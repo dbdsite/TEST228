@@ -1,4 +1,13 @@
-// ============================================
+        // Анти-копирование защита
+(function() {
+    if (window.location.hostname !== 'dbdsite.github.io' && 
+        window.location.hostname !== 'localhost' &&
+        window.location.hostname !== '127.0.0.1') {
+        document.body.innerHTML = '<div style="text-align:center;padding:50px;color:#D4AF37;font-size:24px;">⚠️ Несанкционированный доступ запрещен!</div>';
+    }
+})();
+        
+        // ============================================
         // CONFIGURATION - НАСТРОЙКИ
         // ============================================
         const CONFIG = {
