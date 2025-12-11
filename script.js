@@ -3,7 +3,7 @@
 // ============================================
 
 // 🔴 ВАЖНО: Замените на ваш URL после развертывания Apps Script
-const BACKEND_URL = 'https://script.google.com/macros/s/ВАШ_DEPLOYMENT_ID/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzTCuFYOaDwOhBwv8cBFt8SvuvwE6v7UaCrchL-DeiRRwV1IsHvBfn1OQB4kIa2Qnpq/exec';
 
 // ============================================
 // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
