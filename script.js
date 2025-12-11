@@ -32,9 +32,11 @@ const NOMINATION_NAMES = {
 };
 
 // ============================================
-// ЗАГРУЗКА КОНФИГУРАЦИИ (тихая, без оверлея)
+// ЗАГРУЗКА КОНФИГУРАЦИИ
 // ============================================
 async function loadConfigFromBackend() {
+    showLoadingOverlay(true, 'Загрузка данных...');
+    
     try {
         const response = await fetch(`${BACKEND_URL}?action=config`);
         
@@ -79,13 +81,70 @@ async function loadConfigFromBackend() {
                 isConfigLoaded = true;
                 console.log('📦 Использован кэш');
                 return true;
-            } catch (e) {
-                console.error('Ошибка чтения кэша:', e);
-            }
+            } catch (e) {}
         }
         
+        showErrorScreen('Не удалось загрузить данные. Проверьте интернет-соединение.');
         return false;
+        
+    } finally {
+        showLoadingOverlay(false);
     }
+}
+
+function showLoadingOverlay(show, message = 'Загрузка...') {
+    let overlay = document.getElementById('loadingOverlay');
+    
+    if (!overlay && show) {
+        overlay = document.createElement('div');
+        overlay.id = 'loadingOverlay';
+        overlay.innerHTML = `
+            <div style="text-align: center;">
+                <div class="spinner" style="
+                    width: 50px; height: 50px; 
+                    border: 4px solid rgba(212,175,55,0.3);
+                    border-top-color: #d4af37;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto 20px;
+                "></div>
+                <p style="color: #d4af37; font-size: 18px;">${message}</p>
+            </div>
+            <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+        `;
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10000;
+        `;
+        document.body.appendChild(overlay);
+    }
+    
+    if (overlay) {
+        overlay.style.display = show ? 'flex' : 'none';
+    }
+}
+
+function showErrorScreen(message) {
+    document.body.innerHTML = `
+        <div style="
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 20px; text-align: center;
+        ">
+            <div>
+                <h1 style="color: #ff6b6b; margin-bottom: 20px;">⚠️ Ошибка</h1>
+                <p style="color: white; margin-bottom: 30px;">${message}</p>
+                <button onclick="location.reload()" style="
+                    background: linear-gradient(135deg, #d4af37, #b8860b);
+                    border: none; padding: 15px 40px; color: black;
+                    font-weight: bold; border-radius: 10px; cursor: pointer;
+                    font-size: 16px;
+                ">🔄 Обновить страницу</button>
+            </div>
+        </div>
+    `;
 }
 
 // ============================================
@@ -181,31 +240,17 @@ function markAsActed(actionType) {
 // ИНИЦИАЛИЗАЦИЯ
 // ============================================
 document.addEventListener('DOMContentLoaded', async function() {
-    // Запускаем анимацию частиц
     createIntroParticles();
     
-    // Загружаем конфигурацию параллельно с анимацией интро
-    const configPromise = loadConfigFromBackend();
+    const loaded = await loadConfigFromBackend();
     
-    // Ждём минимум 4.5 секунды (время анимации) И загрузку конфигурации
-    const [configLoaded] = await Promise.all([
-        configPromise,
-        new Promise(resolve => setTimeout(resolve, 4500)) // Ждём анимацию
-    ]);
-    
-    // Скрываем интро
-    const introOverlay = document.getElementById('introOverlay');
-    if (introOverlay) {
-        introOverlay.classList.add('hidden');
+    if (loaded) {
+        setTimeout(() => {
+            document.getElementById('introOverlay')?.classList.add('hidden');
+        }, 2000);
+        
+        checkVotedNominations();
     }
-    
-    // Если конфигурация не загрузилась - показываем ошибку
-    if (!configLoaded) {
-        showModal('errorModal', 'Не удалось загрузить данные. Обновите страницу.');
-    }
-    
-    // Проверяем проголосованные номинации
-    checkVotedNominations();
 });
 
 function createIntroParticles() {
@@ -244,13 +289,8 @@ function handleButton(buttonType) {
 
     const button = buttonMap[buttonType];
     
-    if (!button) {
-        console.error('Unknown button:', buttonType);
-        return;
-    }
-    
     if (!button.enabled) {
-        showModal('disabledModal', `Раздел "${button.name}" пока что недоступен. Следите за новостями!`);
+        showModal('disabledModal', `Раздел "${button.name}" пока что недоступен.`);
         return;
     }
     
@@ -632,13 +672,7 @@ function openSupportModal() {
     }
     
     showSupportStep('supportStep1');
-    document.getElementById('supportTelegram').value = '';
-    document.getElementById('supportMessage').value = '';
     document.getElementById('supportModal').classList.add('active');
-}
-
-function closeSupportModal() {
-    document.getElementById('supportModal').classList.remove('active');
 }
 
 function showSupportStep(stepId) {
@@ -666,7 +700,7 @@ async function submitSupport() {
     const message = document.getElementById('supportMessage').value.trim();
     
     if (!message || message.length < 10) {
-        showModal('errorModal', 'Сообщение слишком короткое (минимум 10 символов)');
+        showModal('errorModal', 'Сообщение слишком короткое');
         return;
     }
 
