@@ -1,4 +1,4 @@
-        // Анти-копирование защита
+// Анти-копирование защита
 (function() {
     if (window.location.hostname !== 'dbdsite.github.io' && 
         window.location.hostname !== 'localhost' &&
@@ -7,26 +7,29 @@
     }
 })();
         
- // ============================================
-// SLAY DBD 25 - FRONTEND С БЭКЕНДОМ НА GOOGLE SHEETS
+        // ============================================
+// CONFIGURATION - НАСТРОЙКИ
 // ============================================
-
-// URL вашего развернутого Google Apps Script
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzTCuFYOaDwOhBwv8cBFt8SvuvwE6v7UaCrchL-DeiRRwV1IsHvBfn1OQB4kIa2Qnpq/exec';
-
-// ============================================
-// ГЛОБАЛЬНАЯ КОНФИГУРАЦИЯ (загружается с сервера)
-// ============================================
-let CONFIG = {
-    BUTTONS: {},
-    TELEGRAM_BOT_TOKEN: '',
-    TELEGRAM_CHAT_ID: '',
-    THREADS: {},
-    SUPPORT_URL: ''
+const CONFIG = {
+    // URL Google Apps Script (ОБЯЗАТЕЛЬНО ЗАМЕНИТЬ!)
+    GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwE7fYclITAQZ_BwTUCkn2m-PJibG8rv-E6P4bEe-YSdA-3p97dfgx2tWbpX4_AP9uaUg/exec',
+    
+    // Локальные настройки (не содержат секретов!)
+    TELEGRAM_CHANNEL_URL: 'https://t.me/slaydbd2025',
+    SUPPORT_URL: 'https://dalink.to/slaydbd25',
+    
+    // Включение/выключение кнопок
+    BUTTONS: {
+        SUGGEST_STREAMER: true,
+        NOMINATE_STREAMER: false,
+        STREAMERS_LIST: true,
+        NOMINEES_LIST: false,
+        SUPPORT_FUND: true,
+        INFO: true,
+        VOTES_COUNT: true,
+        CONTACT_SUPPORT: true
+    }
 };
-
-let STREAMERS_DB = [];
-let isConfigLoaded = false;
 
 // ============================================
 // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
@@ -38,6 +41,7 @@ let voterData = {};
 let supportUserTelegram = '';
 let selectedStreamerForVote = { name: '', twitch: '' };
 let streamersVoteTelegram = '';
+let streamersFromSheet = [];
 
 const NOMINATION_NAMES = {
     'best_streamer': 'Лучший ДБД стример года',
@@ -45,282 +49,6 @@ const NOMINATION_NAMES = {
     'best_entertainment': 'Лучший развлекательный контент',
     'viewers_choice': 'Приз зрительских симпатий'
 };
-
-// ============================================
-// ЗАГРУЗКА КОНФИГУРАЦИИ С СЕРВЕРА
-// ============================================
-async function loadConfigFromBackend() {
-    showLoadingScreen(true, 'Загрузка конфигурации...');
-    
-    try {
-        const response = await fetch(`${BACKEND_URL}?action=config`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        
-        // Применяем конфигурацию
-        applyConfig(data);
-        
-        isConfigLoaded = true;
-        console.log('✅ Конфигурация загружена:', data.timestamp);
-        
-        return true;
-        
-    } catch (error) {
-        console.error('❌ Ошибка загрузки конфигурации:', error);
-        
-        // Пробуем загрузить из кэша
-        const cached = loadCachedConfig();
-        if (cached) {
-            applyConfig(cached);
-            console.log('📦 Использован кэш конфигурации');
-            return true;
-        }
-        
-        showConfigError(error.message);
-        return false;
-    } finally {
-        showLoadingScreen(false);
-    }
-}
-
-/**
- * Применить загруженную конфигурацию
- */
-function applyConfig(data) {
-    // Базовая конфигурация
-    if (data.config) {
-        CONFIG.TELEGRAM_BOT_TOKEN = data.config.TELEGRAM_BOT_TOKEN || '';
-        CONFIG.TELEGRAM_CHAT_ID = data.config.TELEGRAM_CHAT_ID || '';
-        CONFIG.SUPPORT_URL = data.config.SUPPORT_URL || '';
-        CONFIG.GOOGLE_SHEET_ID = data.config.GOOGLE_SHEET_ID || '';
-        CONFIG.GOOGLE_SHEET_NAME = data.config.GOOGLE_SHEET_NAME || 'SlayDBD25';
-    }
-    
-    // Кнопки
-    if (data.buttons) {
-        CONFIG.BUTTONS = {
-            SUGGEST_STREAMER: data.buttons.SUGGEST_STREAMER ?? true,
-            NOMINATE_STREAMER: data.buttons.NOMINATE_STREAMER ?? false,
-            STREAMERS_LIST: data.buttons.STREAMERS_LIST ?? true,
-            NOMINEES_LIST: data.buttons.NOMINEES_LIST ?? false,
-            SUPPORT_FUND: data.buttons.SUPPORT_FUND ?? true,
-            INFO: data.buttons.INFO ?? true,
-            VOTES_COUNT: data.buttons.VOTES_COUNT ?? true,
-            CONTACT_SUPPORT: data.buttons.CONTACT_SUPPORT ?? true
-        };
-    }
-    
-    // Треды
-    if (data.threads) {
-        CONFIG.THREADS = {
-            SUGGESTIONS: data.threads.SUGGESTIONS || 5,
-            BEST_STREAMER: data.threads.BEST_STREAMER || 7,
-            BEST_GUIDE: data.threads.BEST_GUIDE || 9,
-            BEST_ENTERTAINMENT: data.threads.BEST_ENTERTAINMENT || 11,
-            VIEWERS_CHOICE: data.threads.VIEWERS_CHOICE || 13,
-            SUPPORT: data.threads.SUPPORT || 27,
-            STREAMERS_LIST_VOTE: data.threads.STREAMERS_LIST_VOTE || 51
-        };
-    }
-    
-    // Стримеры
-    if (data.streamers && Array.isArray(data.streamers)) {
-        STREAMERS_DB = data.streamers;
-    }
-    
-    // Кэшируем конфигурацию
-    cacheConfig(data);
-    
-    // Обновляем UI на основе конфигурации
-    updateUIBasedOnConfig();
-}
-
-/**
- * Обновить UI на основе конфигурации
- */
-function updateUIBasedOnConfig() {
-    // Показать/скрыть кнопки на основе настроек
-    const buttonMappings = {
-        'suggest': CONFIG.BUTTONS.SUGGEST_STREAMER,
-        'nominate': CONFIG.BUTTONS.NOMINATE_STREAMER,
-        'streamersList': CONFIG.BUTTONS.STREAMERS_LIST,
-        'nomineesList': CONFIG.BUTTONS.NOMINEES_LIST,
-        'fund': CONFIG.BUTTONS.SUPPORT_FUND,
-        'info': CONFIG.BUTTONS.INFO,
-        'votes': CONFIG.BUTTONS.VOTES_COUNT,
-        'support': CONFIG.BUTTONS.CONTACT_SUPPORT
-    };
-    
-    // Можно добавить визуальные индикаторы для отключенных кнопок
-    Object.keys(buttonMappings).forEach(btnType => {
-        const btn = document.querySelector(`[data-button="${btnType}"]`);
-        if (btn) {
-            if (!buttonMappings[btnType]) {
-                btn.classList.add('disabled-visual');
-            } else {
-                btn.classList.remove('disabled-visual');
-            }
-        }
-    });
-}
-
-/**
- * Кэширование конфигурации в localStorage
- */
-function cacheConfig(data) {
-    try {
-        const cacheData = {
-            ...data,
-            cachedAt: Date.now()
-        };
-        localStorage.setItem('slaydbd_config_cache', JSON.stringify(cacheData));
-    } catch (e) {
-        console.warn('Не удалось кэшировать конфигурацию:', e);
-    }
-}
-
-/**
- * Загрузить конфигурацию из кэша
- */
-function loadCachedConfig() {
-    try {
-        const cached = localStorage.getItem('slaydbd_config_cache');
-        if (!cached) return null;
-        
-        const data = JSON.parse(cached);
-        
-        // Проверяем возраст кэша (максимум 24 часа)
-        const maxAge = 24 * 60 * 60 * 1000;
-        if (Date.now() - data.cachedAt > maxAge) {
-            localStorage.removeItem('slaydbd_config_cache');
-            return null;
-        }
-        
-        return data;
-    } catch (e) {
-        return null;
-    }
-}
-
-/**
- * Показать/скрыть экран загрузки
- */
-function showLoadingScreen(show, message = 'Загрузка...') {
-    let loader = document.getElementById('configLoader');
-    
-    if (!loader && show) {
-        loader = document.createElement('div');
-        loader.id = 'configLoader';
-        loader.innerHTML = `
-            <div class="config-loader-content">
-                <div class="loader-spinner"></div>
-                <p class="loader-message">${message}</p>
-            </div>
-        `;
-        loader.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-        `;
-        document.body.appendChild(loader);
-    }
-    
-    if (loader) {
-        if (show) {
-            const msgEl = loader.querySelector('.loader-message');
-            if (msgEl) msgEl.textContent = message;
-            loader.style.display = 'flex';
-        } else {
-            loader.style.display = 'none';
-        }
-    }
-}
-
-/**
- * Показать ошибку загрузки конфигурации
- */
-function showConfigError(message) {
-    const errorHtml = `
-        <div id="configError" style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        ">
-            <div>
-                <h2 style="color: #ff6b6b; margin-bottom: 20px;">⚠️ Ошибка загрузки</h2>
-                <p style="margin-bottom: 20px;">${message}</p>
-                <button onclick="retryLoadConfig()" style="
-                    background: linear-gradient(135deg, #d4af37, #b8860b);
-                    border: none;
-                    padding: 15px 30px;
-                    color: black;
-                    font-weight: bold;
-                    border-radius: 10px;
-                    cursor: pointer;
-                ">🔄 Попробовать снова</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', errorHtml);
-}
-
-/**
- * Повторная попытка загрузки
- */
-async function retryLoadConfig() {
-    const errorEl = document.getElementById('configError');
-    if (errorEl) errorEl.remove();
-    
-    await loadConfigFromBackend();
-    
-    if (isConfigLoaded) {
-        initializeApp();
-    }
-}
-
-// ============================================
-// ESCAPE MARKDOWN FOR TELEGRAM
-// ============================================
-function escapeMarkdown(text) {
-    if (!text) return '';
-    return String(text)
-        .replace(/_/g, '\\_')
-        .replace(/\*/g, '\\*')
-        .replace(/\[/g, '\\[')
-        .replace(/\]/g, '\\]')
-        .replace(/`/g, '\\`');
-}
 
 // ============================================
 // BROWSER FINGERPRINT
@@ -363,7 +91,7 @@ function getFingerprint() {
 }
 
 // ============================================
-// COOKIES FUNCTIONS
+// COOKIES & LOCAL STORAGE
 // ============================================
 function setCookie(name, value, days) {
     const expires = new Date(Date.now() + days * 864e5).toUTCString();
@@ -389,64 +117,125 @@ function markAsActed(actionType) {
 }
 
 // ============================================
-// BUTTON HANDLER
+// API ЗАПРОСЫ К GOOGLE APPS SCRIPT
 // ============================================
-function handleButton(buttonType) {
-    if (!isConfigLoaded) {
-        showModal('errorModal', 'Конфигурация еще загружается. Подождите...');
-        return;
+async function apiRequest(action, data = {}) {
+    try {
+        const response = await fetch(CONFIG.GOOGLE_APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: action,
+                fingerprint: getFingerprint(),
+                ...data
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        return await response.json();
+        
+    } catch (error) {
+        console.error(`API Error (${action}):`, error);
+        return { error: error.message };
     }
-    
-    const buttonMap = {
-        'suggest': { enabled: CONFIG.BUTTONS.SUGGEST_STREAMER, action: handleSuggestStreamer, name: 'Предложить стримера' },
-        'nominate': { enabled: CONFIG.BUTTONS.NOMINATE_STREAMER, action: handleVote, name: 'Номинировать стримера' },
-        'streamersList': { enabled: CONFIG.BUTTONS.STREAMERS_LIST, action: () => showSection('streamersListSection'), name: 'Список стримеров' },
-        'nomineesList': { enabled: CONFIG.BUTTONS.NOMINEES_LIST, action: () => { showSection('nomineesListSection'); loadNominees(); }, name: 'Список номинантов' },
-        'fund': { enabled: CONFIG.BUTTONS.SUPPORT_FUND, action: () => showSection('fundSection'), name: 'Поддержать фонд' },
-        'info': { enabled: CONFIG.BUTTONS.INFO, action: () => showSection('infoSection'), name: 'Информация' },
-        'votes': { enabled: CONFIG.BUTTONS.VOTES_COUNT, action: () => { showSection('votesSection'); loadVotes(); }, name: 'Количество голосов' },
-        'support': { enabled: CONFIG.BUTTONS.CONTACT_SUPPORT, action: openSupportModal, name: 'Связаться с поддержкой' }
-    };
+}
 
-    const button = buttonMap[buttonType];
-    
-    if (!button) {
-        console.error('Unknown button type:', buttonType);
-        return;
+async function apiGet(action) {
+    try {
+        const response = await fetch(`${CONFIG.GOOGLE_APPS_SCRIPT_URL}?action=${action}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        return await response.json();
+        
+    } catch (error) {
+        console.error(`API GET Error (${action}):`, error);
+        return { error: error.message };
     }
-    
-    if (!button.enabled) {
-        showModal('disabledModal', `Раздел "${button.name}" пока что недоступен. Следите за новостями у нас в Соц. Сетях!`);
-        return;
-    }
-    
-    button.action();
 }
 
 // ============================================
-// ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
+// LOADING OVERLAY
 // ============================================
-async function initializeApp() {
+function showLoadingOverlay(text = 'Загрузка...') {
+    let overlay = document.getElementById('loadingOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'loadingOverlay';
+        overlay.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.9);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                flex-direction: column;
+                gap: 20px;
+            ">
+                <div style="
+                    width: 50px;
+                    height: 50px;
+                    border: 4px solid rgba(212, 175, 55, 0.3);
+                    border-top-color: #d4af37;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                "></div>
+                <p id="loadingText" style="color: #d4af37; font-size: 1.2rem;">${text}</p>
+            </div>
+            <style>
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            </style>
+        `;
+        document.body.appendChild(overlay);
+    } else {
+        const textEl = document.getElementById('loadingText');
+        if (textEl) textEl.textContent = text;
+        overlay.style.display = 'block';
+    }
+}
+
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+}
+
+// ============================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================
+document.addEventListener('DOMContentLoaded', async function() {
     createIntroParticles();
     
-    // Загружаем конфигурацию
-    const configLoaded = await loadConfigFromBackend();
-    
-    if (!configLoaded) {
-        console.error('Не удалось загрузить конфигурацию');
-        return;
+    // Проверяем доступность API
+    const pingResult = await apiGet('ping');
+    if (pingResult.error) {
+        console.warn('API недоступен, будет использована локальная база');
+    } else {
+        console.log('✅ API доступен:', pingResult.timestamp);
     }
     
-    // Скрываем интро после загрузки
     setTimeout(() => {
-        document.getElementById('introOverlay').classList.add('hidden');
-    }, 2000);
+        const intro = document.getElementById('introOverlay');
+        if (intro) intro.classList.add('hidden');
+    }, 4500);
     
     checkVotedNominations();
-}
-
-// Запуск при загрузке DOM
-document.addEventListener('DOMContentLoaded', initializeApp);
+});
 
 function createIntroParticles() {
     const container = document.getElementById('introParticles');
@@ -469,7 +258,7 @@ function showSection(sectionId) {
     document.getElementById(sectionId).classList.add('active');
     
     if (sectionId === 'streamersListSection') {
-        renderStreamers(STREAMERS_DB);
+        loadStreamersFromSheet();
     }
     
     window.scrollTo(0, 0);
@@ -488,101 +277,72 @@ function showModal(modalId, text = null) {
 }
 
 // ============================================
-// NOMINEES LIST
+// BUTTON HANDLER
 // ============================================
-function loadNominees() {
-    const grid = document.getElementById('nomineesGrid');
-    
-    grid.innerHTML = STREAMERS_DB.map(streamer => `
-        <div class="nominee-card" onclick="openNomineeProfile(${streamer.id})">
-            <img src="${streamer.image}" alt="${streamer.name}" class="nominee-card-image"
-                 onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
-            <h3 class="nominee-card-name">${streamer.name}</h3>
-            <p class="nominee-card-hint">Нажмите для подробностей</p>
-        </div>
-    `).join('');
-}
+function handleButton(buttonType) {
+    const buttonMap = {
+        'suggest': { enabled: CONFIG.BUTTONS.SUGGEST_STREAMER, action: handleSuggestStreamer, name: 'Предложить стримера' },
+        'nominate': { enabled: CONFIG.BUTTONS.NOMINATE_STREAMER, action: handleVote, name: 'Номинировать стримера' },
+        'streamersList': { enabled: CONFIG.BUTTONS.STREAMERS_LIST, action: () => showSection('streamersListSection'), name: 'Список стримеров' },
+        'nomineesList': { enabled: CONFIG.BUTTONS.NOMINEES_LIST, action: () => { showSection('nomineesListSection'); loadNominees(); }, name: 'Список номинантов' },
+        'fund': { enabled: CONFIG.BUTTONS.SUPPORT_FUND, action: () => showSection('fundSection'), name: 'Поддержать фонд' },
+        'info': { enabled: CONFIG.BUTTONS.INFO, action: () => showSection('infoSection'), name: 'Информация' },
+        'votes': { enabled: CONFIG.BUTTONS.VOTES_COUNT, action: () => { showSection('votesSection'); loadVotes(); }, name: 'Количество голосов' },
+        'support': { enabled: CONFIG.BUTTONS.CONTACT_SUPPORT, action: openSupportModal, name: 'Связаться с поддержкой' }
+    };
 
-function openNomineeProfile(streamerId) {
-    const streamer = STREAMERS_DB.find(s => s.id === streamerId);
-    if (!streamer) return;
+    const button = buttonMap[buttonType];
     
-    document.getElementById('nomineeProfileImage').src = streamer.profileImage || streamer.image;
-    document.getElementById('nomineeProfileImage').alt = streamer.name;
-    document.getElementById('nomineeProfileName').textContent = streamer.name;
-    document.getElementById('nomineeProfileTwitch').href = streamer.twitch;
-    
-    let interviewHTML = '';
-    if (streamer.interview && streamer.interview.q1) {
-        interviewHTML = `
-            <div class="interview-item">
-                <p class="interview-question">${streamer.interview.q1}</p>
-                <p class="interview-answer">${streamer.interview.a1}</p>
-            </div>
-            <div class="interview-item">
-                <p class="interview-question">${streamer.interview.q2}</p>
-                <p class="interview-answer">${streamer.interview.a2}</p>
-            </div>
-            <div class="interview-item">
-                <p class="interview-question">${streamer.interview.q3}</p>
-                <p class="interview-answer">${streamer.interview.a3}</p>
-            </div>
-        `;
-    } else {
-        interviewHTML = '<p style="color: var(--gold-light);">Интервью скоро появится...</p>';
+    if (!button.enabled) {
+        showModal('disabledModal', `Раздел "${button.name}" пока что недоступен.`);
+        return;
     }
     
-    document.getElementById('nomineeInterviewContent').innerHTML = interviewHTML;
-    document.getElementById('nomineeProfileModal').classList.add('active');
+    button.action();
 }
 
 // ============================================
-// VOTES COUNT
+// ЗАГРУЗКА СТРИМЕРОВ
 // ============================================
-function loadVotes() {
-    const container = document.getElementById('votesContainer');
+async function loadStreamersFromSheet() {
+    const loadingEl = document.getElementById('streamersLoading');
+    const errorEl = document.getElementById('streamersError');
+    const gridEl = document.getElementById('streamersGrid');
     
-    const sortedStreamers = [...STREAMERS_DB].sort((a, b) => (b.votes || 0) - (a.votes || 0));
-    const maxVotes = sortedStreamers[0]?.votes || 1;
+    loadingEl.style.display = 'block';
+    errorEl.style.display = 'none';
+    gridEl.innerHTML = '';
     
-    container.innerHTML = sortedStreamers.map((streamer, index) => {
-        const percentage = ((streamer.votes || 0) / maxVotes) * 100;
-        const position = index + 1;
-        const isTop3 = position <= 3;
-        const medals = ['🥇', '🥈', '🥉'];
+    try {
+        const result = await apiGet('getStreamers');
         
-        return `
-            <div class="vote-item">
-                <div class="vote-position ${isTop3 ? 'top-3' : ''}">
-                    ${isTop3 ? medals[position - 1] : position}
-                </div>
-                <img src="${streamer.image}" alt="${streamer.name}" class="vote-avatar"
-                     onerror="this.src='https://via.placeholder.com/50?text=?'">
-                <div class="vote-info">
-                    <div class="vote-name">${streamer.name}</div>
-                    <div class="vote-bar-container">
-                        <div class="vote-bar" style="width: ${percentage}%"></div>
-                    </div>
-                </div>
-                <div class="vote-count">${streamer.votes || 0}</div>
-            </div>
-        `;
-    }).join('');
+        if (result.error) {
+            throw new Error(result.error);
+        }
+        
+        streamersFromSheet = result;
+        loadingEl.style.display = 'none';
+        renderStreamers(result.length > 0 ? result : STREAMERS_DB);
+        
+    } catch (error) {
+        console.error('Ошибка загрузки:', error);
+        loadingEl.style.display = 'none';
+        
+        // Fallback на локальную базу
+        if (typeof STREAMERS_DB !== 'undefined') {
+            renderStreamers(STREAMERS_DB);
+        } else {
+            errorEl.style.display = 'block';
+        }
+    }
 }
 
-// ============================================
-// STREAMERS LIST
-// ============================================
 function renderStreamers(streamers) {
     const gridEl = document.getElementById('streamersGrid');
-    const loadingEl = document.getElementById('streamersLoading');
-    
-    if (loadingEl) loadingEl.style.display = 'none';
-    
     const hasVoted = hasAlreadyActed('streamersListVoted');
     
-    if (!streamers || streamers.length === 0) {
-        gridEl.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--gold-light);"><p>Список стримеров пока пуст</p></div>`;
+    if (streamers.length === 0) {
+        gridEl.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #d4af37;"><p>Список стримеров пока пуст</p></div>`;
         return;
     }
     
@@ -610,7 +370,7 @@ function escapeHtmlAttr(text) {
 }
 
 // ============================================
-// STREAMERS LIST VOTING
+// ГОЛОСОВАНИЕ ЗА СТРИМЕРА (СПИСОК)
 // ============================================
 function openStreamersVoteModal(streamerName, streamerTwitch) {
     if (hasAlreadyActed('streamersListVoted')) {
@@ -653,52 +413,31 @@ function streamersVoteStep2() {
 }
 
 async function submitStreamersVote() {
-    const fingerprint = getFingerprint();
+    showLoadingOverlay('Отправка голоса...');
     
-    const message = `🗳️ *ГОЛОС ЗА СТРИМЕРА*
-
-👤 *Голосующий:*
-├ Telegram: ${escapeMarkdown(streamersVoteTelegram)}
-└ 🔐 ID: \`${fingerprint}\`
-
-🎮 *Голос за стримера:*
-├ Никнейм: ${escapeMarkdown(selectedStreamerForVote.name)}
-└ Twitch: ${escapeMarkdown(selectedStreamerForVote.twitch)}
-
-📅 Дата: ${new Date().toLocaleString('ru-RU')}`;
-
-    const success = await sendToTelegram(message, CONFIG.THREADS.STREAMERS_LIST_VOTE);
+    const result = await apiRequest('vote', {
+        streamerName: selectedStreamerForVote.name,
+        telegram: streamersVoteTelegram
+    });
     
-    if (success) {
+    hideLoadingOverlay();
+    
+    if (result.error) {
+        if (result.code === 'DUPLICATE') {
+            showModal('errorModal', 'Вы уже голосовали!');
+            markAsActed('streamersListVoted');
+        } else {
+            showModal('errorModal', 'Ошибка: ' + result.error);
+        }
+        return;
+    }
+    
+    if (result.success) {
         markAsActed('streamersListVoted');
         showStreamersVoteStep('streamersVoteStep3');
         updateVoteButtons();
-        
-        // Также можно обновить счётчик голосов на бэкенде
-        await updateVoteCount(selectedStreamerForVote.name);
     } else {
         showModal('errorModal', 'Ошибка отправки. Попробуйте позже.');
-    }
-}
-
-/**
- * Обновить счетчик голосов на бэкенде
- */
-async function updateVoteCount(streamerName) {
-    const streamer = STREAMERS_DB.find(s => s.name === streamerName);
-    if (!streamer) return;
-    
-    try {
-        await fetch(BACKEND_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'addVote',
-                streamerId: streamer.id
-            })
-        });
-    } catch (e) {
-        console.warn('Не удалось обновить счётчик голосов:', e);
     }
 }
 
@@ -710,7 +449,54 @@ function updateVoteButtons() {
 }
 
 // ============================================
-// SUGGEST STREAMER
+// КОЛИЧЕСТВО ГОЛОСОВ
+// ============================================
+async function loadVotes() {
+    const container = document.getElementById('votesContainer');
+    container.innerHTML = '<p style="text-align: center; color: #d4af37;">Загрузка...</p>';
+    
+    try {
+        const streamers = await apiGet('getStreamers');
+        
+        if (streamers.error) {
+            throw new Error(streamers.error);
+        }
+        
+        const sortedStreamers = [...streamers].sort((a, b) => (b.votes || 0) - (a.votes || 0));
+        const maxVotes = sortedStreamers[0]?.votes || 1;
+        
+        container.innerHTML = sortedStreamers.map((streamer, index) => {
+            const percentage = ((streamer.votes || 0) / maxVotes) * 100;
+            const position = index + 1;
+            const isTop3 = position <= 3;
+            const medals = ['🥇', '🥈', '🥉'];
+            
+            return `
+                <div class="vote-item">
+                    <div class="vote-position ${isTop3 ? 'top-3' : ''}">
+                        ${isTop3 ? medals[position - 1] : position}
+                    </div>
+                    <img src="${streamer.image}" alt="${streamer.name}" class="vote-avatar"
+                         onerror="this.src='https://via.placeholder.com/50?text=?'">
+                    <div class="vote-info">
+                        <div class="vote-name">${streamer.name}</div>
+                        <div class="vote-bar-container">
+                            <div class="vote-bar" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                    <div class="vote-count">${streamer.votes || 0}</div>
+                </div>
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.error('Ошибка загрузки голосов:', error);
+        container.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Ошибка загрузки данных</p>';
+    }
+}
+
+// ============================================
+// ПРЕДЛОЖИТЬ СТРИМЕРА
 // ============================================
 function handleSuggestStreamer() {
     if (hasAlreadyActed('hasSuggested')) {
@@ -753,34 +539,33 @@ async function submitSuggestion() {
         return;
     }
 
-    const fingerprint = getFingerprint();
+    showLoadingOverlay('Отправка предложения...');
 
-    const message = `🎯 *НОВОЕ ПРЕДЛОЖЕНИЕ СТРИМЕРА*
+    const result = await apiRequest('suggest', {
+        userTelegram: userTelegram,
+        userTwitch: userTwitch,
+        streamerNick: streamerNick,
+        streamerTwitch: streamerTwitch
+    });
 
-👤 *Отправитель:*
-├ Telegram: ${escapeMarkdown(userTelegram)}
-├ Twitch: ${escapeMarkdown(userTwitch)}
-└ 🔐 ID: \`${fingerprint}\`
+    hideLoadingOverlay();
 
-🎮 *Предложенный стример:*
-├ Никнейм: ${escapeMarkdown(streamerNick)}
-└ Twitch: ${escapeMarkdown(streamerTwitch)}
-
-📅 Дата: ${new Date().toLocaleString('ru-RU')}`;
-
-    const success = await sendToTelegram(message, CONFIG.THREADS.SUGGESTIONS);
-
-    if (success) {
+    if (result.success) {
         markAsActed('hasSuggested');
         document.getElementById('suggestStep2').style.display = 'none';
         document.getElementById('suggestSuccess').style.display = 'block';
     } else {
-        showModal('errorModal', 'Ошибка отправки. Попробуйте позже.');
+        if (result.code === 'DUPLICATE') {
+            showModal('errorModal', 'Вы уже отправляли предложение!');
+            markAsActed('hasSuggested');
+        } else {
+            showModal('errorModal', 'Ошибка отправки: ' + (result.error || 'Попробуйте позже'));
+        }
     }
 }
 
 // ============================================
-// VOTING (NOMINATIONS)
+// ГОЛОСОВАНИЕ В НОМИНАЦИЯХ
 // ============================================
 function handleVote() {
     showSection('voteSection');
@@ -830,7 +615,10 @@ function startBracket() {
     }
 
     voterData = { nick, telegram, twitch };
-    currentStreamers = [...STREAMERS_DB].sort(() => Math.random() - 0.5);
+    
+    // Используем загруженных стримеров или локальную базу
+    const sourceStreamers = streamersFromSheet.length > 0 ? streamersFromSheet : STREAMERS_DB;
+    currentStreamers = [...sourceStreamers].sort(() => Math.random() - 0.5);
 
     document.getElementById('voterVerification').style.display = 'none';
     document.getElementById('bracketVoting').style.display = 'block';
@@ -848,8 +636,8 @@ function showNextMatch() {
     const remainingInRound = currentStreamers.length;
     document.getElementById('roundInfo').textContent = `Осталось стримеров: ${remainingInRound}`;
     
-    const totalStreamers = STREAMERS_DB.length;
-    const progress = ((totalStreamers - remainingInRound) / (totalStreamers - 1)) * 100;
+    const total = streamersFromSheet.length || STREAMERS_DB.length;
+    const progress = ((total - remainingInRound) / (total - 1)) * 100;
     document.getElementById('progressFill').style.width = progress + '%';
 
     const streamer1 = currentStreamers[0];
@@ -899,45 +687,32 @@ function showWinner() {
 }
 
 async function submitVote() {
-    const threadId = getThreadIdForNomination(currentNomination);
-    const fingerprint = getFingerprint();
-    
-    const message = `🏆 *НОВЫЙ ГОЛОС*
+    showLoadingOverlay('Отправка голоса...');
 
-📋 *Номинация:* ${NOMINATION_NAMES[currentNomination]}
+    const result = await apiRequest('nominationVote', {
+        nomination: currentNomination,
+        voterNick: voterData.nick,
+        voterTelegram: voterData.telegram,
+        voterTwitch: voterData.twitch,
+        winnerName: winner.name,
+        winnerTwitch: winner.twitch
+    });
 
-👤 *Голосующий:*
-├ Никнейм: ${escapeMarkdown(voterData.nick)}
-├ Telegram: ${escapeMarkdown(voterData.telegram)}
-├ Twitch: ${escapeMarkdown(voterData.twitch)}
-└ 🔐 ID: \`${fingerprint}\`
+    hideLoadingOverlay();
 
-🎮 *Выбранный стример:*
-├ Никнейм: ${escapeMarkdown(winner.name)}
-└ Twitch: ${escapeMarkdown(winner.twitch)}
-
-📅 Дата: ${new Date().toLocaleString('ru-RU')}`;
-
-    const success = await sendToTelegram(message, threadId);
-
-    if (success) {
+    if (result.success) {
         markAsActed(`voted_${currentNomination}`);
         document.getElementById('winnerDisplay').style.display = 'none';
         document.getElementById('voteSuccess').style.display = 'block';
         checkVotedNominations();
     } else {
-        showModal('errorModal', 'Ошибка отправки. Попробуйте позже.');
+        if (result.code === 'DUPLICATE') {
+            showModal('errorModal', 'Вы уже голосовали в этой номинации!');
+            markAsActed(`voted_${currentNomination}`);
+        } else {
+            showModal('errorModal', 'Ошибка отправки: ' + (result.error || 'Попробуйте позже'));
+        }
     }
-}
-
-function getThreadIdForNomination(nomination) {
-    const map = {
-        'best_streamer': CONFIG.THREADS.BEST_STREAMER,
-        'best_guide': CONFIG.THREADS.BEST_GUIDE,
-        'best_entertainment': CONFIG.THREADS.BEST_ENTERTAINMENT,
-        'viewers_choice': CONFIG.THREADS.VIEWERS_CHOICE
-    };
-    return map[nomination] || null;
 }
 
 function backToNominations() {
@@ -951,7 +726,7 @@ function backToNominations() {
 }
 
 // ============================================
-// SUPPORT FUNCTIONALITY
+// ПОДДЕРЖКА
 // ============================================
 function openSupportModal() {
     const lastSent = localStorage.getItem('supportLastSent') || getCookie('supportLastSent');
@@ -1011,65 +786,83 @@ async function submitSupport() {
         return;
     }
 
-    const fingerprint = getFingerprint();
+    showLoadingOverlay('Отправка сообщения...');
+
+    const result = await apiRequest('support', {
+        telegram: supportUserTelegram,
+        message: message
+    });
+
+    hideLoadingOverlay();
     
-    const telegramMessage = `💬 *ОБРАЩЕНИЕ В ПОДДЕРЖКУ*
-
-👤 *Отправитель:*
-├ Telegram: ${escapeMarkdown(supportUserTelegram)}
-└ 🔐 ID: \`${fingerprint}\`
-
-📝 *Сообщение:*
-${escapeMarkdown(message)}
-
-📅 Дата: ${new Date().toLocaleString('ru-RU')}`;
-
-    const success = await sendToTelegram(telegramMessage, CONFIG.THREADS.SUPPORT);
-    
-    if (success) {
+    if (result.success) {
         const timestamp = Date.now().toString();
         localStorage.setItem('supportLastSent', timestamp);
         setCookie('supportLastSent', timestamp, 1);
         showSupportStep('supportStep4');
     } else {
-        showModal('errorModal', 'Ошибка отправки. Попробуйте позже.');
+        showModal('errorModal', 'Ошибка отправки: ' + (result.error || 'Попробуйте позже'));
     }
 }
 
 // ============================================
-// TELEGRAM API
+// NOMINEES (локальная база как fallback)
 // ============================================
-async function sendToTelegram(message, threadId = null) {
-    if (!CONFIG.TELEGRAM_BOT_TOKEN || !CONFIG.TELEGRAM_CHAT_ID) {
-        console.error('Telegram credentials not configured');
-        return false;
+function loadNominees() {
+    const grid = document.getElementById('nomineesGrid');
+    const sourceStreamers = streamersFromSheet.length > 0 ? streamersFromSheet : STREAMERS_DB;
+    
+    grid.innerHTML = sourceStreamers.map(streamer => `
+        <div class="nominee-card" onclick="openNomineeProfile(${streamer.id})">
+            <img src="${streamer.image}" alt="${streamer.name}" class="nominee-card-image"
+                 onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
+            <h3 class="nominee-card-name">${streamer.name}</h3>
+            <p class="nominee-card-hint">Нажмите для подробностей</p>
+        </div>
+    `).join('');
+}
+
+function openNomineeProfile(streamerId) {
+    const sourceStreamers = streamersFromSheet.length > 0 ? streamersFromSheet : STREAMERS_DB;
+    const streamer = sourceStreamers.find(s => s.id === streamerId);
+    if (!streamer) return;
+    
+    document.getElementById('nomineeProfileImage').src = streamer.profileImage || streamer.image;
+    document.getElementById('nomineeProfileImage').alt = streamer.name;
+    document.getElementById('nomineeProfileName').textContent = streamer.name;
+    document.getElementById('nomineeProfileTwitch').href = streamer.twitch;
+    
+    let interviewHTML = '<p style="color: #d4af37;">Интервью скоро появится...</p>';
+    
+    if (streamer.interview) {
+        interviewHTML = `
+            <div class="interview-item">
+                <p class="interview-question">${streamer.interview.q1}</p>
+                <p class="interview-answer">${streamer.interview.a1}</p>
+            </div>
+            <div class="interview-item">
+                <p class="interview-question">${streamer.interview.q2}</p>
+                <p class="interview-answer">${streamer.interview.a2}</p>
+            </div>
+            <div class="interview-item">
+                <p class="interview-question">${streamer.interview.q3}</p>
+                <p class="interview-answer">${streamer.interview.a3}</p>
+            </div>
+        `;
     }
     
-    try {
-        const url = `https://api.telegram.org/bot${CONFIG.TELEGRAM_BOT_TOKEN}/sendMessage`;
-        
-        const body = {
-            chat_id: CONFIG.TELEGRAM_CHAT_ID,
-            text: message,
-            parse_mode: 'Markdown',
-            disable_web_page_preview: true
-        };
-
-        if (threadId) body.message_thread_id = threadId;
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-
-        const data = await response.json();
-        return data.ok;
-    } catch (error) {
-        console.error('Telegram API Error:', error);
-        return false;
-    }
+    document.getElementById('nomineeInterviewContent').innerHTML = interviewHTML;
+    document.getElementById('nomineeProfileModal').classList.add('active');
 }
+
+// ============================================
+// FALLBACK STREAMERS DATABASE (на случай если API недоступен)
+// ============================================
+const STREAMERS_DB = [
+    { id: 1, name: "Spc_tgc", image: "https://static-cdn.jtvnw.net/jtv_user_pictures/f983d142-d6e5-46cf-80d9-f9c5cd6c6836-profile_image-70x70.png", twitch: "https://twitch.tv/spc_tgc", votes: 46 },
+    { id: 2, name: "MogilevTM", image: "https://static-cdn.jtvnw.net/jtv_user_pictures/183376cf-247a-433e-91bd-22fcd30d3901-profile_image-70x70.jpeg", twitch: "https://twitch.tv/mogilevtm", votes: 23 },
+    // ... остальные стримеры
+];
 
         // ============================================
     // ANTI-DEVTOOLS PROTECTION
