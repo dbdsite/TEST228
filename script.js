@@ -12,7 +12,7 @@
 // ============================================
 const CONFIG = {
     // URL Google Apps Script (ОБЯЗАТЕЛЬНО ЗАМЕНИТЬ!)
-    GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwE7fYclITAQZ_BwTUCkn2m-PJibG8rv-E6P4bEe-YSdA-3p97dfgx2tWbpX4_AP9uaUg/exec',
+    GOOGLE_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwqVft21GrSNNESk0x0x8sN_8_CAxGVhqVCCqj-lctqXpk5yn-ZjgTNYkwEPYyQEjbT5Q/exec',
     
     // Локальные настройки (не содержат секретов!)
     TELEGRAM_CHANNEL_URL: 'https://t.me/slaydbd2025',
@@ -117,14 +117,16 @@ function markAsActed(actionType) {
 }
 
 // ============================================
-// API ЗАПРОСЫ К GOOGLE APPS SCRIPT
+// API ЗАПРОСЫ К GOOGLE APPS SCRIPT (ИСПРАВЛЕНО!)
 // ============================================
+
 async function apiRequest(action, data = {}) {
     try {
+        // Используем text/plain чтобы избежать preflight запроса
         const response = await fetch(CONFIG.GOOGLE_APPS_SCRIPT_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'text/plain;charset=utf-8',
             },
             body: JSON.stringify({
                 action: action,
@@ -133,11 +135,20 @@ async function apiRequest(action, data = {}) {
             })
         });
         
+        // Проверяем, что ответ получен
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
         
-        return await response.json();
+        const text = await response.text();
+        
+        // Пробуем распарсить JSON
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error('Failed to parse response:', text);
+            return { error: 'Invalid response format' };
+        }
         
     } catch (error) {
         console.error(`API Error (${action}):`, error);
@@ -147,13 +158,23 @@ async function apiRequest(action, data = {}) {
 
 async function apiGet(action) {
     try {
-        const response = await fetch(`${CONFIG.GOOGLE_APPS_SCRIPT_URL}?action=${action}`);
+        // GET запросы работают без проблем
+        const response = await fetch(`${CONFIG.GOOGLE_APPS_SCRIPT_URL}?action=${action}`, {
+            method: 'GET',
+        });
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
         
-        return await response.json();
+        const text = await response.text();
+        
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error('Failed to parse response:', text);
+            return { error: 'Invalid response format' };
+        }
         
     } catch (error) {
         console.error(`API GET Error (${action}):`, error);
