@@ -1,589 +1,1321 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <link rel="icon" href="https://i.postimg.cc/g2WKzQgW/SLAYDBD-05-52-43.png" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SLAY DBD 25 - Стример Года</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Open Graph метатеги -->
-    <meta property="og:title" content="SLAYDBD25 - Dead by Daylight">
-    <meta property="og:description" content="SLAYDBD25 | DBD Сommunity">
-    <meta property="og:image" content="https://i.postimg.cc/MGw3LXCs/2SLAYDBD-05-52-43.png">
-    <meta property="og:url" content="https://dbdsite.github.io/SLAYDBD25/">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="SLAYDBD25r">
-    
-    <!-- Дополнительные метатеги для ВКонтакте -->
-    <meta property="vk:image" content="https://i.postimg.cc/MGw3LXCs/2SLAYDBD-05-52-43.png">
-    
-    <!-- Дополнительные метатеги для Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SLAYDBD25 - Dead by Daylight">
-    <meta name="twitter:description" content="SLAYDBD25 | DBD Сommunity">
-    <meta name="twitter:image" content="https://i.postimg.cc/MGw3LXCs/2SLAYDBD-05-52-43.png">
-
-
-    <link rel="stylesheet" href="style.css">
+    <title>Трансляция DarinNKTh - Twitch</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #0e0e10;
+            color: #efeff1;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            height: 100vh;
+        }
+        
+        /* Левый чат (реальный Twitch чат) */
+        .live-chat-container {
+            width: 300px;
+            background-color: #18181b;
+            border-right: 1px solid #2d2d2d;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Основной контент с видео */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Правый чат (управление ботами) */
+        .bot-chat-container {
+            width: 300px;
+            background-color: #18181b;
+            border-left: 1px solid #2d2d2d;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Общие стили для чатов */
+        .chat-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #2d2d2d;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 50px;
+            flex-shrink: 0;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .chat-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            line-height: 1.3;
+            font-size: 13px;
+        }
+        
+        .user-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .message-content {
+            flex: 1;
+            word-break: break-word;
+        }
+        
+        .username {
+            font-weight: 600;
+            margin-right: 4px;
+            font-size: 13px;
+        }
+        
+        .bot-tag {
+            background-color: #9146ff;
+            color: white;
+            font-size: 9px;
+            padding: 1px 3px;
+            border-radius: 2px;
+            margin-left: 4px;
+        }
+        
+        .message-text {
+            color: #efeff1;
+            font-size: 13px;
+        }
+        
+        .chat-controls {
+            padding: 12px 15px;
+            border-top: 1px solid #2d2d2d;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        
+        .chat-input {
+            width: 100%;
+            background-color: #464649;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 13px;
+        }
+        
+        .chat-input::placeholder {
+            color: #adadb8;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            background-color: #5a5a5d;
+        }
+        
+        /* Стили для чата управления ботами */
+        .bot-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .bot-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .bot-btn {
+            background-color: #2d2d2d;
+            color: #efeff1;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            flex: 1;
+            min-width: 70px;
+        }
+        
+        .bot-btn:hover {
+            background-color: #3a3a3d;
+        }
+        
+        .bot-btn.active {
+            background-color: #9146ff;
+            color: white;
+        }
+        
+        .quick-messages {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        
+        .quick-msg-btn {
+            background-color: #464649;
+            color: #adadb8;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            flex: 1;
+            min-width: 60px;
+        }
+        
+        .quick-msg-btn:hover {
+            background-color: #5a5a5d;
+            color: #efeff1;
+        }
+        
+        /* Стили для основного контента */
+        .stream-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        
+        .streamer-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #9146ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        
+        .stream-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .stream-category {
+            color: #adadb8;
+            font-size: 13px;
+            margin-top: 2px;
+        }
+        
+        /* Видеоплеер */
+        .video-player {
+            background-color: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .video-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .latency-indicator {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+        }
+        
+        .offline-message {
+            text-align: center;
+            color: #adadb8;
+            padding: 20px;
+            z-index: 5;
+        }
+        
+        .offline-message h3 {
+            color: #efeff1;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        /* Элементы управления плеером */
+        .player-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .video-player:hover .player-controls {
+            opacity: 1;
+        }
+        
+        .left-controls, .right-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .control-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .play-btn {
+            background-color: #9146ff;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+        }
+        
+        .play-btn:hover {
+            background-color: #772ce8;
+        }
+        
+        /* Статистика под плеером */
+        .stream-stats-container {
+            background-color: #18181b;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-around;
+            flex-shrink: 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #efeff1;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #adadb8;
+            margin-top: 4px;
+        }
+        
+        .viewers {
+            color: #ff0000;
+        }
+        
+        /* Информационные блоки */
+        .info-panels {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+        
+        .panel {
+            background-color: #18181b;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .panel-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #bf94ff;
+        }
+        
+        .tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        
+        .tag {
+            background-color: #464649;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        
+        /* Цвета для разных ботов */
+        .bot-color-1 { background-color: #9146ff; color: white; }
+        .bot-color-2 { background-color: #1f8b4c; color: white; }
+        .bot-color-3 { background-color: #e74c3c; color: white; }
+        .bot-color-4 { background-color: #3498db; color: white; }
+        .bot-color-5 { background-color: #f39c12; color: white; }
+        .bot-color-6 { background-color: #9b59b6; color: white; }
+        
+        /* Кнопки */
+        .action-button {
+            background-color: #9146ff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        
+        .action-button:hover {
+            background-color: #772ce8;
+        }
+        
+        .secondary-button {
+            background-color: #464649;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .secondary-button:hover {
+            background-color: #5a5a5d;
+        }
+        
+        /* Twitch чат iframe */
+        .twitch-chat-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            flex: 1;
+        }
+        
+        /* Чат-заглушка для локальной разработки */
+        .chat-stub {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-stub-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #adadb8;
+            text-align: center;
+        }
+        
+        .chat-stub-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #9146ff;
+        }
+        
+        .chat-stub-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 8px 16px;
+            background-color: #9146ff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        
+        .chat-stub-link:hover {
+            background-color: #772ce8;
+        }
+        
+        /* Анимации */
+        @keyframes slideIn {
+            from { transform: translateX(10px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .new-message {
+            animation: slideIn 0.2s ease-out;
+        }
+        
+        /* Скроллбар */
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: #18181b;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #464649;
+            border-radius: 2px;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .live-chat-container, .bot-chat-container {
+                width: 100%;
+                height: 350px;
+                border-right: none;
+                border-left: none;
+                border-bottom: 1px solid #2d2d2d;
+            }
+            
+            .live-chat-container {
+                order: 1;
+            }
+            
+            .main-content {
+                order: 2;
+            }
+            
+            .bot-chat-container {
+                order: 3;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stream-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .stream-stats-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .video-placeholder {
+                height: 300px;
+            }
+            
+            .player-controls {
+                padding: 10px 15px;
+            }
+            
+            .left-controls, .right-controls {
+                gap: 10px;
+            }
+            
+            .control-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+            
+            .play-btn {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Intro Animation -->
-    <div class="intro-overlay" id="introOverlay">
-        <div class="intro-particles" id="introParticles"></div>
-        <img src="https://i.postimg.cc/y8LD7X6B/222Slay_DBD2025.png" alt="Trophy" class="intro-logo" style="width: 590px; height: 300px;">
-    </div>
-
-    <!-- Background Animation -->
-    <div class="bg-animation">
-        <div class="bg-orb"></div>
-        <div class="bg-orb"></div>
-        <div class="bg-orb"></div>
-    </div>
-
     <div class="container">
-        <!-- Main Menu -->
-        <section class="section active" id="mainMenu">
-            <div class="main-menu">
-                <div class="logo-container">
-                    <img src="https://i.postimg.cc/0yVz9d5v/111Slay_DBD2025.png" alt="Кубок SLAY DBD 25" style="width: 590px; height: 300px;">
+        <!-- Левый чат: реальный Twitch чат -->
+        <div class="live-chat-container">
+            <div class="chat-header">
+                <div>
+                    <i class="fas fa-comments"></i> Чат Twitch
                 </div>
-                
-                <div class="menu-buttons-grid">
-    <!-- Первый ряд -->
-    <button class="btn" id="btnSuggest" onclick="showSection('suggestSection')">
-        <i class="fas fa-bullseye"></i> Предложить стримера
-    </button>
-    <button class="btn" id="btnNominate" onclick="showSection('voteSection')">
-        <i class="fas fa-trophy"></i> Номинировать стримера
-    </button>
-    <button class="btn" id="btnStreamersList" onclick="loadStreamersFromSheet(); showSection('streamersListSection')">
-        <i class="fab fa-twitch"></i> Список стримеров
-    </button>
-    <button class="btn" id="btnNomineesList" onclick="showSection('nomineesListSection')">
-        <i class="fas fa-star"></i> Список номинантов
-    </button>
-    
-    <!-- Второй ряд -->
-    <button class="btn" id="btnFund" onclick="showSection('fundSection')">
-        <i class="fas fa-gem"></i> Поддержать фонд
-    </button>
-    <button class="btn" id="btnInfo" onclick="showSection('infoSection')">
-        <i class="fas fa-info-circle"></i> Информация
-    </button>
-    <button class="btn" id="btnVotes" onclick="showSection('votesSection')">
-        <i class="fas fa-chart-bar"></i> Количество голосов
-    </button>
-    <button class="btn" id="btnSupport" onclick="openSupportModal()">
-        <i class="fas fa-comments"></i> Поддержка
-    </button>
-</div>
-                
-                     <!-- Новая кнопка под сеткой -->
-<div style="text-align: center; margin-top: 40px;">
-    <button class="btn" onclick="window.open('https://t.me/slaydbd2025', '_blank')" style="min-width: 300px; background: linear-gradient( #787d82 0%, #6b7a85 100%);"><i class="fab fa-telegram"></i> Новости в телеграмм</button>
-</div>
+                <div style="font-size: 11px; color: #adadb8;">
+                    <span id="viewerCount">3247</span> зрителей
+                </div>
             </div>
-        </section>
-
-        <!-- Fund Section -->
-        <section class="section" id="fundSection">
-            <div class="section-header">
-                <button class="btn btn-back" onclick="showSection('mainMenu')" style="margin-bottom: 20px; margin-top: 0;">← Назад</button>
-                <h2 class="section-title">💎 Поддержать Фонд</h2>
-            </div>
-            <div class="card fund-content">
-                <div class="fund-icon">🎁</div>
-                <h3 style="color: var(--gold); font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 20px;">О нашем фонде</h3>
-                <p style="color: var(--gold-light); line-height: 1.8; margin-bottom: 20px;">
-                    Фонд SLAY DBD 2025 создан для поддержки стримерского сообщества Dead by Daylight. 
-                    Все собранные средства направятся в призовой фонд для победителя премии 
-                    и развитие комьюнити. 20% Организации 80% Победителю.
-                </p>
-                <p style="color: var(--gold-light); line-height: 1.8; margin-bottom: 30px;">
-                    Ваша поддержка помогает нам делать наши мероприятия ещё более масштабными и незабываемыми! 
-                    Каждый донат — это вклад в развитие любимого сообщества.
-                </p>
-                <h3 style="color: var(--gold); font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 20px;">Фонд сейчас составляет - 00000 руб.</h3>
-                <br>
-                <button class="btn" onclick="window.open(CONFIG.SUPPORT_URL, '_blank')">
-                    ❤️ Поддержать
-                </button>
-            </div>
-        </section>
-
-        <!-- Suggest Streamer Section -->
-        <section class="section" id="suggestSection">
-            <div class="section-header">
-                <button class="btn btn-back" onclick="showSection('mainMenu')" style="margin-bottom: 20px; margin-top: 0;">← Назад</button>
-                <h2 class="section-title">🎯 Предложить Стримера</h2>
-                <p class="section-description">Предложите стримера для участия в номинациях SLAY DBD 2025</p>
-            </div>
-            <div class="card" style="max-width: 600px; margin: 0 auto;">
-                <!-- Step 1: User Info -->
-                <div id="suggestStep1">
-                    <h3 style="color: var(--gold); margin-bottom: 25px; text-align: center;">Шаг 1: Ваши данные</h3>
-                    <div class="form-group">
-                        <label class="form-label">Ваш Telegram логин</label>
-                        <input type="text" class="form-input" id="userTelegram" placeholder="@username">
+            
+            <!-- Чат-заглушка для локальной разработки -->
+            <div class="chat-stub" id="chatStub">
+                <div class="chat-stub-content">
+                    <div class="chat-stub-icon">
+                        <i class="fab fa-twitch"></i>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Ссылка на ваш Twitch</label>
-                        <input type="url" class="form-input" id="userTwitch" placeholder="https://twitch.tv/username">
-                    </div>
-                    <button class="btn" onclick="suggestStep2()" style="width: 100%;">Далее →</button>
-                </div>
-
-                <!-- Step 2: Streamer Info -->
-                <div id="suggestStep2" style="display: none;">
-                    <h3 style="color: var(--gold); margin-bottom: 25px; text-align: center;">Шаг 2: Данные стримера</h3>
-                    <div class="form-group">
-                        <label class="form-label">Никнейм стримера</label>
-                        <input type="text" class="form-input" id="streamerNick" placeholder="Никнейм">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ссылка на Twitch стримера</label>
-                        <input type="url" class="form-input" id="streamerTwitch" placeholder="https://twitch.tv/streamer">
-                    </div>
-                    <button class="btn" onclick="submitSuggestion()" style="width: 100%;">✓ Отправить предложение</button>
-                </div>
-
-                <!-- Already Suggested -->
-                <div id="alreadySuggested" style="display: none;">
-                    <div class="success-message">
-                        <div class="success-icon">⏳</div>
-                        <h3 class="success-title">Вы уже предлагали стримера!</h3>
-                        <p class="success-text">Смотрите раздел "Список Стримеров"</p>
-                    </div>
-                </div>
-
-                <!-- Success -->
-                <div id="suggestSuccess" style="display: none;">
-                    <div class="success-message">
-                        <div class="success-icon">✨</div>
-                        <h3 class="success-title">Успешно отправлено!</h3>
-                        <p class="success-text">Спасибо за ваше предложение! Мы рассмотрим его в ближайшее время.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Vote Section (Nominations) -->
-        <section class="section" id="voteSection">
-            <div class="section-header">
-                <button class="btn btn-back" onclick="showSection('mainMenu')" style="margin-bottom: 20px; margin-top: 0;">← Назад</button>
-                <h2 class="section-title">🏆 Голосование</h2>
-                <p class="section-description">Выберите номинацию для голосования</p>
-            </div>
-            <div class="nomination-grid" id="nominationGrid">
-                <button class="nomination-btn" data-nomination="best_streamer" onclick="startVoting('best_streamer')">
-                    🎮 Лучший ДБД стример года
-                </button>
-                <button class="nomination-btn" data-nomination="best_guide" onclick="startVoting('best_guide')">
-                    📚 Лучший гайд контент
-                </button>
-                <button class="nomination-btn" data-nomination="best_entertainment" onclick="startVoting('best_entertainment')">
-                    🎭 Лучший развлекательный контент
-                </button>
-                <button class="nomination-btn" data-nomination="viewers_choice" onclick="startVoting('viewers_choice')">
-                    ❤️ Приз зрительских симпатий
-                </button>
-            </div>
-        </section>
-
-        <!-- Voting Process Section -->
-        <section class="section" id="votingProcess">
-            <div class="section-header">
-                <button class="btn btn-back" onclick="backToNominations()" style="margin-bottom: 20px; margin-top: 0;">← Назад к номинациям</button>
-                <h2 class="section-title" id="currentNominationTitle">Голосование</h2>
-            </div>
-
-            <!-- User Verification -->
-            <div id="voterVerification" class="card" style="max-width: 500px; margin: 0 auto;">
-                <h3 style="color: var(--gold); margin-bottom: 25px; text-align: center;">Подтвердите вашу личность</h3>
-                <div class="form-group">
-                    <label class="form-label">Ваш никнейм</label>
-                    <input type="text" class="form-input" id="voterNick" placeholder="Ваш никнейм">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Telegram логин</label>
-                    <input type="text" class="form-input" id="voterTelegram" placeholder="@username">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Ссылка на ваш Twitch</label>
-                    <input type="url" class="form-input" id="voterTwitch" placeholder="https://twitch.tv/username">
-                </div>
-                <button class="btn" onclick="startBracket()" style="width: 100%;">Начать голосование →</button>
-            </div>
-
-            <!-- Bracket Voting -->
-            <div id="bracketVoting" style="display: none;">
-                <div class="voting-progress">
-                    <span class="round-info" id="roundInfo">Раунд 1 из 5</span>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
-                    </div>
-                    <span id="matchInfo" style="color: var(--gold-light);">Выберите одного стримера</span>
-                </div>
-                <div class="streamers-battle" id="streamersBattle">
-                    <!-- Streamers will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Winner Display -->
-            <div id="winnerDisplay" style="display: none;">
-                <div class="winner-container">
-                    <h2 class="winner-title">🏆 Ваш выбор!</h2>
-                    <div class="winner-card" id="winnerCard">
-                        <!-- Winner will be displayed here -->
-                    </div>
-                    <div style="margin-top: 30px;">
-                        <button class="btn" onclick="submitVote()">📤 Отправить результат</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Already Voted -->
-            <div id="alreadyVoted" style="display: none;">
-                <div class="success-message">
-                    <div class="success-icon">🚫</div>
-                    <h3 class="success-title">Вы уже голосовали!</h3>
-                    <p class="success-text">В этой номинации вы уже приняли участие. Попробуйте другие номинации!</p>
-                </div>
-            </div>
-
-            <!-- Vote Success -->
-            <div id="voteSuccess" style="display: none;">
-                <div class="success-message">
-                    <div class="success-icon">🎉</div>
-                    <h3 class="success-title">Спасибо за ваш голос!</h3>
-                    <p class="success-text">Ваш голос успешно учтён. Следите за результатами!</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Info Section -->
-        <section class="section" id="infoSection">
-            <div class="section-header">
-                <button class="btn btn-back" onclick="showSection('mainMenu')" style="margin-bottom: 20px; margin-top: 0;">← Назад</button>
-                <h2 class="section-title">📋 О мероприятии</h2>
-            </div>
-            <div class="info-content">
-                <div class="info-block">
-                    <h3><span class="info-icon">🎮</span> Что такое SLAY DBD 2025?</h3>
-                    <p>
-                        SLAY DBD 2025 — это ежегодная премия, посвящённая лучшим стримерам и контент-мейкерам 
-                        Dead by Daylight. Мы отмечаем тех, кто делает наше сообщество ярче, интереснее и веселее!
+                    <h3 style="color: #efeff1; margin-bottom: 10px;">Twitch Чат</h3>
+                    <p style="margin-bottom: 10px;">Для работы Twitch чата необходимо запустить сайт на сервере с доменом</p>
+                    <p style="font-size: 12px; margin-bottom: 20px; color: #bf94ff;">
+                        Локальная разработка ограничивает доступ к Twitch Embed API
                     </p>
-                </div>
-                <div class="info-block">
-                    <h3><span class="info-icon">🎯</span> Наша цель</h3>
-                    <p>
-                        Объединить сообщество DBD, выразить благодарность стримерам за их труд и создать 
-                        праздничную атмосферу для всех фанатов игры. Мы хотим показать, что каждый голос важен!
-                    </p>
-                </div>
-                <div class="info-block">
-                    <h3><span class="info-icon">👥</span> Организаторы</h3>
-                    <p>
-                        Мероприятие организовано силами активных членов DBD-сообщества. Наша команда состоит 
-                        из энтузиастов, которые любят игру и её комьюнити так же сильно, как и вы, а именно:
-                        </p>
-                        <br>
-                        <p>
-                        • <a href="https://www.twitch.tv/lagerta_seeman" target="_blank">LagertaSeeman</a>
-                        </p>
-                        <br>
-                        <p>
-                        • <a href="https://www.twitch.tv/mcpleh" target="_blank">MCPLEH</a>
-                        </p>
-                        <br>
-                        <p>
-                        • <a href="https://www.twitch.tv/nestli_exidaz" target="_blank">NESTLI_EXIDAZ</a>
-                        </p>
-                        <br>
-                        <p>
-                        • <a href="https://vk.com/deadbydaylight_overhear" target="_blank">У костра ВК</a>
-                        </p>
-                        <br>
-                        <p>
-                        • <a href="https://t.me/deadbydaylight_overhear" target="_blank">У костра Telegram</a>
-                    </p>
-                </div>
-                <div class="info-block">
-                    <h3><span class="info-icon">📅</span> Даты проведения</h3>
-                    <p>
-                        <strong>Приём заявок и голосование:</strong> 8 - 25 декабря 2025<br>
-                        <strong>Голосование на Номинацию:</strong> 26 декабря 2025 - 7-8 января 2026<br>
-                        <strong>Объявление победителей:</strong> 8-9 января 2026
-                    </p>
-                    <p>
-                        • Все даты примерные ~
-                        </p>
-                </div>
-                <div class="info-block">
-                    <h3><span class="info-icon">🏆</span> Номинации</h3>
-                    <p>
-                        • Лучший ДБД стример года<br>
-                        • Лучший гайд контент<br>
-                        • Лучший развлекательный контент<br>
-                        • Приз зрительских симпатий
-                    </p>
-                </div>
-                <div class="info-block">
-                    <h3><span class="info-icon">👍</span> Другая информация</h3>
-                    <p>
-                        • Проголосовать за стримера можно в разделе списка стримеров.<br>
-                        • Если вы попали на сайт, и не хотите этого, напишите в поддержку сайта.<br>
-                        • В номинации будет только 32 стримера, у кого будет больше всего голосов.<br>
-                        • Пополнив фонд, вы увеличите призовой стримеров в номинации, ведь именно ваш стример может победить!<br>
-                        • ТГ и ваш Твич нужен для индификации голоса и связи в случае чего.<br>
-                        • Будьте внимательны при заполнении заявки, когда предлагаете стримера, плохие анкеты будут пропускаться.<br>
-                        • Номинация стримеров откроется когда там наберется хотя-бы чуть больше 40 человек.
-                    </p>
-                </div>
-            </div>
-            <div style="text-align: center;">
-                <button class="btn btn-back" onclick="showSection('mainMenu')">← Назад</button>
-            </div>
-        </section>
-
-        <!-- Streamers List Section -->
-        <section class="section" id="streamersListSection">
-            <div class="section-header">
-                <button class="btn btn-back" onclick="showSection('mainMenu')" style="margin-bottom: 20px; margin-top: 0;">← Назад</button>
-                <h2 class="section-title">📺 Список Стримеров</h2>
-                <p class="section-description">Все участники SLAY DBD 25</p>
-            </div>
-            
-            <div id="streamersLoading" class="loading-container">
-                <div class="loading-spinner"></div>
-                <p>Загрузка списка стримеров...</p>
-            </div>
-            
-            <div id="streamersError" class="error-container" style="display: none;">
-                <div class="error-icon">⚠️</div>
-                <p>Не удалось загрузить список стримеров</p>
-                <button class="btn btn-small" onclick="loadStreamersFromSheet()">Попробовать снова</button>
-            </div>
-            
-            <div class="streamers-grid" id="streamersGrid">
-                <!-- Стримеры загрузятся сюда -->
-            </div>
-        </section>
-
-        <!-- Nominees List Section -->
-        <section class="section" id="nomineesListSection">
-            <div class="section-header">
-                <button class="btn btn-back" onclick="showSection('mainMenu')" style="margin-bottom: 20px; margin-top: 0;">← Назад</button>
-                <h2 class="section-title">⭐ Список Номинантов</h2>
-                <p class="section-description">Нажмите на стримера, чтобы узнать больше</p>
-            </div>
-            
-            <div class="nominees-grid" id="nomineesGrid">
-                <!-- Номинанты загрузятся сюда -->
-            </div>
-        </section>
-
-        <!-- Votes Count Section -->
-        <section class="section" id="votesSection">
-            <div class="section-header">
-                <button class="btn btn-back" onclick="showSection('mainMenu')" style="margin-bottom: 20px; margin-top: 0;">← Назад</button>
-                <h2 class="section-title">📊 Количество голосов</h2>
-                <p class="section-description">Предварительно - текущий рейтинг всех стримеров</p>
-            </div>
-            
-            <div class="votes-container" id="votesContainer">
-                <!-- Голоса загрузятся сюда -->
-            </div>
-        </section>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <center><p style="font-size: 10px;">Сайт создан при поддержке by PHG community</p></center>
-			<center><a href="https://x.com/McPleh" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/5Ny3zZqN/twitter-logos.jpg" alt="Логотип" width="40"></a>
-			<a href="https://www.instagram.com/mcpleh_/" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/B6XSHTpz/insta.jpg" alt="Логотип" width="40"></a>
-			<a href="https://www.youtube.com/@playhangames" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/LsP2N9L9/YT-ICON.png" alt="Логотип" width="41"></a>
-			<a href="https://www.twitch.tv/mcpleh" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/026kb0jK/twittch.jpg" alt="Логотип" width="40"></a>
-			<a href="https://discord.gg/YCUTMsNxff" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/tRcyQnkq/discord.jpg" alt="Логотип" width="40"></a>
-			<a href="https://t.me/dbdphgnews" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/zDyvgrPf/telega.jpg" alt="Логотип" width="40"></a></center>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Modal for Disabled Features -->
-    <div class="modal-overlay" id="disabledModal">
-        <div class="modal">
-            <div class="modal-icon">🔒</div>
-            <h3 class="modal-title">Недоступно</h3>
-            <p class="modal-text" id="disabledModalText">Данная функция временно недоступна. Пожалуйста, ожидайте!</p>
-            <button class="btn btn-small" onclick="closeModal('disabledModal')">Окей</button>
-        </div>
-    </div>
-
-    <!-- Modal for Errors -->
-    <div class="modal-overlay" id="errorModal">
-        <div class="modal">
-            <div class="modal-icon">⚠️</div>
-            <h3 class="modal-title">Ошибка</h3>
-            <p class="modal-text" id="errorModalText">Пожалуйста, заполните все поля!</p>
-            <button class="btn btn-small" onclick="closeModal('errorModal')">Окей</button>
-        </div>
-    </div>
-
-    <!-- Support Modal -->
-    <div class="modal-overlay" id="supportModal">
-        <div class="modal support-modal">
-            <!-- Step 1: Telegram Input -->
-            <div id="supportStep1">
-                <div class="modal-icon">💬</div>
-                <h3 class="modal-title">Связаться с поддержкой</h3>
-                <p class="modal-text">Введите ваш Telegram для связи</p>
-                <div class="form-group" style="text-align: left;">
-                    <label class="form-label">Telegram логин</label>
-                    <input type="text" class="form-input" id="supportTelegram" placeholder="@username">
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <button class="btn btn-secondary btn-small" onclick="closeModal('supportModal')">Отмена</button>
-                    <button class="btn btn-small" onclick="supportStep2()">Далее →</button>
-                </div>
-            </div>
-            
-            <!-- Step 2: Warning -->
-            <div id="supportStep2" style="display: none;">
-                <div class="modal-icon">⚠️</div>
-                <h3 class="modal-title">Важно!</h3>
-                <p class="modal-text">
-                    Это <strong>односторонняя связь</strong>. Вы отправляете сообщение, 
-                    и поддержка свяжется с вами в Telegram, если потребуется.
-                    <br><br>
-                    Вы можете отправить <strong>только одно сообщение в сутки</strong>.
-                </p>
-                <button class="btn btn-small" onclick="supportStep3()">Окей, понятно</button>
-            </div>
-            
-            <!-- Step 3: Message Input -->
-            <div id="supportStep3" style="display: none;">
-                <div class="modal-icon">✉️</div>
-                <h3 class="modal-title">Ваше сообщение</h3>
-                <div class="form-group" style="text-align: left;">
-                    <label class="form-label">Опишите ваш вопрос или проблему</label>
-                    <textarea class="form-input form-textarea" id="supportMessage" placeholder="Введите ваше сообщение..." rows="5"></textarea>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <button class="btn btn-secondary btn-small" onclick="closeModal('supportModal')">Отмена</button>
-                    <button class="btn btn-small" onclick="submitSupport()">📤 Отправить</button>
-                </div>
-            </div>
-            
-            <!-- Step 4: Success -->
-            <div id="supportStep4" style="display: none;">
-                <div class="modal-icon">✅</div>
-                <h3 class="modal-title">Сообщение отправлено!</h3>
-                <p class="modal-text">
-                    Спасибо за обращение! Ожидайте, мы свяжемся с вами в Telegram.
-                </p>
-                <button class="btn btn-small" onclick="closeModal('supportModal')">Закрыть</button>
-            </div>
-            
-            <!-- Already Sent Today -->
-            <div id="supportAlreadySent" style="display: none;">
-                <div class="modal-icon">⏳</div>
-                <h3 class="modal-title">Подождите</h3>
-                <p class="modal-text">
-                    Вы уже отправляли сообщение сегодня. Попробуйте снова через <span id="supportCooldown">24 часа</span>.
-                </p>
-                <button class="btn btn-small" onclick="closeModal('supportModal')">Окей</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Streamers List Vote Modal -->
-    <div class="modal-overlay" id="streamersVoteModal">
-        <div class="modal">
-            <!-- Step 1: Telegram Input -->
-            <div id="streamersVoteStep1">
-                <div class="modal-icon">🗳️</div>
-                <h3 class="modal-title">Голосование за стримера</h3>
-                <p class="modal-text">Вы голосуете за: <strong id="voteStreamerName"></strong></p>
-                <div class="form-group" style="text-align: left;">
-                    <label class="form-label">Ваш Telegram логин</label>
-                    <input type="text" class="form-input" id="streamersVoteTelegram" placeholder="@username">
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <button class="btn btn-secondary btn-small" onclick="closeStreamersVoteModal()">Отмена</button>
-                    <button class="btn btn-small" onclick="streamersVoteStep2()">Далее →</button>
-                </div>
-            </div>
-            
-            <!-- Step 2: Warning -->
-            <div id="streamersVoteStep2" style="display: none;">
-                <div class="modal-icon">⚠️</div>
-                <h3 class="modal-title">Внимание!</h3>
-                <p class="modal-text">
-                    В номинации будут участвовать только <strong>32 стримера</strong>, 
-                    которые наберут больше всего голосов.
-                    <br><br>
-                    <strong>Ваш голос отменить будет нельзя!</strong>
-                    <br><br>
-                    Вы уверены, что хотите проголосовать за <strong id="voteStreamerNameConfirm"></strong>?
-                </p>
-                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <button class="btn btn-secondary btn-small" onclick="closeStreamersVoteModal()">Отмена</button>
-                    <button class="btn btn-small" onclick="submitStreamersVote()">✓ Отправить голос</button>
-                </div>
-            </div>
-            
-            <!-- Step 3: Success -->
-            <div id="streamersVoteStep3" style="display: none;">
-                <div class="modal-icon">🎉</div>
-                <h3 class="modal-title">Голос принят!</h3>
-                <p class="modal-text">
-                    Спасибо за ваш голос! Он успешно отправлен.
-                    <br><br>
-                    Следите за новостями, чтобы узнать результаты!
-                </p>
-                <button class="btn btn-small" onclick="closeStreamersVoteModal()">Закрыть</button>
-            </div>
-            
-            <!-- Already Voted -->
-            <div id="streamersVoteAlready" style="display: none;">
-                <div class="modal-icon">🚫</div>
-                <h3 class="modal-title">Вы уже голосовали!</h3>
-                <p class="modal-text">
-                    Вы уже отдали свой голос за стримера. 
-                    Повторное голосование невозможно.
-                </p>
-                <button class="btn btn-small" onclick="closeStreamersVoteModal()">Закрыть</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Nominee Profile Modal -->
-    <div class="modal-overlay" id="nomineeProfileModal">
-        <div class="modal nominee-profile-modal">
-            <button class="modal-close-btn" onclick="closeModal('nomineeProfileModal')">×</button>
-            <div class="nominee-profile-content">
-                <div class="nominee-profile-left">
-                    <img src="" alt="" class="nominee-profile-image" id="nomineeProfileImage">
-                    <h3 class="nominee-profile-name" id="nomineeProfileName"></h3>
-                    <a href="" target="_blank" class="streamer-list-link" id="nomineeProfileTwitch">
-                        <i class="fab fa-twitch"></i> TWITCH
+                    
+                    <a href="https://www.twitch.tv/popout/darinnkth/chat?popout=" target="_blank" class="chat-stub-link">
+                        <i class="fas fa-external-link-alt"></i> Открыть чат в новой вкладке
                     </a>
-                </div>
-                <div class="nominee-profile-right">
-                    <h4 class="interview-title">💬 Мини-интервью</h4>
-                    <div class="interview-content" id="nomineeInterviewContent">
-                        <!-- Интервью загрузится сюда -->
+                    
+                    <div style="margin-top: 20px; padding: 15px; background-color: rgba(145, 70, 255, 0.1); border-radius: 8px; width: 100%;">
+                        <p style="font-size: 12px; margin-bottom: 10px; color: #bf94ff;">
+                            <i class="fas fa-info-circle"></i> Для локального тестирования:
+                        </p>
+                        <ul style="font-size: 11px; text-align: left; padding-left: 15px; color: #adadb8;">
+                            <li>Используйте правую панель для имитации ботов</li>
+                            <li>Нажмите кнопку ниже для имитации чата</li>
+                        </ul>
+                        <button id="simulateChatBtn" style="margin-top: 10px; padding: 8px 12px; background-color: #464649; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; width: 100%;">
+                            <i class="fas fa-robot"></i> Имитировать активность чата
+                        </button>
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Основной контент -->
+        <div class="main-content">
+            <!-- Заголовок трансляции -->
+            <div class="stream-header">
+                <div class="streamer-info">
+                    <div class="avatar">DN</div>
+                    <div>
+                        <div class="stream-title">DarinNKTh - Играю в Dead by Daylight с подписчиками!</div>
+                        <div class="stream-category">Dead by Daylight</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Видеоплеер -->
+            <div class="video-player">
+                <div class="latency-indicator">
+                    Latency: 1.42s
+                </div>
+                <div class="video-placeholder">
+                    <div class="offline-message">
+                        <h3>Трансляция DarinNKTh</h3>
+                        <p>В данный момент стрим офлайн</p>
+                        <p>Это демо-версия интерфейса Twitch</p>
+                        <p style="margin-top: 15px; font-size: 14px;">
+                            <i class="fas fa-external-link-alt"></i> 
+                            <a href="https://www.twitch.tv/darinnkth" target="_blank" style="color: #bf94ff; text-decoration: none;">
+                                https://www.twitch.tv/darinnkth
+                            </a>
+                        </p>
+                    </div>
+                    
+                    <!-- Элементы управления плеером -->
+                    <div class="player-controls">
+                        <div class="left-controls">
+                            <button class="control-btn play-btn" id="playButton">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="right-controls">
+                            <button class="control-btn" id="settingsButton" title="Настройки">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            <button class="control-btn" id="theaterButton" title="Режим кинотеатра">
+                                <i class="fas fa-film"></i>
+                            </button>
+                            <button class="control-btn" id="fullscreenButton" title="Полный экран">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Статистика под плеером -->
+            <div class="stream-stats-container">
+                <div class="stat-item">
+                    <div class="stat-value viewers" id="viewersCount">3,247</div>
+                    <div class="stat-label">Зрителей</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">12.8K</div>
+                    <div class="stat-label">Подписчиков</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">2:17</div>
+                    <div class="stat-label">В эфире</div>
+                </div>
+            </div>
+            
+            <!-- Информационные панели -->
+            <div class="info-panels">
+                <!-- Информация о стримере -->
+                <div class="panel">
+                    <div class="panel-title">Информация о канале</div>
+                    <p style="font-size: 13px; line-height: 1.4; margin-bottom: 10px;">
+                        Стримы по Dead by Daylight и другим хоррорам. Люблю общаться с чатом и устраивать игры с подписчиками.
+                    </p>
+                    <div class="panel-title" style="margin-top: 10px; font-size: 13px;">Теги трансляции</div>
+                    <div class="tags-list">
+                        <div class="tag">Русский</div>
+                        <div class="tag">развлечение</div>
+                        <div class="tag">хоррор</div>
+                        <div class="tag">сикьюстирм</div>
+                        <div class="tag">пострашний</div>
+                        <div class="tag">DBD</div>
+                        <div class="tag">deadbydaylight</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Правый чат: управление ботами -->
+        <div class="bot-chat-container">
+            <div class="chat-header">
+                <div>
+                    <i class="fas fa-robot"></i> Управление ботами
+                </div>
+                <div style="font-size: 11px; color: #adadb8;">
+                    <span id="botCount">6</span> ботов
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="botChatMessages">
+                <!-- Сообщения от ботов будут здесь -->
+            </div>
+            
+            <div class="chat-controls">
+                <div class="bot-controls">
+                    <div style="font-size: 12px; margin-bottom: 6px; color: #bf94ff;">Выберите бота:</div>
+                    <div class="bot-selector" id="botSelector">
+                        <!-- Кнопки выбора бота будут сгенерированы скриптом -->
+                    </div>
+                    
+                    <input type="text" class="chat-input" placeholder="Сообщение от бота..." id="botMessageInput">
+                    
+                    <div style="font-size: 12px; margin-top: 8px; color: #bf94ff;">Быстрые сообщения:</div>
+                    <div class="quick-messages" id="quickMessages">
+                        <!-- Быстрые сообщения будут сгенерированы скриптом -->
+                    </div>
+                    
+                    <button id="sendBotMessage" class="action-button">
+                        <i class="fas fa-paper-plane"></i> Отправить как бот
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Данные для ботов
+        const bots = [
+            { id: 1, name: 'streamelements', colorClass: 'bot-color-1', displayName: 'StreamElements', isActive: true },
+            { id: 2, name: 'nightbot', colorClass: 'bot-color-2', displayName: 'Nightbot', isActive: true },
+            { id: 3, name: 'moobot', colorClass: 'bot-color-3', displayName: 'Moobot', isActive: true },
+            { id: 4, name: 'wizebot', colorClass: 'bot-color-4', displayName: 'Wizebot', isActive: true },
+            { id: 5, name: 'commanderroot', colorClass: 'bot-color-5', displayName: 'CommanderRoot', isActive: true },
+            { id: 6, name: 'streamlabs', colorClass: 'bot-color-6', displayName: 'StreamLabs', isActive: true }
+        ];
+        
+        // Быстрые сообщения для ботов
+        const quickMessages = [
+            "Добро пожаловать на стрим!",
+            "Не забудьте подписаться!",
+            "Используйте !команды",
+            "Донаты помогают стримеру!",
+            "Присоединяйтесь к дискорду!",
+            "Спасибо за просмотр!",
+            "Стрим длится 2 ч 17 мин",
+            "В чате 3247 зрителей"
+        ];
+        
+        // Сообщения для имитации чата
+        const chatMessages = [
+            "Привет всем!",
+            "Крутой стрим!",
+            "Кто играет в DBD?",
+            "Какой ник в игре?",
+            "Клин №2!",
+            "🎉🎉🎉",
+            "Когда рулетка?",
+            "Привет из Москвы!",
+            "Отличный клип!",
+            "Ссылку на дискорд?",
+            "Классно играет!",
+            "Хочу сыграть с вами!",
+            "Сколько часов в DBD?",
+            "Лайк за контент!",
+            "Донат 100 руб!",
+            "Стример красава!",
+            "Как настроение?",
+            "Играю с вами!"
+        ];
+        
+        // Имена пользователей для имитации
+        const userNames = [
+            'poweltelkito', 'lilybybloom', 'drystik', 'estRre', 'cute_cat_kurtcobein',
+            'handerchik_99', 'sigma_120fps_340ms', 'gamer_pro', 'xXx_Sniper', 'dark_knight',
+            'stream_fan_22', 'dbd_lover', 'horror_fanatic', 'twitch_viewer', 'random_user'
+        ];
+        
+        // Текущий выбранный бот
+        let selectedBot = bots[0];
+        
+        // Состояние плеера
+        let isPlaying = false;
+        let isTheaterMode = false;
+        let isFullscreen = false;
+        
+        // Переменные для имитации чата
+        let chatInterval;
+        let isChatSimulated = false;
+        
+        // Инициализация страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация селектора ботов
+            initBotSelector();
+            
+            // Инициализация быстрых сообщений
+            initQuickMessages();
+            
+            // Загрузка начальных сообщений
+            loadInitialMessages();
+            
+            // Настройка обработчиков событий
+            setupEventListeners();
+            
+            // Обновление времени в эфире
+            startStreamTimer();
+            
+            // Имитация начальной активности чата
+            simulateInitialChatActivity();
+        });
+        
+        // Инициализация селектора ботов
+        function initBotSelector() {
+            const botSelector = document.getElementById('botSelector');
+            const botCount = document.getElementById('botCount');
+            
+            botCount.textContent = bots.length;
+            
+            bots.forEach(bot => {
+                const btn = document.createElement('button');
+                btn.className = `bot-btn ${bot.id === selectedBot.id ? 'active' : ''}`;
+                btn.textContent = bot.displayName;
+                btn.dataset.botId = bot.id;
+                
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.bot-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const botId = parseInt(this.dataset.botId);
+                    selectedBot = bots.find(b => b.id === botId);
+                    
+                    document.getElementById('botMessageInput').focus();
+                });
+                
+                botSelector.appendChild(btn);
+            });
+        }
+        
+        // Инициализация быстрых сообщений
+        function initQuickMessages() {
+            const quickMessagesContainer = document.getElementById('quickMessages');
+            
+            quickMessages.forEach((message, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'quick-msg-btn';
+                btn.textContent = message.length > 15 ? message.substring(0, 15) + '...' : message;
+                btn.title = message;
+                btn.dataset.message = message;
+                
+                btn.addEventListener('click', function() {
+                    const input = document.getElementById('botMessageInput');
+                    input.value = this.dataset.message;
+                    input.focus();
+                });
+                
+                quickMessagesContainer.appendChild(btn);
+            });
+        }
+        
+        // Загрузка начальных сообщений
+        function loadInitialMessages() {
+            // Начальные сообщения в чате ботов
+            const botInitialMessages = [
+                { bot: bots[0], message: 'StreamElements бот активен.' },
+                { bot: bots[1], message: 'Nightbot запущен.' },
+                { bot: bots[2], message: 'Moobot подключен.' },
+                { bot: bots[3], message: 'Wizebot готов.' }
+            ];
+            
+            // Добавляем начальные сообщения в чат ботов
+            botInitialMessages.forEach(msg => {
+                addMessageToBotChat(msg.bot, msg.message);
+            });
+        }
+        
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Отправка сообщения ботом
+            document.getElementById('sendBotMessage').addEventListener('click', sendBotMessage);
+            document.getElementById('botMessageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendBotMessage();
+                }
+            });
+            
+            // Управление плеером
+            setupPlayerControls();
+            
+            // Кнопка имитации чата
+            document.getElementById('simulateChatBtn').addEventListener('click', toggleChatSimulation);
+        }
+        
+        // Настройка элементов управления плеером
+        function setupPlayerControls() {
+            const playButton = document.getElementById('playButton');
+            const settingsButton = document.getElementById('settingsButton');
+            const theaterButton = document.getElementById('theaterButton');
+            const fullscreenButton = document.getElementById('fullscreenButton');
+            
+            // Кнопка воспроизведения
+            playButton.addEventListener('click', function() {
+                isPlaying = !isPlaying;
+                
+                if (isPlaying) {
+                    this.innerHTML = '<i class="fas fa-pause"></i>';
+                    this.title = 'Пауза';
+                    
+                    // В реальном приложении здесь будет запуск видео
+                    console.log('Воспроизведение видео');
+                    document.querySelector('.offline-message').style.opacity = '0.3';
+                } else {
+                    this.innerHTML = '<i class="fas fa-play"></i>';
+                    this.title = 'Воспроизвести';
+                    
+                    // В реальном приложении здесь будет пауза видео
+                    console.log('Пауза видео');
+                    document.querySelector('.offline-message').style.opacity = '1';
+                }
+            });
+            
+            // Кнопка настроек
+            settingsButton.addEventListener('click', function() {
+                // В реальном приложении здесь будет меню настроек
+                const settingsMenu = document.createElement('div');
+                settingsMenu.style.position = 'absolute';
+                settingsMenu.style.bottom = '50px';
+                settingsMenu.style.right = '10px';
+                settingsMenu.style.backgroundColor = '#18181b';
+                settingsMenu.style.border = '1px solid #2d2d2d';
+                settingsMenu.style.borderRadius = '5px';
+                settingsMenu.style.padding = '10px';
+                settingsMenu.style.zIndex = '100';
+                settingsMenu.style.minWidth = '150px';
+                settingsMenu.innerHTML = `
+                    <div style="color: #bf94ff; font-size: 12px; margin-bottom: 8px;">Настройки качества:</div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <button style="background: none; border: none; color: white; text-align: left; padding: 5px; cursor: pointer; font-size: 12px;">Авто (1080p)</button>
+                        <button style="background: none; border: none; color: white; text-align: left; padding: 5px; cursor: pointer; font-size: 12px;">720p</button>
+                        <button style="background: none; border: none; color: white; text-align: left; padding: 5px; cursor: pointer; font-size: 12px;">480p</button>
+                        <button style="background: none; border: none; color: white; text-align: left; padding: 5px; cursor: pointer; font-size: 12px;">360p</button>
+                    </div>
+                `;
+                
+                document.querySelector('.video-player').appendChild(settingsMenu);
+                
+                // Удаляем меню при клике вне его
+                setTimeout(() => {
+                    const removeMenu = (e) => {
+                        if (!settingsMenu.contains(e.target) && e.target !== settingsButton) {
+                            settingsMenu.remove();
+                            document.removeEventListener('click', removeMenu);
+                        }
+                    };
+                    document.addEventListener('click', removeMenu);
+                }, 10);
+            });
+            
+            // Кнопка режима кинотеатра
+            theaterButton.addEventListener('click', function() {
+                isTheaterMode = !isTheaterMode;
+                
+                if (isTheaterMode) {
+                    this.innerHTML = '<i class="fas fa-compress"></i>';
+                    this.title = 'Обычный режим';
+                    console.log('Режим кинотеатра включен');
+                } else {
+                    this.innerHTML = '<i class="fas fa-film"></i>';
+                    this.title = 'Режим кинотеатра';
+                    console.log('Режим кинотеатра выключен');
+                }
+            });
+            
+            // Кнопка полного экрана
+            fullscreenButton.addEventListener('click', function() {
+                isFullscreen = !isFullscreen;
+                
+                if (isFullscreen) {
+                    this.innerHTML = '<i class="fas fa-compress"></i>';
+                    this.title = 'Выйти из полного экрана';
+                    
+                    // Включение полноэкранного режима
+                    const videoPlayer = document.querySelector('.video-player');
+                    
+                    if (videoPlayer.requestFullscreen) {
+                        videoPlayer.requestFullscreen();
+                    } else if (videoPlayer.webkitRequestFullscreen) {
+                        videoPlayer.webkitRequestFullscreen();
+                    } else if (videoPlayer.msRequestFullscreen) {
+                        videoPlayer.msRequestFullscreen();
+                    }
+                    
+                    console.log('Полноэкранный режим включен');
+                } else {
+                    this.innerHTML = '<i class="fas fa-expand"></i>';
+                    this.title = 'Полный экран';
+                    
+                    // Выход из полноэкранного режима
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                    
+                    console.log('Полноэкранный режим выключен');
+                }
+            });
+            
+            // Обработчик выхода из полноэкранного режима
+            document.addEventListener('fullscreenchange', function() {
+                if (!document.fullscreenElement) {
+                    isFullscreen = false;
+                    fullscreenButton.innerHTML = '<i class="fas fa-expand"></i>';
+                    fullscreenButton.title = 'Полный экран';
+                }
+            });
+        }
+        
+        // Отправка сообщения от выбранного бота
+        function sendBotMessage() {
+            const input = document.getElementById('botMessageInput');
+            const message = input.value.trim();
+            
+            if (message === '') return;
+            
+            // Добавляем сообщение в чат ботов
+            addMessageToBotChat(selectedBot, message);
+            
+            // Также добавляем в левый чат (имитация)
+            addMessageToLiveChat(selectedBot.displayName, message, true);
+            
+            // Очищаем поле ввода
+            input.value = '';
+            input.focus();
+        }
+        
+        // Добавление сообщения в чат ботов
+        function addMessageToBotChat(bot, message) {
+            const chatContainer = document.getElementById('botChatMessages');
+            const messageElement = createBotMessageElement(bot, message);
+            
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Анимация
+            messageElement.classList.add('new-message');
+            setTimeout(() => {
+                messageElement.classList.remove('new-message');
+            }, 200);
+        }
+        
+        // Добавление сообщения в левый чат (имитация)
+        function addMessageToLiveChat(userName, message, isBot) {
+            const chatStub = document.getElementById('chatStub');
+            
+            // Если чат уже имитируется, добавляем сообщение
+            if (isChatSimulated) {
+                const messagesContainer = document.querySelector('.chat-stub .chat-messages');
+                if (messagesContainer) {
+                    const messageElement = createLiveMessageElement(userName, message, isBot);
+                    messagesContainer.appendChild(messageElement);
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            }
+        }
+        
+        // Создание элемента сообщения для чата ботов
+        function createBotMessageElement(bot, message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'chat-message';
+            
+            // Аватар
+            const avatar = document.createElement('div');
+            avatar.className = `user-avatar ${bot.colorClass}`;
+            avatar.textContent = bot.displayName.substring(0, 2).toUpperCase();
+            
+            // Содержимое сообщения
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            content.innerHTML = `
+                <div style="color: #adadb8; font-size: 10px; margin-bottom: 2px;">${time}</div>
+                <span class="username" style="color: ${getColorFromClass(bot.colorClass)}">${bot.displayName}</span>
+                <span class="bot-tag">BOT</span>
+                <div class="message-text">${message}</div>
+            `;
+            
+            messageElement.appendChild(avatar);
+            messageElement.appendChild(content);
+            
+            return messageElement;
+        }
+        
+        // Создание элемента сообщения для левого чата
+        function createLiveMessageElement(userName, message, isBot) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'chat-message';
+            
+            // Аватар
+            const avatar = document.createElement('div');
+            avatar.className = 'user-avatar';
+            
+            if (isBot) {
+                const bot = bots.find(b => b.displayName === userName) || bots[0];
+                avatar.className += ` ${bot.colorClass}`;
+                avatar.textContent = userName.substring(0, 2).toUpperCase();
+            } else {
+                // Случайный цвет для пользователя
+                const colors = ['#9146ff', '#1f8b4c', '#e74c3c', '#3498db', '#f39c12'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                avatar.style.backgroundColor = color;
+                avatar.textContent = userName.substring(0, 2).toUpperCase();
+            }
+            
+            // Содержимое сообщения
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            let botTag = '';
+            if (isBot) {
+                botTag = '<span class="bot-tag">BOT</span>';
+            }
+            
+            content.innerHTML = `
+                <div style="color: #adadb8; font-size: 10px; margin-bottom: 2px;">${time}</div>
+                <span class="username">${userName}</span>
+                ${botTag}
+                <div class="message-text">${message}</div>
+            `;
+            
+            messageElement.appendChild(avatar);
+            messageElement.appendChild(content);
+            
+            return messageElement;
+        }
+        
+        // Получение цвета из класса
+        function getColorFromClass(className) {
+            const colorMap = {
+                'bot-color-1': '#9146ff',
+                'bot-color-2': '#1f8b4c',
+                'bot-color-3': '#e74c3c',
+                'bot-color-4': '#3498db',
+                'bot-color-5': '#f39c12',
+                'bot-color-6': '#9b59b6'
+            };
+            
+            return colorMap[className] || '#9146ff';
+        }
+        
+        // Имитация начальной активности чата
+        function simulateInitialChatActivity() {
+            const initialMessages = [
+                { user: 'poweltelkito', message: 'Привет всем!', isBot: false },
+                { user: 'drystik', message: 'Крутой стрим!', isBot: false },
+                { user: 'lilybybloom', message: 'Как дела?', isBot: false },
+                { user: 'streamelements', message: 'Добро пожаловать на стрим!', isBot: true },
+                { user: 'cute_cat_kurtcobein', message: '🎉🎉🎉', isBot: false },
+                { user: 'nightbot', message: 'Используйте !команды', isBot: true }
+            ];
+            
+            // Создаем контейнер для сообщений в чате
+            const chatStub = document.getElementById('chatStub');
+            const messagesContainer = document.createElement('div');
+            messagesContainer.className = 'chat-messages';
+            messagesContainer.style.display = 'none';
+            chatStub.appendChild(messagesContainer);
+            
+            // Добавляем начальные сообщения
+            initialMessages.forEach(msg => {
+                const messageElement = createLiveMessageElement(msg.user, msg.message, msg.isBot);
+                messagesContainer.appendChild(messageElement);
+            });
+        }
+        
+        // Переключение имитации чата
+        function toggleChatSimulation() {
+            const simulateBtn = document.getElementById('simulateChatBtn');
+            const chatStub = document.getElementById('chatStub');
+            const messagesContainer = chatStub.querySelector('.chat-messages');
+            const stubContent = chatStub.querySelector('.chat-stub-content');
+            
+            if (!isChatSimulated) {
+                // Включаем имитацию
+                isChatSimulated = true;
+                simulateBtn.innerHTML = '<i class="fas fa-stop"></i> Остановить имитацию';
+                stubContent.style.display = 'none';
+                messagesContainer.style.display = 'flex';
+                
+                // Запускаем интервал для новых сообщений
+                chatInterval = setInterval(() => {
+                    if (Math.random() < 0.7) { // 70% chance
+                        const randomUser = userNames[Math.floor(Math.random() * userNames.length)];
+                        const randomMessage = chatMessages[Math.floor(Math.random() * chatMessages.length)];
+                        
+                        const messageElement = createLiveMessageElement(randomUser, randomMessage, false);
+                        messagesContainer.appendChild(messageElement);
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                        
+                        // Обновляем счетчик зрителей
+                        updateViewerCount();
+                    }
+                }, Math.random() * 5000 + 3000);
+                
+                // Иногда добавляем сообщения от ботов
+                setInterval(() => {
+                    if (Math.random() < 0.3 && isChatSimulated) { // 30% chance
+                        const randomBot = bots[Math.floor(Math.random() * bots.length)];
+                        const randomMessage = quickMessages[Math.floor(Math.random() * quickMessages.length)];
+                        
+                        const messageElement = createLiveMessageElement(randomBot.displayName, randomMessage, true);
+                        messagesContainer.appendChild(messageElement);
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }
+                }, Math.random() * 10000 + 8000);
+                
+            } else {
+                // Выключаем имитацию
+                isChatSimulated = false;
+                simulateBtn.innerHTML = '<i class="fas fa-robot"></i> Имитировать активность чата';
+                stubContent.style.display = 'flex';
+                messagesContainer.style.display = 'none';
+                
+                // Останавливаем интервал
+                clearInterval(chatInterval);
+            }
+        }
+        
+        // Обновление счетчика зрителей
+        function updateViewerCount() {
+            const viewerCount = document.getElementById('viewerCount');
+            const viewersCount = document.getElementById('viewersCount');
+            const currentCount = parseInt(viewerCount.textContent.replace(',', ''));
+            
+            // Случайное небольшое изменение количества зрителей
+            const change = Math.floor(Math.random() * 21) - 10; // от -10 до +10
+            const newCount = Math.max(3000, currentCount + change);
+            
+            const formattedCount = newCount.toLocaleString();
+            viewerCount.textContent = formattedCount;
+            viewersCount.textContent = formattedCount;
+        }
+        
+        // Запуск таймера трансляции
+        function startStreamTimer() {
+            let hours = 2;
+            let minutes = 17;
+            let seconds = 0;
+            
+            const timerElement = document.querySelector('.stat-item:nth-child(3) .stat-value');
+            
+            setInterval(() => {
+                seconds++;
+                if (seconds >= 60) {
+                    seconds = 0;
+                    minutes++;
+                }
+                if (minutes >= 60) {
+                    minutes = 0;
+                    hours++;
+                }
+                
+                timerElement.textContent = `${hours}:${minutes.toString().padStart(2, '0')}`;
+            }, 1000);
+            
+            // Обновление счетчика зрителей каждые 30 секунд
+            setInterval(updateViewerCount, 30000);
+        }
+    </script>
 </body>
 </html>
