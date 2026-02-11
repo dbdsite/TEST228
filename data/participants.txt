@@ -1,0 +1,4 @@
+TonLuck,huntress,10000,https://twitch.tv/tonluck,tonluck#3220,confirmed
+Player2,spirit,850,https://twitch.tv/player2,player2#1234,pending
+Player3,oni,1200,https://twitch.tv/player3,player3#5678,confirmed
+Player4,artist,950,https://twitch.tv/player4,player4#9012,rejected
