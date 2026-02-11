@@ -1,12 +1,13 @@
 // ========== CONFIGURATION ==========
-const CONFIG = {
-    // ID вашей Google таблицы (только для конфига)
-    SHEET_ID: '2imBaDAQ2iFkj5l61UxkYD8AFbreW5IrRSOn36KtdzKE1',
-    // TXT файлы для данных (убедитесь, что они в папке data/)
-    TXT_FILES: {,
-        bracket: 'data/bracket.txt',
-    },
-};
+        const CONFIG = {
+            SHEET_ID: '2imBaDAQ2iFkj5l61UxkYD8AFbreW5IrRSOn36KtdzKE0',
+            // Для TXT файлов используйте относительные пути
+            TXT_FILES: {
+                participants: 'participants.txt',
+                bracket: 'bracket.txt',
+                config: 'config.txt'
+            },
+        };
 
 // ========== KILLERS DATA ==========
 const KILLERS = [
