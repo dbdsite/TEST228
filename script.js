@@ -1,39 +1,37 @@
 // ========== CONFIGURATION ==========
 const CONFIG = {
     // ID вашей Google таблицы (только для конфига)
-    SHEET_ID: '1imBaDAQ2iFkj5l61UxkYD8AFbreW5IrRSOn36KtdzKE',
+    SHEET_ID: '2imBaDAQ2iFkj5l61UxkYD8AFbreW5IrRSOn36KtdzKE1',
     // TXT файлы для данных (убедитесь, что они в папке data/)
-    TXT_FILES: {
-        participants: 'data/participants.txt',
+    TXT_FILES: {,
         bracket: 'data/bracket.txt',
-        config: 'data/config.txt'
     },
 };
 
 // ========== KILLERS DATA ==========
 const KILLERS = [
-    { id: 'trapper', name: 'Trapper', nameRu: 'Траппер', img: 'images/killers/trapper.webp' },
+    { id: 'trapper', name: 'Trapper', nameRu: 'Траппер', img: 'https://i.imgur.com/CTaZlmF.png' },
     { id: 'wraith', name: 'Wraith', nameRu: 'Призрак', img: 'images/killers/wraith.webp' },
-    { id: 'hillbilly', name: 'Hillbilly', nameRu: 'Хиллбилли', img: 'images/killers/hillbilly.webp' },
+    { id: 'hillbilly', name: 'Hillbilly', nameRu: 'Хиллбилли', img: 'https://i.imgur.com/jt3BATY.png' },
     { id: 'nurse', name: 'Nurse', nameRu: 'Медсестра', img: 'images/killers/nurse.webp' },
-    { id: 'doctor', name: 'Doctor', nameRu: 'Доктор', img: 'images/killers/doctor.webp' },
-    { id: 'huntress', name: 'Huntress', nameRu: 'Охотница', img: 'images/killers/huntress.webp' },
-    { id: 'cannibal', name: 'Cannibal', nameRu: 'Каннибал', img: 'images/killers/cannibal.webp' },
-    { id: 'nightmare', name: 'Nightmare', nameRu: 'Кошмар', img: 'images/killers/nightmare.webp' },
+    { id: 'doctor', name: 'Doctor', nameRu: 'Доктор', img: 'https://i.imgur.com/D0I6Evw.png' },
+    { id: 'huntress', name: 'Huntress', nameRu: 'Охотница', img: 'https://i.imgur.com/A78f8s3.png' },
+    { id: 'cannibal', name: 'Cannibal', nameRu: 'Каннибал', img: 'https://i.imgur.com/AkoIvGj.png' },
+    { id: 'nightmare', name: 'Nightmare', nameRu: 'Кошмар', img: 'https://i.imgur.com/TN8H6Pz.png' },
     { id: 'pig', name: 'Pig', nameRu: 'Свинья', img: 'images/killers/pig.webp' },
-    { id: 'clown', name: 'Clown', nameRu: 'Клоун', img: 'images/killers/clown.webp' },
-    { id: 'spirit', name: 'Spirit', nameRu: 'Дух', img: 'images/killers/spirit.webp' },
-    { id: 'demogorgon', name: 'Demogorgon', nameRu: 'Демогоргон', img: 'images/killers/demogorgon.webp' },
-    { id: 'oni', name: 'Oni', nameRu: 'Они', img: 'images/killers/oni.webp' },
+    { id: 'clown', name: 'Clown', nameRu: 'Клоун', img: 'https://i.imgur.com/LXiDR6s.png' },
+    { id: 'spirit', name: 'Spirit', nameRu: 'Дух', img: 'https://i.imgur.com/lUoZ7EB.png' },
+    { id: 'demogorgon', name: 'Demogorgon', nameRu: 'Демогоргон', img: 'https://i.imgur.com/wdUH3jL.png' },
+    { id: 'oni', name: 'Oni', nameRu: 'Они', img: 'https://i.imgur.com/SftFGjd.png' },
     { id: 'deathslinger', name: 'Deathslinger', nameRu: 'Стрелок', img: 'images/killers/deathslinger.webp' },
-    { id: 'executioner', name: 'Executioner', nameRu: 'Палач', img: 'images/killers/executioner.webp' },
-    { id: 'blight', name: 'Blight', nameRu: 'Мор', img: 'images/killers/blight.webp' },
+    { id: 'executioner', name: 'Executioner', nameRu: 'Палач', img: 'https://i.imgur.com/kckCdKs.png' },
+    { id: 'blight', name: 'Blight', nameRu: 'Мор', img: 'https://i.imgur.com/3srhPN0.png' },
     { id: 'nemesis', name: 'Nemesis', nameRu: 'Немезис', img: 'images/killers/nemesis.webp' },
-    { id: 'cenobite', name: 'Cenobite', nameRu: 'Сенобит', img: 'images/killers/cenobite.webp' },
-    { id: 'artist', name: 'Artist', nameRu: 'Художница', img: 'images/killers/artist.webp' },
-    { id: 'mastermind', name: 'Mastermind', nameRu: 'Вескер', img: 'images/killers/mastermind.webp' },
-    { id: 'houndmaster', name: 'Houndmaster', nameRu: 'Егерь', img: 'images/killers/houndmaster.webp' },
-    { id: 'unknown', name: 'Unknown', nameRu: 'Неводомое', img: 'images/killers/unknown.webp' }
+    { id: 'cenobite', name: 'Cenobite', nameRu: 'Сенобит', img: 'https://i.imgur.com/a4Or0gU.png' },
+    { id: 'artist', name: 'Artist', nameRu: 'Художница', img: 'https://i.imgur.com/EeeY3dH.png' },
+    { id: 'mastermind', name: 'Mastermind', nameRu: 'Вескер', img: 'https://i.imgur.com/vqxhzH3.png' },
+    { id: 'houndmaster', name: 'Houndmaster', nameRu: 'Егерь', img: 'https://i.imgur.com/9vAwJB1.png' },
+    { id: 'unknown', name: 'Unknown', nameRu: 'Неводомое', img: 'https://i.imgur.com/nGFqWMk.png' }
 ];
 
 // ========== TRANSLATIONS ==========
@@ -881,9 +879,9 @@ function initBalanceSection() {
 
     // Maps for Stage 1
     const maps = [
-        { name: 'Coal Tower', nameRu: 'Угольная башня', img: 'images/maps/coal_tower.webp' },
-        { name: 'Wreckers Yard', nameRu: 'Зона свалки', img: 'images/maps/wreckers_yard.webp' },
-        { name: 'Suffocation Pit', nameRu: 'Удушающая яма 1', img: 'images/maps/suffocation_pit.webp' }
+        { name: 'Coal Tower', nameRu: 'Угольная башня', img: 'https://i.imgur.com/MBHfMUb.png' },
+        { name: 'Wreckers Yard', nameRu: 'Зона свалки', img: 'https://i.imgur.com/zQXw63z.png' },
+        { name: 'Suffocation Pit', nameRu: 'Удушающая яма 1', img: 'https://i.imgur.com/wesObbm.png' }
     ];
 
     const mapsContainer = document.getElementById('mapsStage1');
@@ -904,12 +902,12 @@ function initBalanceSection() {
 
     // Perks for Stage 2
     const perks = [
-        { name: 'Resilience', nameRu: 'Устойчивость', img: 'images/perks/ress.webp' },
-        { name: 'Finesse', nameRu: 'Сноровка', img: 'images/perks/finesse.webp' },
-        { name: 'Lithe', nameRu: 'Гибкость', img: 'images/perks/lithe.webp' },
-        { name: 'Overcome', nameRu: 'Преодоление', img: 'images/perks/overcome.webp' },
-        { name: 'Dramaturgy', nameRu: 'Драматургия', img: 'images/perks/dramaturgy.webp' },
-        { name: 'Smash Hit', nameRu: 'Ударный забег', img: 'images/perks/smash.webp' }
+        { name: 'Resilience', nameRu: 'Устойчивость', img: 'https://i.imgur.com/qpB0dm8.png' },
+        { name: 'Finesse', nameRu: 'Сноровка', img: 'https://i.imgur.com/Klt9NNO.png' },
+        { name: 'Lithe', nameRu: 'Гибкость', img: 'https://i.imgur.com/yALtWZg.png' },
+        { name: 'Overcome', nameRu: 'Преодоление', img: 'https://i.imgur.com/4K4YgLc.png' },
+        { name: 'Dramaturgy', nameRu: 'Драматургия', img: 'https://i.imgur.com/1Gn8RBB.png' },
+        { name: 'Smash Hit', nameRu: 'Ударный забег', img: 'https://i.imgur.com/aE1jXYT.png' }
     ];
 
     const perksContainer = document.getElementById('perksStage2');
