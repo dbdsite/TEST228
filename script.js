@@ -12,28 +12,28 @@ const CONFIG = {
 
 // ========== KILLERS DATA ==========
 const KILLERS = [
-    { id: 'trapper', name: 'Trapper', nameRu: 'Траппер', img: 'images/killers/trapper.png' },
-    { id: 'wraith', name: 'Wraith', nameRu: 'Призрак', img: 'images/killers/wraith.png' },
-    { id: 'hillbilly', name: 'Hillbilly', nameRu: 'Хиллбилли', img: 'images/killers/hillbilly.png' },
-    { id: 'nurse', name: 'Nurse', nameRu: 'Медсестра', img: 'images/killers/nurse.png' },
-    { id: 'doctor', name: 'Doctor', nameRu: 'Доктор', img: 'images/killers/doctor.png' },
-    { id: 'huntress', name: 'Huntress', nameRu: 'Охотница', img: 'images/killers/huntress.png' },
-    { id: 'cannibal', name: 'Cannibal', nameRu: 'Каннибал', img: 'images/killers/cannibal.png' },
-    { id: 'nightmare', name: 'Nightmare', nameRu: 'Кошмар', img: 'images/killers/nightmare.png' },
-    { id: 'pig', name: 'Pig', nameRu: 'Свинья', img: 'images/killers/pig.png' },
-    { id: 'clown', name: 'Clown', nameRu: 'Клоун', img: 'images/killers/clown.png' },
-    { id: 'spirit', name: 'Spirit', nameRu: 'Дух', img: 'images/killers/spirit.png' },
-    { id: 'demogorgon', name: 'Demogorgon', nameRu: 'Демогоргон', img: 'images/killers/demogorgon.png' },
-    { id: 'oni', name: 'Oni', nameRu: 'Они', img: 'images/killers/oni.png' },
-    { id: 'deathslinger', name: 'Deathslinger', nameRu: 'Стрелок', img: 'images/killers/deathslinger.png' },
-    { id: 'executioner', name: 'Executioner', nameRu: 'Палач', img: 'images/killers/executioner.png' },
-    { id: 'blight', name: 'Blight', nameRu: 'Мор', img: 'images/killers/blight.png' },
-    { id: 'nemesis', name: 'Nemesis', nameRu: 'Немезис', img: 'images/killers/nemesis.png' },
-    { id: 'cenobite', name: 'Cenobite', nameRu: 'Сенобит', img: 'images/killers/cenobite.png' },
-    { id: 'artist', name: 'Artist', nameRu: 'Художница', img: 'images/killers/artist.png' },
-    { id: 'mastermind', name: 'Mastermind', nameRu: 'Вескер', img: 'images/killers/mastermind.png' },
-    { id: 'houndmaster', name: 'Houndmaster', nameRu: 'Егерь', img: 'images/killers/houndmaster.png' },
-    { id: 'unknown', name: 'Unknown', nameRu: 'Неводомое', img: 'images/killers/unknown.png' }
+    { id: 'trapper', name: 'Trapper', nameRu: 'Траппер', img: 'images/killers/trapper.webp' },
+    { id: 'wraith', name: 'Wraith', nameRu: 'Призрак', img: 'images/killers/wraith.webp' },
+    { id: 'hillbilly', name: 'Hillbilly', nameRu: 'Хиллбилли', img: 'images/killers/hillbilly.webp' },
+    { id: 'nurse', name: 'Nurse', nameRu: 'Медсестра', img: 'images/killers/nurse.webp' },
+    { id: 'doctor', name: 'Doctor', nameRu: 'Доктор', img: 'images/killers/doctor.webp' },
+    { id: 'huntress', name: 'Huntress', nameRu: 'Охотница', img: 'images/killers/huntress.webp' },
+    { id: 'cannibal', name: 'Cannibal', nameRu: 'Каннибал', img: 'images/killers/cannibal.webp' },
+    { id: 'nightmare', name: 'Nightmare', nameRu: 'Кошмар', img: 'images/killers/nightmare.webp' },
+    { id: 'pig', name: 'Pig', nameRu: 'Свинья', img: 'images/killers/pig.webp' },
+    { id: 'clown', name: 'Clown', nameRu: 'Клоун', img: 'images/killers/clown.webp' },
+    { id: 'spirit', name: 'Spirit', nameRu: 'Дух', img: 'images/killers/spirit.webp' },
+    { id: 'demogorgon', name: 'Demogorgon', nameRu: 'Демогоргон', img: 'images/killers/demogorgon.webp' },
+    { id: 'oni', name: 'Oni', nameRu: 'Они', img: 'images/killers/oni.webp' },
+    { id: 'deathslinger', name: 'Deathslinger', nameRu: 'Стрелок', img: 'images/killers/deathslinger.webp' },
+    { id: 'executioner', name: 'Executioner', nameRu: 'Палач', img: 'images/killers/executioner.webp' },
+    { id: 'blight', name: 'Blight', nameRu: 'Мор', img: 'images/killers/blight.webp' },
+    { id: 'nemesis', name: 'Nemesis', nameRu: 'Немезис', img: 'images/killers/nemesis.webp' },
+    { id: 'cenobite', name: 'Cenobite', nameRu: 'Сенобит', img: 'images/killers/cenobite.webp' },
+    { id: 'artist', name: 'Artist', nameRu: 'Художница', img: 'images/killers/artist.webp' },
+    { id: 'mastermind', name: 'Mastermind', nameRu: 'Вескер', img: 'images/killers/mastermind.webp' },
+    { id: 'houndmaster', name: 'Houndmaster', nameRu: 'Егерь', img: 'images/killers/houndmaster.webp' },
+    { id: 'unknown', name: 'Unknown', nameRu: 'Неводомое', img: 'images/killers/unknown.webp' }
 ];
 
 // ========== TRANSLATIONS ==========
@@ -816,7 +816,7 @@ async function sendToTelegram(data) {
 👤 *Никнейм:* ${data.nickname}
 📺 *Twitch:* ${data.twitch}
 💬 *Discord:* ${data.discord}
-🎮 *Steam:* ${data.steam}
+🎮 *Steam/Epic:* ${data.steam}
 🔪 *Киллер:* ${killerName}
 ⏱ *Часы в игре:* ${data.hours}
 📝 *Доп. информация:* ${data.additional || 'Не указано'}
@@ -867,7 +867,7 @@ function initBalanceSection() {
             item.className = 'balance-item';
             item.innerHTML = `
                 <img src="${killer.img}" 
-                     onerror="this.src='https://i.postimg.cc/MpPNLknH/killer-placeholder.png'" 
+                     onerror="this.src='https://i.postimg.cc/MpPNLknH/killer-placeholder.webp'" 
                      alt="${killer.name}">
                 <div class="balance-item-name">${currentLang === 'ru' ? killer.nameRu : killer.name}</div>
             `;
@@ -881,9 +881,9 @@ function initBalanceSection() {
 
     // Maps for Stage 1
     const maps = [
-        { name: 'Coal Tower', nameRu: 'Угольная башня', img: 'images/maps/coal_tower.png' },
-        { name: 'Wreckers Yard', nameRu: 'Зона свалки', img: 'images/maps/wreckers_yard.png' },
-        { name: 'Suffocation Pit', nameRu: 'Удушающая яма 1', img: 'images/maps/suffocation_pit.png' }
+        { name: 'Coal Tower', nameRu: 'Угольная башня', img: 'images/maps/coal_tower.webp' },
+        { name: 'Wreckers Yard', nameRu: 'Зона свалки', img: 'images/maps/wreckers_yard.webp' },
+        { name: 'Suffocation Pit', nameRu: 'Удушающая яма 1', img: 'images/maps/suffocation_pit.webp' }
     ];
 
     const mapsContainer = document.getElementById('mapsStage1');
@@ -894,7 +894,7 @@ function initBalanceSection() {
             item.className = 'balance-item';
             item.innerHTML = `
                 <img src="${map.img}" 
-                     onerror="this.src='https://i.postimg.cc/QtpBL4cV/map-placeholder.png'" 
+                     onerror="this.src='https://i.postimg.cc/QtpBL4cV/map-placeholder.webp'" 
                      alt="${map.name}">
                 <div class="balance-item-name">${currentLang === 'ru' ? map.nameRu : map.name}</div>
             `;
@@ -904,12 +904,12 @@ function initBalanceSection() {
 
     // Perks for Stage 2
     const perks = [
-        { name: 'Resilience', nameRu: 'Устойчивость', img: 'images/perks/ress.png' },
-        { name: 'Finesse', nameRu: 'Сноровка', img: 'images/perks/finesse.png' },
-        { name: 'Lithe', nameRu: 'Гибкость', img: 'images/perks/lithe.png' },
-        { name: 'Overcome', nameRu: 'Преодоление', img: 'images/perks/overcome.png' },
-        { name: 'Dramaturgy', nameRu: 'Драматургия', img: 'images/perks/dramaturgy.png' },
-        { name: 'Smash Hit', nameRu: 'Ударный забег', img: 'images/perks/smash.png' }
+        { name: 'Resilience', nameRu: 'Устойчивость', img: 'images/perks/ress.webp' },
+        { name: 'Finesse', nameRu: 'Сноровка', img: 'images/perks/finesse.webp' },
+        { name: 'Lithe', nameRu: 'Гибкость', img: 'images/perks/lithe.webp' },
+        { name: 'Overcome', nameRu: 'Преодоление', img: 'images/perks/overcome.webp' },
+        { name: 'Dramaturgy', nameRu: 'Драматургия', img: 'images/perks/dramaturgy.webp' },
+        { name: 'Smash Hit', nameRu: 'Ударный забег', img: 'images/perks/smash.webp' }
     ];
 
     const perksContainer = document.getElementById('perksStage2');
