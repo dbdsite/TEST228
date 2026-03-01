@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Pick/Ban — админка</title>
+
+<style>
+html, body{
+  margin:0;
+  width: 100%;
+  height: 100%;
+  background:#0f0f10;
+  color:#fff;
+  font-family: Inter, Arial, sans-serif;
+}
+
+.header{
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 14px 16px;
+  background:#121214;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display:flex;
+  gap: 12px;
+  align-items:center;
+}
+
+.title{
+  font-weight: 1000;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .9;
+}
+
+.pair{
+  margin-left:auto;
+  display:flex;
+  gap: 10px;
+  align-items:center;
+}
+
+.pill{
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  font-weight: 900;
+  min-width: 180px;
+  text-align:center;
+}
+
+.note{
+  padding: 10px 16px;
+  font-size: 12px;
+  opacity: .7;
+  letter-spacing: .02em;
+}
+
+.grid{
+  padding: 16px;
+  display:grid;
+  grid-template-columns: repeat(auto-fill, 140px);
+  gap: 14px;
+  justify-content:center;
+}
+
+.killer{
+  width: 140px;
+  height: 190px;
+  border-radius: 14px;
+  overflow:hidden;
+  position:relative;
+
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 14px 26px rgba(0,0,0,0.22);
+  cursor:pointer;
+}
+
+.killer img{
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+}
+
+/* финальный бан */
+.killer.banned{
+  filter: grayscale(100%) brightness(30%);
+}
+.killer.banned::after{
+  content:"✖";
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,0.55);
+  color:#ff4b4b;
+  font-size: 76px;
+  font-weight: 1000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* ручной бан */
+.killer.manual-ban{
+  outline: 3px solid rgba(255,75,75,0.85);
+  outline-offset: -3px;
+}
+
+/* override unban (снятие авто-бана) */
+.killer.manual-unban{
+  outline: 3px solid rgba(120,255,180,0.85);
+  outline-offset: -3px;
+}
+</style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="title">Pick/Ban — админка</div>
+    <div class="pair">
+      <div class="pill" id="p1">—</div>
+      <div style="opacity:.6; font-weight:900;">VS</div>
+      <div class="pill" id="p2">—</div>
+    </div>
+  </div>
+
+  <div class="note">
+    Клик по убийце: добавить/снять ручной бан. Если бан идёт автоматически из bans.json — клик снимет его (зелёная рамка = override unban).
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+<script>
+const API = "../Турнирная таблица/api.php";
+
+const grid = document.getElementById("grid");
+const cards = {};
+
+let bansTable = {};
+let activePlayers = [];
+let lastKey = "";
+let manual = { ban: [], unban: [] };
+
+/* загрузим таблицу авто-банов */
+fetch("bans.json", { cache:"no-store" })
+  .then(r=>r.json())
+  .then(j => { bansTable = j || {}; })
+  .catch(()=>{});
+
+/* загрузим персонажей */
+fetch("data.php", { cache:"no-store" })
+  .then(r=>r.json())
+  .then(data=>{
+    (data?.characters?.killers || []).forEach(file=>{
+      const name = file.replace(/\.(png|jpg|webp)$/i, "");
+      const card = document.createElement("div");
+      card.className = "killer";
+      card.dataset.name = name;
+
+      const img = document.createElement("img");
+      img.src = "characters/killers/" + file;
+      img.alt = name;
+
+      card.appendChild(img);
+      card.onclick = ()=>toggle(name);
+
+      grid.appendChild(card);
+      cards[name] = card;
+    });
+  });
+
+async function loadManual(key){
+  try{
+    const j = await fetch(`${API}?action=bans_get&key=${encodeURIComponent(key)}`, { cache:"no-store" }).then(r=>r.json());
+    manual = {
+      ban: Array.isArray(j?.ban) ? j.ban : [],
+      unban: Array.isArray(j?.unban) ? j.unban : []
+    };
+  }catch(e){
+    manual = { ban: [], unban: [] };
+  }
+}
+
+async function toggle(killer){
+  if (!lastKey) return;
+  try{
+    await fetch(`${API}?action=bans_toggle`, {
+      method:"POST",
+      headers:{ "Content-Type":"application/x-www-form-urlencoded" },
+      body:`key=${encodeURIComponent(lastKey)}&killer=${encodeURIComponent(killer)}`
+    });
+    await loadManual(lastKey);
+    apply();
+  }catch(e){}
+}
+
+function apply(){
+  Object.values(cards).forEach(c=>{
+    c.classList.remove("banned","manual-ban","manual-unban");
+  });
+
+  const auto = new Set();
+  activePlayers.forEach(p=>{
+    (bansTable[p] || []).forEach(k => auto.add((k||"").trim()));
+  });
+
+  const manBan = new Set((manual.ban||[]).map(x=>(x||"").trim()).filter(Boolean));
+  const manUnban = new Set((manual.unban||[]).map(x=>(x||"").trim()).filter(Boolean));
+
+  const finalBans = new Set([...auto, ...manBan].filter(Boolean));
+  manUnban.forEach(x=>finalBans.delete(x));
+
+  finalBans.forEach(n=>{ if(cards[n]) cards[n].classList.add("banned"); });
+  manBan.forEach(n=>{ if(cards[n]) cards[n].classList.add("manual-ban"); });
+  manUnban.forEach(n=>{ if(cards[n]) cards[n].classList.add("manual-unban"); });
+}
+
+async function syncMatch(){
+  try{
+    const s = await fetch(`${API}?action=overlay_get`, { cache:"no-store" }).then(r=>r.json());
+    const m = s.currentMatch;
+    if (!m) return;
+
+    const p1 = m.p1 || "—";
+    const p2 = m.p2 || "—";
+    const key = `${p1}__${p2}`;
+
+    document.getElementById("p1").textContent = p1;
+    document.getElementById("p2").textContent = p2;
+
+    activePlayers = [m.p1, m.p2].filter(Boolean);
+
+    if (key !== lastKey){
+      lastKey = key;
+      await loadManual(lastKey);
+    }
+
+    apply();
+  }catch(e){}
+}
+
+syncMatch();
+setInterval(syncMatch, 700);
+</script>
+</body>
+</html>

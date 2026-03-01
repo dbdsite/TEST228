@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Pick & Ban Overlay</title>
+
+<style>
+html, body {
+    margin: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    font-family: Inter, Arial, sans-serif;
+}
+
+/* ФОН */
+body {
+    background: url("bans_bg.png") center / cover no-repeat;
+}
+
+/* safe зоны под заголовок/низ */
+:root{
+    --safe-top: 240px;     /* если залезает на надпись — увеличь */
+    --safe-bottom: 60px;
+    --safe-sides: 90px;
+}
+
+/* ===== MATCH BAR ===== */
+#matchBar {
+    position: absolute;
+    top: var(--safe-top);
+    left: 0;
+    right: 0;
+
+    display: flex;
+    justify-content: center;
+    gap: 46px;
+    pointer-events: none;
+}
+
+.playerBox {
+    padding: 14px 30px;
+    background: rgba(0,0,0,0.42);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 18px;
+
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+
+    color: #fff;
+    min-width: 420px;
+    text-align: center;
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    box-shadow:
+        0 18px 44px rgba(0,0,0,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* ===== GRID ===== */
+#grid {
+    position: absolute;
+    top: calc(var(--safe-top) + 95px);
+    left: var(--safe-sides);
+    right: var(--safe-sides);
+    bottom: var(--safe-bottom);
+
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 140px);
+    justify-content: center;
+    gap: 18px;
+}
+
+/* ===== CARD ===== */
+.killer {
+    width: 140px;
+    height: 190px;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.20);
+
+    /* клики в оверлее оставим (можно отключить, если не нужно) */
+    cursor: pointer;
+}
+
+.killer img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display:block;
+}
+
+/* автоматический бан */
+.killer.banned {
+    filter: grayscale(100%) brightness(30%);
+}
+.killer.banned::after {
+    content: "✖";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    color: #ff4b4b;
+    font-size: 80px;
+    font-weight: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ручной ДОБАВЛЕННЫЙ бан (от админки/клика) — рамка */
+.killer.manual-ban {
+    outline: 3px solid rgba(255,75,75,0.75);
+    outline-offset: -3px;
+}
+
+/* ручной СНИТЫЙ бан (override unban) — зелёная рамка */
+.killer.manual-unban {
+    outline: 3px solid rgba(120,255,180,0.75);
+    outline-offset: -3px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="matchBar">
+    <div class="playerBox" id="p1">—</div>
+    <div class="playerBox" id="p2">—</div>
+</div>
+
+<div id="grid"></div>
+
+<script>
+/*
+  pickban.html у тебя в .../overlay/
+  api.php у тебя в .../Турнирная таблица/
+*/
+const API = "../Турнирная таблица/api.php";
+
+const grid = document.getElementById("grid");
+const cards = {};
+
+let bansTable = {};          // bans.json (авто баны по игрокам)
+let activePlayers = [];
+let lastKey = "";
+
+/* ручные оверрайды с сервера */
+let manual = { ban: [], unban: [] };
+
+/* ===== LOAD BANS TABLE (bans.json) ===== */
+fetch("bans.json", { cache:"no-store" })
+  .then(r => r.json())
+  .then(data => { bansTable = data || {}; })
+  .catch(()=>{});
+
+/* ===== LOAD CHARACTERS ===== */
+fetch("data.php", { cache:"no-store" })
+  .then(r => r.json())
+  .then(data => {
+    (data?.characters?.killers || []).forEach(file => {
+      const name = file.replace(/\.(png|jpg|webp)$/i, "");
+
+      const card = document.createElement("div");
+      card.className = "killer";
+      card.dataset.name = name;
+
+      const img = document.createElement("img");
+      img.src = "characters/killers/" + file;
+      card.appendChild(img);
+
+      // клики в оверлее (если не хочешь — можно удалить)
+      card.onclick = () => toggleManual(name);
+
+      grid.appendChild(card);
+      cards[name] = card;
+    });
+  });
+
+/* ===== helper: fetch manual overrides ===== */
+async function loadManualForMatchKey(key){
+  try{
+    const r = await fetch(`${API}?action=bans_get&key=${encodeURIComponent(key)}`, { cache:"no-store" });
+    const j = await r.json();
+    manual = {
+      ban: Array.isArray(j?.ban) ? j.ban : [],
+      unban: Array.isArray(j?.unban) ? j.unban : []
+    };
+  }catch(e){
+    manual = { ban: [], unban: [] };
+  }
+}
+
+/* ===== toggle manual via API ===== */
+async function toggleManual(killerName){
+  if (!lastKey) return;
+  try{
+    await fetch(`${API}?action=bans_toggle`, {
+      method: "POST",
+      headers: {"Content-Type":"application/x-www-form-urlencoded"},
+      body: `key=${encodeURIComponent(lastKey)}&killer=${encodeURIComponent(killerName)}`
+    });
+    await loadManualForMatchKey(lastKey);
+    applyBans();
+  }catch(e){}
+}
+
+/* ===== APPLY BANS ===== */
+function applyBans() {
+  // очистка
+  Object.values(cards).forEach(c => {
+    c.classList.remove("banned","manual-ban","manual-unban");
+  });
+
+  // авто баны
+  const auto = new Set();
+  activePlayers.forEach(p => {
+    (bansTable[p] || []).forEach(k => auto.add((k || "").trim()));
+  });
+
+  // ручные оверрайды
+  const manBan = new Set((manual.ban || []).map(x => (x||"").trim()).filter(Boolean));
+  const manUnban = new Set((manual.unban || []).map(x => (x||"").trim()).filter(Boolean));
+
+  // итог: (auto ∪ manBan) \ manUnban
+  const finalBans = new Set([...auto, ...manBan].filter(Boolean));
+  manUnban.forEach(x => finalBans.delete(x));
+
+  // отрисовка
+  finalBans.forEach(name => {
+    if (cards[name]) cards[name].classList.add("banned");
+  });
+
+  // подсветка именно ручных решений
+  manBan.forEach(name => { if (cards[name]) cards[name].classList.add("manual-ban"); });
+  manUnban.forEach(name => { if (cards[name]) cards[name].classList.add("manual-unban"); });
+}
+
+/* ===== MATCH SYNC (SERVER) ===== */
+async function updateMatch() {
+  try{
+    const s = await fetch(`${API}?action=overlay_get`, { cache:"no-store" }).then(r=>r.json());
+    const m = s.currentMatch;
+    if (!m) return;
+
+    const p1 = m.p1 || "—";
+    const p2 = m.p2 || "—";
+    const key = `${p1}__${p2}`;
+
+    document.getElementById("p1").textContent = p1;
+    document.getElementById("p2").textContent = p2;
+
+    activePlayers = [m.p1, m.p2].filter(Boolean);
+
+    // если матч сменился — сменить ключ
+    if (key !== lastKey) {
+      lastKey = key;
+    }
+
+    // ВСЕГДА подтягиваем ручные оверрайды — чтобы обновлялось сразу после клика в админке
+    await loadManualForMatchKey(lastKey);
+
+    applyBans();
+  }catch(e){}
+}
+
+
+updateMatch();
+setInterval(updateMatch, 700);
+</script>
+
+</body>
+</html>
