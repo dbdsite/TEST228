@@ -12,10 +12,83 @@
         }
 
         body {
-            background: #0e0e10;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             height: 100vh;
             font-family: 'Segoe UI', Arial, sans-serif;
             overflow: hidden;
+        }
+
+        /* Страница входа */
+        .login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .login-container h2 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2rem;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .error-message {
+            color: #ff4444;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        /* Основной интерфейс */
+        .main-interface {
+            display: none;
+            height: 100vh;
+            position: relative;
         }
 
         .settings-btn {
@@ -212,6 +285,44 @@
         .add-streamer-btn:hover {
             border-color: #9146ff;
             background: rgba(145, 70, 255, 0.1);
+        }
+
+        .password-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1f1f23;
+            border-radius: 8px;
+        }
+
+        .password-display {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .password-input {
+            flex: 1;
+            padding: 10px;
+            background: #0e0e10;
+            border: 2px solid #2d2d35;
+            border-radius: 8px;
+            color: #fff;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        .generate-btn {
+            padding: 10px 20px;
+            background: #9146ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .generate-btn:hover {
+            background: #772ce8;
         }
 
         .modal-footer {
@@ -598,103 +709,109 @@
     </style>
 </head>
 <body>
-    <button class="settings-btn" id="settingsBtn">⚙️</button>
-
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>⚙️ Настройки</h2>
-                <button class="modal-close" id="modalClose">✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="warning-box">
-                    <h4>⚠️ Важно</h4>
-                    <p>
-                        Запустите сервер в папке с файлом:<br>
-                        <code>python -m http.server 8000</code><br>
-                        Откройте: <code>http://localhost:8000</code>
-                    </p>
-                </div>
-
-                <div class="setting-group">
-                    <label class="setting-label">Количество стримеров</label>
-                    <div class="grid-size-container">
-                        <input type="range" class="grid-slider" id="gridSlider" min="1" max="20" value="20">
-                        <span class="grid-value" id="gridValue">20</span>
-                    </div>
-                </div>
-
-                <div class="setting-group">
-                    <label class="setting-label">Стримеры</label>
-                    <div class="streamers-list" id="streamersList"></div>
-                    <button class="add-streamer-btn" id="addStreamerBtn">+ Добавить</button>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="resetBtn">Сбросить</button>
-                <button class="btn btn-primary" id="saveBtn">Сохранить</button>
-            </div>
+    <!-- Страница входа -->
+    <div class="login-page" id="loginPage">
+        <div class="login-container">
+            <h2>Вход в систему</h2>
+            <input type="text" class="login-input" id="loginUsername" placeholder="Логин" autocomplete="off">
+            <input type="password" class="login-input" id="loginPassword" placeholder="Пароль">
+            <button class="login-btn" id="loginBtn">Войти</button>
+            <div class="error-message" id="loginError"></div>
         </div>
     </div>
 
-    <div class="wrapper" id="wrapper">
-        <div class="container" id="container"></div>
+    <!-- Основной интерфейс -->
+    <div class="main-interface" id="mainInterface">
+        <button class="settings-btn" id="settingsBtn" style="display: none;">⚙️</button>
 
-        <div class="active-view" id="activeView">
-            <div class="left-section">
-                <div class="main-player" id="mainPlayer">
-                    <iframe id="playerFrame" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        <div class="modal-overlay" id="modalOverlay">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2>⚙️ Настройки администратора</h2>
+                    <button class="modal-close" id="modalClose">✕</button>
                 </div>
-                <div class="player-info">
-                    <span class="active-streamer-name" id="activeStreamerName"></span>
-                    <button class="close-btn" id="closeBtn">✕</button>
+                <div class="modal-body">
+                    <div class="warning-box">
+                        <h4>⚠️ Важно</h4>
+                        <p>
+                            Запустите сервер в папке с файлом:<br>
+                            <code>python -m http.server 8000</code><br>
+                            Откройте: <code>http://localhost:8000</code>
+                        </p>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Количество стримеров</label>
+                        <div class="grid-size-container">
+                            <input type="range" class="grid-slider" id="gridSlider" min="1" max="20" value="20">
+                            <span class="grid-value" id="gridValue">20</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Стримеры</label>
+                        <div class="streamers-list" id="streamersList"></div>
+                        <button class="add-streamer-btn" id="addStreamerBtn">+ Добавить</button>
+                    </div>
+
+                    <div class="password-section">
+                        <label class="setting-label">Управление доступом пользователей</label>
+                        <div class="password-display">
+                            <input type="text" class="password-input" id="currentPassword" readonly placeholder="Текущий пароль" value="Не установлен">
+                            <button class="generate-btn" id="generatePassword">Сгенерировать</button>
+                        </div>
+                        <p style="color: #ccc; font-size: 0.85rem;">После генерации старый пароль перестанет работать</p>
+                    </div>
                 </div>
-                <div class="bottom-streams" id="bottomStreams"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="resetBtn">Сбросить</button>
+                    <button class="btn btn-primary" id="saveBtn">Сохранить</button>
+                </div>
             </div>
-            <div class="sidebar" id="sidebar"></div>
         </div>
-        
-        <div class="drag-hint">🔄 Перетащите стримы между нижней панелью и боковой колонкой</div>
+
+        <div class="wrapper" id="wrapper">
+            <div class="container" id="container"></div>
+
+            <div class="active-view" id="activeView">
+                <div class="left-section">
+                    <div class="main-player" id="mainPlayer">
+                        <iframe id="playerFrame" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                    </div>
+                    <div class="player-info">
+                        <span class="active-streamer-name" id="activeStreamerName"></span>
+                        <button class="close-btn" id="closeBtn">✕</button>
+                    </div>
+                    <div class="bottom-streams" id="bottomStreams"></div>
+                </div>
+                <div class="sidebar" id="sidebar"></div>
+            </div>
+            
+            <div class="drag-hint">🔄 Перетащите стримы между нижней панелью и боковой колонкой</div>
+        </div>
     </div>
 
     <script>
-        const defaultStreamers = [
-            "xqc", "bratishkinoff", "silvername", "c_a_k_e", "shroud",
-            "summit1g", "lirik", "pokimane", "pestily", "asmongold",
-            "hasanabi", "mizkif", "ludwig", "sykkuno", "kaicenat",
-            "cohhcarnage", "ironmouse", "nmplol", "esfandtv", "tarik"
-        ];
+        // Конфигурация
+        const ADMIN_USERNAME = 'admin';
+        const ADMIN_PASSWORD = 'admin123';
+        
+        // Глобальные переменные
+        let settings = { gridSize: 20, streamers: [] };
+        let currentUser = null;
+        let currentPassword = null;
+        let activeChannel = null;
+        let streamStatuses = {};
+        let bottomStreamers = [];
+        let sidebarStreamers = [];
 
-        function loadSettings() {
-            const saved = localStorage.getItem('multiStreamSettings');
-            if (saved) {
-                try { return JSON.parse(saved); } catch (e) { return null; }
-            }
-            return null;
-        }
-
-        function saveSettings(settings) {
-            localStorage.setItem('multiStreamSettings', JSON.stringify(settings));
-        }
-
-        function getCurrentSettings() {
-            const saved = loadSettings();
-            return {
-                gridSize: saved?.gridSize || 20,
-                streamers: saved?.streamers || [...defaultStreamers]
-            };
-        }
-
-        let settings = getCurrentSettings();
-
-        const wrapper = document.getElementById('wrapper');
-        const container = document.getElementById('container');
-        const playerFrame = document.getElementById('playerFrame');
-        const activeStreamerName = document.getElementById('activeStreamerName');
-        const closeBtn = document.getElementById('closeBtn');
-        const bottomStreams = document.getElementById('bottomStreams');
-        const sidebar = document.getElementById('sidebar');
-
+        // DOM элементы
+        const loginPage = document.getElementById('loginPage');
+        const mainInterface = document.getElementById('mainInterface');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginUsername = document.getElementById('loginUsername');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginError = document.getElementById('loginError');
         const settingsBtn = document.getElementById('settingsBtn');
         const modalOverlay = document.getElementById('modalOverlay');
         const modalClose = document.getElementById('modalClose');
@@ -704,12 +821,138 @@
         const addStreamerBtn = document.getElementById('addStreamerBtn');
         const saveBtn = document.getElementById('saveBtn');
         const resetBtn = document.getElementById('resetBtn');
+        const generatePassword = document.getElementById('generatePassword');
+        const currentPasswordInput = document.getElementById('currentPassword');
+        const container = document.getElementById('container');
+        const wrapper = document.getElementById('wrapper');
+        const playerFrame = document.getElementById('playerFrame');
+        const activeStreamerName = document.getElementById('activeStreamerName');
+        const closeBtn = document.getElementById('closeBtn');
+        const bottomStreams = document.getElementById('bottomStreams');
+        const sidebar = document.getElementById('sidebar');
 
-        let activeChannel = null;
-        let streamStatuses = {};
-        let bottomStreamers = [];
-        let sidebarStreamers = [];
+        // Загрузка данных из файлов
+        async function loadData() {
+            try {
+                // Загружаем пароль
+                const passResponse = await fetch('/password.txt?' + Date.now());
+                if (passResponse.ok) {
+                    currentPassword = (await passResponse.text()).trim();
+                    if (currentPassword) {
+                        currentPasswordInput.value = currentPassword;
+                    }
+                }
 
+                // Загружаем стримеров
+                const dataResponse = await fetch('/data.txt?' + Date.now());
+                if (dataResponse.ok) {
+                    const data = await dataResponse.text();
+                    settings.streamers = data.split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line && !line.startsWith('#'));
+                } else {
+                    // Если файла нет, используем дефолтных
+                    settings.streamers = [
+                        "xqc", "bratishkinoff", "silvername", "c_a_k_e", "shroud",
+                        "summit1g", "lirik", "pokimane", "pestily", "asmongold"
+                    ];
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                settings.streamers = [
+                    "xqc", "bratishkinoff", "silvername", "c_a_k_e", "shroud"
+                ];
+            }
+        }
+
+        // Сохранение стримеров в data.txt
+        async function saveStreamersToFile() {
+            try {
+                const response = await fetch('/save_data.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'streamers=' + encodeURIComponent(settings.streamers.join('\n'))
+                });
+                if (!response.ok) console.error('Ошибка сохранения data.txt');
+            } catch (error) {
+                console.error('Ошибка сохранения:', error);
+            }
+        }
+
+        // Сохранение пароля в password.txt
+        async function savePasswordToFile(password) {
+            try {
+                const response = await fetch('/save_password.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'password=' + encodeURIComponent(password)
+                });
+                if (response.ok) {
+                    currentPassword = password;
+                    currentPasswordInput.value = password;
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения пароля:', error);
+            }
+        }
+
+        // Генерация случайного пароля
+        function generateRandomPassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let password = '';
+            for (let i = 0; i < 12; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return password;
+        }
+
+        // Вход в систему
+        loginBtn.addEventListener('click', async () => {
+            const username = loginUsername.value.trim();
+            const password = loginPassword.value.trim();
+
+            if (!username || !password) {
+                loginError.textContent = 'Введите логин и пароль';
+                return;
+            }
+
+            // Проверка администратора
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                currentUser = 'admin';
+                loginPage.style.display = 'none';
+                mainInterface.style.display = 'block';
+                settingsBtn.style.display = 'flex';
+                await loadData();
+                initStreamers();
+                return;
+            }
+
+            // Проверка пользователя
+            if (currentPassword && password === currentPassword) {
+                currentUser = 'user';
+                loginPage.style.display = 'none';
+                mainInterface.style.display = 'block';
+                settingsBtn.style.display = 'none';
+                await loadData();
+                initStreamers();
+                return;
+            }
+
+            loginError.textContent = 'Неверный логин или пароль';
+        });
+
+        // Enter для входа
+        loginPassword.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loginBtn.click();
+        });
+
+        // Генерация нового пароля
+        generatePassword.addEventListener('click', () => {
+            const newPassword = generateRandomPassword();
+            savePasswordToFile(newPassword);
+        });
+
+        // Функции интерфейса
         function extractChannelName(input) {
             input = input.trim();
             const match = input.match(/(?:https?:\/\/)?(?:www\.)?twitch\.tv\/([a-zA-Z0-9_]+)/i);
@@ -720,32 +963,6 @@
         function getParentDomain() {
             const hostname = window.location.hostname;
             return (hostname === '' || hostname === 'null') ? 'localhost' : hostname;
-        }
-
-        // Простая проверка статуса - если картинка загрузилась, значит онлайн
-        async function checkStreamStatus(channel) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                const timestamp = Date.now();
-                img.src = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${channel}-320x180.jpg?nocache=${timestamp}`;
-                
-                const timeout = setTimeout(() => {
-                    resolve({ online: false });
-                }, 5000);
-
-                img.onload = () => {
-                    clearTimeout(timeout);
-                    // Twitch всегда отдает картинку, но для офлайн - это заглушка
-                    // Проверяем по размеру - заглушка может иметь другой размер
-                    // Но проще - считаем онлайн если загрузилась
-                    resolve({ online: true, preview: img.src });
-                };
-                
-                img.onerror = () => {
-                    clearTimeout(timeout);
-                    resolve({ online: false });
-                };
-            });
         }
 
         function calculateGrid(count) {
@@ -766,7 +983,6 @@
             container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
         }
 
-        // Создание бокса для основной сетки (только превью)
         function createGridBox(channel) {
             const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
             const parent = getParentDomain();
@@ -776,7 +992,6 @@
             box.dataset.channel = channel;
             box.dataset.name = displayName;
 
-            // Сразу показываем плеер без звука
             box.innerHTML = `
                 <div class="mini-player">
                     <iframe 
@@ -799,7 +1014,6 @@
             return box;
         }
 
-        // Создание бокса для активного вида (с drag & drop)
         function createActiveBox(channel, location) {
             const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
             const parent = getParentDomain();
@@ -808,8 +1022,8 @@
             box.className = 'stream-box online with-player';
             box.dataset.channel = channel;
             box.dataset.name = displayName;
-            box.dataset.location = location; // 'bottom' или 'sidebar'
-            box.draggable = true;
+            box.dataset.location = location;
+            box.draggable = currentUser === 'admin';
 
             box.innerHTML = `
                 <div class="mini-player">
@@ -828,48 +1042,46 @@
                 openStream(channel, displayName);
             });
 
-            // Drag events
-            box.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('text/plain', channel);
-                e.dataTransfer.setData('location', location);
-                box.classList.add('dragging');
-            });
+            if (currentUser === 'admin') {
+                box.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', channel);
+                    e.dataTransfer.setData('location', location);
+                    box.classList.add('dragging');
+                });
 
-            box.addEventListener('dragend', () => {
-                box.classList.remove('dragging');
-                document.querySelectorAll('.stream-box').forEach(b => b.classList.remove('drag-over'));
-            });
+                box.addEventListener('dragend', () => {
+                    box.classList.remove('dragging');
+                    document.querySelectorAll('.stream-box').forEach(b => b.classList.remove('drag-over'));
+                });
 
-            box.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                box.classList.add('drag-over');
-            });
+                box.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    box.classList.add('drag-over');
+                });
 
-            box.addEventListener('dragleave', () => {
-                box.classList.remove('drag-over');
-            });
+                box.addEventListener('dragleave', () => {
+                    box.classList.remove('drag-over');
+                });
 
-            box.addEventListener('drop', (e) => {
-                e.preventDefault();
-                box.classList.remove('drag-over');
-                
-                const draggedChannel = e.dataTransfer.getData('text/plain');
-                const draggedLocation = e.dataTransfer.getData('location');
-                const targetChannel = channel;
-                const targetLocation = location;
+                box.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    box.classList.remove('drag-over');
+                    
+                    const draggedChannel = e.dataTransfer.getData('text/plain');
+                    const draggedLocation = e.dataTransfer.getData('location');
+                    const targetChannel = channel;
+                    const targetLocation = location;
 
-                if (draggedChannel === targetChannel) return;
+                    if (draggedChannel === targetChannel) return;
 
-                // Меняем местами в массивах
-                swapStreamers(draggedChannel, draggedLocation, targetChannel, targetLocation);
-            });
+                    swapStreamers(draggedChannel, draggedLocation, targetChannel, targetLocation);
+                });
+            }
 
             return box;
         }
 
-        // Функция обмена стримеров
         function swapStreamers(channel1, loc1, channel2, loc2) {
-            // Находим индексы
             let idx1, idx2;
             
             if (loc1 === 'bottom') {
@@ -884,7 +1096,6 @@
                 idx2 = sidebarStreamers.indexOf(channel2);
             }
 
-            // Меняем
             if (loc1 === 'bottom' && loc2 === 'bottom') {
                 [bottomStreamers[idx1], bottomStreamers[idx2]] = [bottomStreamers[idx2], bottomStreamers[idx1]];
             } else if (loc1 === 'sidebar' && loc2 === 'sidebar') {
@@ -897,20 +1108,16 @@
                 bottomStreamers[idx2] = channel1;
             }
 
-            // Перерисовываем
             renderPanels();
         }
 
-        // Отрисовка панелей
         function renderPanels() {
-            // Нижняя панель
             bottomStreams.innerHTML = '';
             bottomStreamers.forEach(channel => {
                 const box = createActiveBox(channel, 'bottom');
                 bottomStreams.appendChild(box);
             });
 
-            // Сайдбар
             sidebar.innerHTML = '';
             sidebarStreamers.forEach(channel => {
                 const box = createActiveBox(channel, 'sidebar');
@@ -918,7 +1125,6 @@
             });
         }
 
-        // Открытие стрима
         function openStream(channel, name) {
             if (activeChannel === channel) {
                 closeStream();
@@ -932,7 +1138,6 @@
             playerFrame.src = `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=false&autoplay=true`;
             activeStreamerName.textContent = name;
 
-            // Распределяем стримеров
             const otherStreamers = settings.streamers.filter(s => s !== channel);
             const count = Math.min(settings.gridSize, otherStreamers.length);
             const streamersToUse = otherStreamers.slice(0, count);
@@ -954,6 +1159,21 @@
             sidebarStreamers = [];
         }
 
+        function initStreamers() {
+            container.innerHTML = '';
+
+            const count = Math.min(settings.gridSize, settings.streamers.length);
+            const streamersToShow = settings.streamers.slice(0, count);
+
+            updateGridLayout();
+
+            streamersToShow.forEach(channel => {
+                const box = createGridBox(channel);
+                container.appendChild(box);
+            });
+        }
+
+        // Обработчики интерфейса
         closeBtn.addEventListener('click', closeStream);
 
         document.addEventListener('keydown', (e) => {
@@ -1025,7 +1245,7 @@
             settings.streamers = newStreamers;
             settings.gridSize = parseInt(gridSlider.value);
             
-            saveSettings(settings);
+            saveStreamersToFile();
             closeModal();
             initStreamers();
         });
@@ -1036,23 +1256,6 @@
             gridSlider.value = 20;
             gridValue.textContent = '20';
         });
-
-        // Инициализация - сразу создаем плееры
-        function initStreamers() {
-            container.innerHTML = '';
-
-            const count = Math.min(settings.gridSize, settings.streamers.length);
-            const streamersToShow = settings.streamers.slice(0, count);
-
-            updateGridLayout();
-
-            streamersToShow.forEach(channel => {
-                const box = createGridBox(channel);
-                container.appendChild(box);
-            });
-        }
-
-        initStreamers();
     </script>
 </body>
 </html>
