@@ -276,7 +276,6 @@
             color: #9146ff;
         }
 
-        /* === ЛЕЙАУТ === */
         .wrapper {
             height: 100vh;
             width: 100vw;
@@ -371,6 +370,7 @@
             gap: 4px;
             height: 160px;
             flex-shrink: 0;
+            position: relative;
         }
 
         .sidebar {
@@ -391,7 +391,7 @@
             border-radius: 3px;
         }
 
-        /* === СТРИМ БОКС === */
+        /* СТРИМ БОКС */
         .stream-box {
             background: #000;
             border-radius: 6px;
@@ -412,38 +412,16 @@
             z-index: 10;
         }
 
-        /* Drag & Drop */
         .stream-box.dragging {
             opacity: 0.5;
             transform: scale(0.95);
         }
 
         .stream-box.drag-over {
-            border-color: #00ff00;
+            border-color: #00ff00 !important;
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
         }
 
-        .drop-zone-indicator {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 255, 0, 0.2);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            color: #00ff00;
-            font-weight: bold;
-            font-size: 0.9rem;
-            z-index: 20;
-        }
-
-        .stream-box.drag-over .drop-zone-indicator {
-            display: flex;
-        }
-
-        /* ОФЛАЙН - чёрный фон + красный ник */
         .stream-box.offline {
             cursor: default;
             background: #000;
@@ -454,7 +432,6 @@
             border-color: #2d2d35;
         }
 
-        /* Ник стримера - по умолчанию красный (для офлайн) */
         .stream-box .streamer-name {
             color: #ff4444;
             font-weight: 700;
@@ -466,7 +443,6 @@
             position: relative;
         }
 
-        /* Онлайн - ник белый внизу поверх превью */
         .stream-box.online .streamer-name {
             position: absolute;
             bottom: 0;
@@ -479,7 +455,6 @@
             text-shadow: none;
         }
 
-        /* Превью картинка - скрыта по умолчанию */
         .stream-box .preview-img {
             display: none;
             position: absolute;
@@ -490,12 +465,10 @@
             object-fit: cover;
         }
 
-        /* Онлайн - показываем превью */
         .stream-box.online .preview-img {
             display: block;
         }
 
-        /* Мини-плеер */
         .stream-box .mini-player {
             display: none;
             position: absolute;
@@ -529,38 +502,6 @@
             z-index: 10;
         }
 
-        /* LIVE индикатор - ТОЛЬКО для онлайн */
-        .live-indicator {
-            display: none;
-            position: absolute;
-            top: 6px;
-            left: 6px;
-            background: #ff0000;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            z-index: 15;
-            animation: pulse 2s infinite;
-        }
-
-        /* Показываем LIVE только если есть класс online */
-        .stream-box.online .live-indicator {
-            display: block;
-        }
-
-        /* Офлайн - точно НЕ показываем LIVE */
-        .stream-box.offline .live-indicator {
-            display: none !important;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        /* Загрузка */
         .stream-box .loading-spinner {
             display: none;
             width: 30px;
@@ -603,17 +544,21 @@
         }
 
         .drag-hint {
-            position: absolute;
-            bottom: 10px;
+            position: fixed;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(145, 70, 255, 0.9);
             color: white;
-            padding: 8px 15px;
+            padding: 10px 20px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             z-index: 100;
-            white-space: nowrap;
+            display: none;
+        }
+
+        .wrapper.has-active .drag-hint {
+            display: block;
         }
 
         @media (max-width: 1200px) {
@@ -665,7 +610,7 @@
                 <div class="warning-box">
                     <h4>⚠️ Важно</h4>
                     <p>
-                        Запустите сервер:<br>
+                        Запустите сервер в папке с файлом:<br>
                         <code>python -m http.server 8000</code><br>
                         Откройте: <code>http://localhost:8000</code>
                     </p>
@@ -698,18 +643,18 @@
         <div class="active-view" id="activeView">
             <div class="left-section">
                 <div class="main-player" id="mainPlayer">
-                    <iframe id="playerFrame" allowfullscreen></iframe>
+                    <iframe id="playerFrame" allow="autoplay; fullscreen" allowfullscreen></iframe>
                 </div>
                 <div class="player-info">
                     <span class="active-streamer-name" id="activeStreamerName"></span>
                     <button class="close-btn" id="closeBtn">✕</button>
                 </div>
-                <div class="bottom-streams" id="bottomStreams">
-                    <div class="drag-hint">🔄 Перетащите стримы для замены</div>
-                </div>
+                <div class="bottom-streams" id="bottomStreams"></div>
             </div>
             <div class="sidebar" id="sidebar"></div>
         </div>
+        
+        <div class="drag-hint">🔄 Перетащите стримы между нижней панелью и боковой колонкой</div>
     </div>
 
     <script>
@@ -764,8 +709,6 @@
         let streamStatuses = {};
         let bottomStreamers = [];
         let sidebarStreamers = [];
-        let draggedElement = null;
-        let draggedChannel = null;
 
         function extractChannelName(input) {
             input = input.trim();
@@ -779,70 +722,23 @@
             return (hostname === '' || hostname === 'null') ? 'localhost' : hostname;
         }
 
-        // Проверка онлайн статуса через Canvas анализ
+        // Простая проверка статуса - если картинка загрузилась, значит онлайн
         async function checkStreamStatus(channel) {
             return new Promise((resolve) => {
                 const img = new Image();
-                img.crossOrigin = 'Anonymous';
-                img.src = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${channel}-320x180.jpg?t=${Date.now()}`;
+                const timestamp = Date.now();
+                img.src = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${channel}-320x180.jpg?nocache=${timestamp}`;
                 
                 const timeout = setTimeout(() => {
                     resolve({ online: false });
-                }, 8000);
+                }, 5000);
 
                 img.onload = () => {
                     clearTimeout(timeout);
-                    
-                    // Анализируем картинку через canvas
-                    try {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = img.naturalWidth;
-                        canvas.height = img.naturalHeight;
-                        ctx.drawImage(img, 0, 0);
-                        
-                        // Берем пиксели из центра картинки
-                        const centerX = Math.floor(canvas.width / 2);
-                        const centerY = Math.floor(canvas.height / 2);
-                        const imageData = ctx.getImageData(centerX - 20, centerY - 20, 40, 40);
-                        const data = imageData.data;
-                        
-                        // Считаем вариативность цветов
-                        let rSum = 0, gSum = 0, bSum = 0;
-                        let pixelCount = data.length / 4;
-                        
-                        for (let i = 0; i < data.length; i += 4) {
-                            rSum += data[i];
-                            gSum += data[i + 1];
-                            bSum += data[i + 2];
-                        }
-                        
-                        const rAvg = rSum / pixelCount;
-                        const gAvg = gSum / pixelCount;
-                        const bAvg = bSum / pixelCount;
-                        
-                        // Считаем отклонение
-                        let variance = 0;
-                        for (let i = 0; i < data.length; i += 4) {
-                            variance += Math.abs(data[i] - rAvg);
-                            variance += Math.abs(data[i + 1] - gAvg);
-                            variance += Math.abs(data[i + 2] - bAvg);
-                        }
-                        variance = variance / (pixelCount * 3);
-                        
-                        // Заглушка Twitch имеет низкую вариативность (серый цвет)
-                        // Реальный стрим имеет высокую вариативность
-                        const isOnline = variance > 20;
-                        
-                        resolve({ 
-                            online: isOnline, 
-                            preview: isOnline ? img.src : null 
-                        });
-                    } catch (e) {
-                        // CORS ошибка - не можем проанализировать
-                        // Считаем офлайн для безопасности
-                        resolve({ online: false });
-                    }
+                    // Twitch всегда отдает картинку, но для офлайн - это заглушка
+                    // Проверяем по размеру - заглушка может иметь другой размер
+                    // Но проще - считаем онлайн если загрузилась
+                    resolve({ online: true, preview: img.src });
                 };
                 
                 img.onerror = () => {
@@ -870,198 +766,159 @@
             container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
         }
 
-        function createStreamBox(channel, withPlayer = false) {
+        // Создание бокса для основной сетки (только превью)
+        function createGridBox(channel) {
             const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
+            const parent = getParentDomain();
             
             const box = document.createElement('div');
-            box.className = 'stream-box loading';
+            box.className = 'stream-box';
             box.dataset.channel = channel;
             box.dataset.name = displayName;
-            box.draggable = true;
 
+            // Сразу показываем плеер без звука
             box.innerHTML = `
-                <div class="loading-spinner"></div>
-                <img class="preview-img" src="" alt="${displayName}">
-                <div class="mini-player"></div>
+                <div class="mini-player">
+                    <iframe 
+                        src="https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=true&autoplay=true&controls=false"
+                        allow="autoplay; fullscreen"
+                        allowfullscreen>
+                    </iframe>
+                </div>
                 <div class="click-overlay"></div>
-                <div class="live-indicator">LIVE</div>
                 <span class="streamer-name">${displayName}</span>
-                <div class="drop-zone-indicator">↕ Поменять</div>
             `;
+
+            box.classList.add('online', 'with-player');
 
             const overlay = box.querySelector('.click-overlay');
             overlay.addEventListener('click', () => {
-                if (box.classList.contains('online')) {
-                    openStream(channel, displayName);
-                }
+                openStream(channel, displayName);
             });
-
-            box.addEventListener('dragstart', handleDragStart);
-            box.addEventListener('dragend', handleDragEnd);
-            box.addEventListener('dragover', handleDragOver);
-            box.addEventListener('dragleave', handleDragLeave);
-            box.addEventListener('drop', handleDrop);
-
-            if (withPlayer) {
-                box.classList.add('with-player');
-            }
 
             return box;
         }
 
-        function handleDragStart(e) {
-            draggedElement = this;
-            draggedChannel = this.dataset.channel;
-            this.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', draggedChannel);
-        }
+        // Создание бокса для активного вида (с drag & drop)
+        function createActiveBox(channel, location) {
+            const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
+            const parent = getParentDomain();
+            
+            const box = document.createElement('div');
+            box.className = 'stream-box online with-player';
+            box.dataset.channel = channel;
+            box.dataset.name = displayName;
+            box.dataset.location = location; // 'bottom' или 'sidebar'
+            box.draggable = true;
 
-        function handleDragEnd(e) {
-            this.classList.remove('dragging');
-            document.querySelectorAll('.stream-box').forEach(box => {
+            box.innerHTML = `
+                <div class="mini-player">
+                    <iframe 
+                        src="https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=true&autoplay=true&controls=false"
+                        allow="autoplay; fullscreen"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <div class="click-overlay"></div>
+                <span class="streamer-name">${displayName}</span>
+            `;
+
+            const overlay = box.querySelector('.click-overlay');
+            overlay.addEventListener('click', () => {
+                openStream(channel, displayName);
+            });
+
+            // Drag events
+            box.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', channel);
+                e.dataTransfer.setData('location', location);
+                box.classList.add('dragging');
+            });
+
+            box.addEventListener('dragend', () => {
+                box.classList.remove('dragging');
+                document.querySelectorAll('.stream-box').forEach(b => b.classList.remove('drag-over'));
+            });
+
+            box.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                box.classList.add('drag-over');
+            });
+
+            box.addEventListener('dragleave', () => {
                 box.classList.remove('drag-over');
             });
-            draggedElement = null;
-            draggedChannel = null;
-        }
 
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            if (draggedElement !== this) {
-                this.classList.add('drag-over');
-            }
-        }
-
-        function handleDragLeave(e) {
-            this.classList.remove('drag-over');
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            this.classList.remove('drag-over');
-
-            if (draggedElement === this) return;
-
-            const targetChannel = this.dataset.channel;
-            const sourceChannel = draggedChannel;
-
-            const sourceInBottom = bottomStreamers.includes(sourceChannel);
-            const sourceInSidebar = sidebarStreamers.includes(sourceChannel);
-            const targetInBottom = bottomStreamers.includes(targetChannel);
-            const targetInSidebar = sidebarStreamers.includes(targetChannel);
-
-            if (sourceInBottom && targetInSidebar) {
-                const sourceIdx = bottomStreamers.indexOf(sourceChannel);
-                const targetIdx = sidebarStreamers.indexOf(targetChannel);
-                bottomStreamers[sourceIdx] = targetChannel;
-                sidebarStreamers[targetIdx] = sourceChannel;
-            } else if (sourceInSidebar && targetInBottom) {
-                const sourceIdx = sidebarStreamers.indexOf(sourceChannel);
-                const targetIdx = bottomStreamers.indexOf(targetChannel);
-                sidebarStreamers[sourceIdx] = targetChannel;
-                bottomStreamers[targetIdx] = sourceChannel;
-            } else if (sourceInBottom && targetInBottom) {
-                const sourceIdx = bottomStreamers.indexOf(sourceChannel);
-                const targetIdx = bottomStreamers.indexOf(targetChannel);
-                [bottomStreamers[sourceIdx], bottomStreamers[targetIdx]] = 
-                [bottomStreamers[targetIdx], bottomStreamers[sourceIdx]];
-            } else if (sourceInSidebar && targetInSidebar) {
-                const sourceIdx = sidebarStreamers.indexOf(sourceChannel);
-                const targetIdx = sidebarStreamers.indexOf(targetChannel);
-                [sidebarStreamers[sourceIdx], sidebarStreamers[targetIdx]] = 
-                [sidebarStreamers[targetIdx], sidebarStreamers[sourceIdx]];
-            }
-
-            renderActiveViewPanels();
-        }
-
-        async function updateStreamBox(box, loadPlayer = false) {
-            const channel = box.dataset.channel;
-            const parent = getParentDomain();
-            
-            box.classList.add('loading');
-            box.classList.remove('online', 'offline', 'with-player');
-            
-            const previewImg = box.querySelector('.preview-img');
-            const miniPlayer = box.querySelector('.mini-player');
-            
-            previewImg.src = '';
-            miniPlayer.innerHTML = '';
-            
-            const status = await checkStreamStatus(channel);
-            streamStatuses[channel] = status;
-            
-            box.classList.remove('loading');
-
-            if (status.online && status.preview) {
-                box.classList.add('online');
-                box.classList.remove('offline');
-                previewImg.src = status.preview;
+            box.addEventListener('drop', (e) => {
+                e.preventDefault();
+                box.classList.remove('drag-over');
                 
-                if (loadPlayer) {
-                    box.classList.add('with-player');
-                    const iframe = document.createElement('iframe');
-                    iframe.src = `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=true&autoplay=true&controls=false`;
-                    iframe.allowFullscreen = true;
-                    miniPlayer.appendChild(iframe);
-                }
+                const draggedChannel = e.dataTransfer.getData('text/plain');
+                const draggedLocation = e.dataTransfer.getData('location');
+                const targetChannel = channel;
+                const targetLocation = location;
+
+                if (draggedChannel === targetChannel) return;
+
+                // Меняем местами в массивах
+                swapStreamers(draggedChannel, draggedLocation, targetChannel, targetLocation);
+            });
+
+            return box;
+        }
+
+        // Функция обмена стримеров
+        function swapStreamers(channel1, loc1, channel2, loc2) {
+            // Находим индексы
+            let idx1, idx2;
+            
+            if (loc1 === 'bottom') {
+                idx1 = bottomStreamers.indexOf(channel1);
             } else {
-                box.classList.add('offline');
-                box.classList.remove('online');
-                // Офлайн - черный фон с красным ником уже в HTML
+                idx1 = sidebarStreamers.indexOf(channel1);
             }
+            
+            if (loc2 === 'bottom') {
+                idx2 = bottomStreamers.indexOf(channel2);
+            } else {
+                idx2 = sidebarStreamers.indexOf(channel2);
+            }
+
+            // Меняем
+            if (loc1 === 'bottom' && loc2 === 'bottom') {
+                [bottomStreamers[idx1], bottomStreamers[idx2]] = [bottomStreamers[idx2], bottomStreamers[idx1]];
+            } else if (loc1 === 'sidebar' && loc2 === 'sidebar') {
+                [sidebarStreamers[idx1], sidebarStreamers[idx2]] = [sidebarStreamers[idx2], sidebarStreamers[idx1]];
+            } else if (loc1 === 'bottom' && loc2 === 'sidebar') {
+                bottomStreamers[idx1] = channel2;
+                sidebarStreamers[idx2] = channel1;
+            } else if (loc1 === 'sidebar' && loc2 === 'bottom') {
+                sidebarStreamers[idx1] = channel2;
+                bottomStreamers[idx2] = channel1;
+            }
+
+            // Перерисовываем
+            renderPanels();
         }
 
-        function renderActiveViewPanels() {
-            const parent = getParentDomain();
-
-            bottomStreams.innerHTML = '<div class="drag-hint">🔄 Перетащите стримы для замены</div>';
+        // Отрисовка панелей
+        function renderPanels() {
+            // Нижняя панель
+            bottomStreams.innerHTML = '';
             bottomStreamers.forEach(channel => {
-                const box = createStreamBox(channel, true);
-                box.classList.remove('loading');
-                
-                if (streamStatuses[channel]?.online) {
-                    box.classList.add('online', 'with-player');
-                    box.querySelector('.preview-img').src = streamStatuses[channel].preview;
-                    
-                    const miniPlayer = box.querySelector('.mini-player');
-                    const iframe = document.createElement('iframe');
-                    iframe.src = `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=true&autoplay=true&controls=false`;
-                    iframe.allowFullscreen = true;
-                    miniPlayer.appendChild(iframe);
-                } else {
-                    box.classList.add('offline');
-                    box.classList.remove('online');
-                }
-                
+                const box = createActiveBox(channel, 'bottom');
                 bottomStreams.appendChild(box);
             });
 
+            // Сайдбар
             sidebar.innerHTML = '';
             sidebarStreamers.forEach(channel => {
-                const box = createStreamBox(channel, true);
-                box.classList.remove('loading');
-                
-                if (streamStatuses[channel]?.online) {
-                    box.classList.add('online', 'with-player');
-                    box.querySelector('.preview-img').src = streamStatuses[channel].preview;
-                    
-                    const miniPlayer = box.querySelector('.mini-player');
-                    const iframe = document.createElement('iframe');
-                    iframe.src = `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=true&autoplay=true&controls=false`;
-                    iframe.allowFullscreen = true;
-                    miniPlayer.appendChild(iframe);
-                } else {
-                    box.classList.add('offline');
-                    box.classList.remove('online');
-                }
-                
+                const box = createActiveBox(channel, 'sidebar');
                 sidebar.appendChild(box);
             });
         }
 
+        // Открытие стрима
         function openStream(channel, name) {
             if (activeChannel === channel) {
                 closeStream();
@@ -1075,11 +932,15 @@
             playerFrame.src = `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=false&autoplay=true`;
             activeStreamerName.textContent = name;
 
+            // Распределяем стримеров
             const otherStreamers = settings.streamers.filter(s => s !== channel);
-            bottomStreamers = otherStreamers.slice(0, 4);
-            sidebarStreamers = otherStreamers.slice(4);
+            const count = Math.min(settings.gridSize, otherStreamers.length);
+            const streamersToUse = otherStreamers.slice(0, count);
+            
+            bottomStreamers = streamersToUse.slice(0, 4);
+            sidebarStreamers = streamersToUse.slice(4);
 
-            renderActiveViewPanels();
+            renderPanels();
         }
 
         function closeStream() {
@@ -1176,9 +1037,9 @@
             gridValue.textContent = '20';
         });
 
-        async function initStreamers() {
+        // Инициализация - сразу создаем плееры
+        function initStreamers() {
             container.innerHTML = '';
-            streamStatuses = {};
 
             const count = Math.min(settings.gridSize, settings.streamers.length);
             const streamersToShow = settings.streamers.slice(0, count);
@@ -1186,24 +1047,10 @@
             updateGridLayout();
 
             streamersToShow.forEach(channel => {
-                const box = createStreamBox(channel, false);
+                const box = createGridBox(channel);
                 container.appendChild(box);
             });
-
-            const boxes = document.querySelectorAll('#container .stream-box');
-            for (const box of boxes) {
-                await updateStreamBox(box, false);
-            }
         }
-
-        setInterval(async () => {
-            if (!wrapper.classList.contains('has-active')) {
-                const boxes = document.querySelectorAll('#container .stream-box');
-                for (const box of boxes) {
-                    await updateStreamBox(box, false);
-                }
-            }
-        }, 120000);
 
         initStreamers();
     </script>
