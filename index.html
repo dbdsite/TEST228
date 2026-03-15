@@ -18,7 +18,6 @@
             overflow: hidden;
         }
 
-        /* Кнопка настроек */
         .settings-btn {
             position: fixed;
             top: 15px;
@@ -43,7 +42,6 @@
             transform: rotate(90deg);
         }
 
-        /* Модальное окно */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -113,12 +111,6 @@
             font-weight: 600;
             margin-bottom: 10px;
             display: block;
-        }
-
-        .setting-description {
-            color: #888;
-            font-size: 0.85rem;
-            margin-bottom: 10px;
         }
 
         .grid-size-container {
@@ -303,7 +295,6 @@
             display: none;
         }
 
-        /* Активный вид */
         .active-view {
             display: none;
             flex: 1;
@@ -374,7 +365,6 @@
             transform: scale(1.1);
         }
 
-        /* Нижние стримы */
         .bottom-streams {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -383,7 +373,6 @@
             flex-shrink: 0;
         }
 
-        /* Колонна справа */
         .sidebar {
             width: 180px;
             display: flex;
@@ -454,7 +443,7 @@
             display: flex;
         }
 
-        /* Офлайн */
+        /* ОФЛАЙН - чёрный фон + красный ник */
         .stream-box.offline {
             cursor: default;
             background: #000;
@@ -465,6 +454,7 @@
             border-color: #2d2d35;
         }
 
+        /* Ник стримера - по умолчанию красный (для офлайн) */
         .stream-box .streamer-name {
             color: #ff4444;
             font-weight: 700;
@@ -476,7 +466,7 @@
             position: relative;
         }
 
-        /* Онлайн */
+        /* Онлайн - ник белый внизу поверх превью */
         .stream-box.online .streamer-name {
             position: absolute;
             bottom: 0;
@@ -489,7 +479,7 @@
             text-shadow: none;
         }
 
-        /* Превью картинка */
+        /* Превью картинка - скрыта по умолчанию */
         .stream-box .preview-img {
             display: none;
             position: absolute;
@@ -500,11 +490,12 @@
             object-fit: cover;
         }
 
+        /* Онлайн - показываем превью */
         .stream-box.online .preview-img {
             display: block;
         }
 
-        /* Мини-плеер (только в активном виде) */
+        /* Мини-плеер */
         .stream-box .mini-player {
             display: none;
             position: absolute;
@@ -538,7 +529,7 @@
             z-index: 10;
         }
 
-        /* LIVE */
+        /* LIVE индикатор - ТОЛЬКО для онлайн */
         .live-indicator {
             display: none;
             position: absolute;
@@ -554,8 +545,14 @@
             animation: pulse 2s infinite;
         }
 
+        /* Показываем LIVE только если есть класс online */
         .stream-box.online .live-indicator {
             display: block;
+        }
+
+        /* Офлайн - точно НЕ показываем LIVE */
+        .stream-box.offline .live-indicator {
+            display: none !important;
         }
 
         @keyframes pulse {
@@ -588,7 +585,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Сайдбар боксы */
         .sidebar .stream-box {
             min-height: 100px;
             flex-shrink: 0;
@@ -598,7 +594,6 @@
             font-size: 0.85rem;
         }
 
-        /* Нижние боксы */
         .bottom-streams .stream-box {
             height: 100%;
         }
@@ -607,7 +602,6 @@
             font-size: 0.95rem;
         }
 
-        /* Подсказка по перетаскиванию */
         .drag-hint {
             position: absolute;
             bottom: 10px;
@@ -622,11 +616,8 @@
             white-space: nowrap;
         }
 
-        /* Responsive */
         @media (max-width: 1200px) {
-            .sidebar {
-                width: 150px;
-            }
+            .sidebar { width: 150px; }
             .bottom-streams {
                 grid-template-columns: repeat(3, 1fr);
                 height: 140px;
@@ -634,24 +625,14 @@
         }
 
         @media (max-width: 900px) {
-            .sidebar {
-                width: 120px;
-            }
-            .sidebar .stream-box {
-                min-height: 80px;
-            }
-            .bottom-streams {
-                height: 120px;
-            }
-            .active-streamer-name {
-                font-size: 1.1rem;
-            }
+            .sidebar { width: 120px; }
+            .sidebar .stream-box { min-height: 80px; }
+            .bottom-streams { height: 120px; }
+            .active-streamer-name { font-size: 1.1rem; }
         }
 
         @media (max-width: 700px) {
-            .active-view {
-                flex-direction: column;
-            }
+            .active-view { flex-direction: column; }
             .sidebar {
                 width: 100%;
                 flex-direction: row;
@@ -798,17 +779,70 @@
             return (hostname === '' || hostname === 'null') ? 'localhost' : hostname;
         }
 
-        // Проверка онлайн статуса
+        // Проверка онлайн статуса через Canvas анализ
         async function checkStreamStatus(channel) {
             return new Promise((resolve) => {
                 const img = new Image();
+                img.crossOrigin = 'Anonymous';
                 img.src = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${channel}-320x180.jpg?t=${Date.now()}`;
                 
-                const timeout = setTimeout(() => resolve({ online: false }), 5000);
+                const timeout = setTimeout(() => {
+                    resolve({ online: false });
+                }, 8000);
 
                 img.onload = () => {
                     clearTimeout(timeout);
-                    resolve({ online: true, preview: img.src });
+                    
+                    // Анализируем картинку через canvas
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        ctx.drawImage(img, 0, 0);
+                        
+                        // Берем пиксели из центра картинки
+                        const centerX = Math.floor(canvas.width / 2);
+                        const centerY = Math.floor(canvas.height / 2);
+                        const imageData = ctx.getImageData(centerX - 20, centerY - 20, 40, 40);
+                        const data = imageData.data;
+                        
+                        // Считаем вариативность цветов
+                        let rSum = 0, gSum = 0, bSum = 0;
+                        let pixelCount = data.length / 4;
+                        
+                        for (let i = 0; i < data.length; i += 4) {
+                            rSum += data[i];
+                            gSum += data[i + 1];
+                            bSum += data[i + 2];
+                        }
+                        
+                        const rAvg = rSum / pixelCount;
+                        const gAvg = gSum / pixelCount;
+                        const bAvg = bSum / pixelCount;
+                        
+                        // Считаем отклонение
+                        let variance = 0;
+                        for (let i = 0; i < data.length; i += 4) {
+                            variance += Math.abs(data[i] - rAvg);
+                            variance += Math.abs(data[i + 1] - gAvg);
+                            variance += Math.abs(data[i + 2] - bAvg);
+                        }
+                        variance = variance / (pixelCount * 3);
+                        
+                        // Заглушка Twitch имеет низкую вариативность (серый цвет)
+                        // Реальный стрим имеет высокую вариативность
+                        const isOnline = variance > 20;
+                        
+                        resolve({ 
+                            online: isOnline, 
+                            preview: isOnline ? img.src : null 
+                        });
+                    } catch (e) {
+                        // CORS ошибка - не можем проанализировать
+                        // Считаем офлайн для безопасности
+                        resolve({ online: false });
+                    }
                 };
                 
                 img.onerror = () => {
@@ -836,10 +870,8 @@
             container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
         }
 
-        // Создание бокса для основной сетки (с превью картинкой)
         function createStreamBox(channel, withPlayer = false) {
             const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
-            const parent = getParentDomain();
             
             const box = document.createElement('div');
             box.className = 'stream-box loading';
@@ -857,7 +889,6 @@
                 <div class="drop-zone-indicator">↕ Поменять</div>
             `;
 
-            // Клик для открытия
             const overlay = box.querySelector('.click-overlay');
             overlay.addEventListener('click', () => {
                 if (box.classList.contains('online')) {
@@ -865,7 +896,6 @@
                 }
             });
 
-            // Drag & Drop
             box.addEventListener('dragstart', handleDragStart);
             box.addEventListener('dragend', handleDragEnd);
             box.addEventListener('dragover', handleDragOver);
@@ -879,7 +909,6 @@
             return box;
         }
 
-        // Drag & Drop handlers
         function handleDragStart(e) {
             draggedElement = this;
             draggedChannel = this.dataset.channel;
@@ -900,7 +929,6 @@
         function handleDragOver(e) {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
-            
             if (draggedElement !== this) {
                 this.classList.add('drag-over');
             }
@@ -919,44 +947,36 @@
             const targetChannel = this.dataset.channel;
             const sourceChannel = draggedChannel;
 
-            // Определяем где находятся элементы
             const sourceInBottom = bottomStreamers.includes(sourceChannel);
             const sourceInSidebar = sidebarStreamers.includes(sourceChannel);
             const targetInBottom = bottomStreamers.includes(targetChannel);
             const targetInSidebar = sidebarStreamers.includes(targetChannel);
 
-            // Меняем местами
             if (sourceInBottom && targetInSidebar) {
-                // Из нижней панели в сайдбар
                 const sourceIdx = bottomStreamers.indexOf(sourceChannel);
                 const targetIdx = sidebarStreamers.indexOf(targetChannel);
                 bottomStreamers[sourceIdx] = targetChannel;
                 sidebarStreamers[targetIdx] = sourceChannel;
             } else if (sourceInSidebar && targetInBottom) {
-                // Из сайдбара в нижнюю панель
                 const sourceIdx = sidebarStreamers.indexOf(sourceChannel);
                 const targetIdx = bottomStreamers.indexOf(targetChannel);
                 sidebarStreamers[sourceIdx] = targetChannel;
                 bottomStreamers[targetIdx] = sourceChannel;
             } else if (sourceInBottom && targetInBottom) {
-                // Оба в нижней панели
                 const sourceIdx = bottomStreamers.indexOf(sourceChannel);
                 const targetIdx = bottomStreamers.indexOf(targetChannel);
                 [bottomStreamers[sourceIdx], bottomStreamers[targetIdx]] = 
                 [bottomStreamers[targetIdx], bottomStreamers[sourceIdx]];
             } else if (sourceInSidebar && targetInSidebar) {
-                // Оба в сайдбаре
                 const sourceIdx = sidebarStreamers.indexOf(sourceChannel);
                 const targetIdx = sidebarStreamers.indexOf(targetChannel);
                 [sidebarStreamers[sourceIdx], sidebarStreamers[targetIdx]] = 
                 [sidebarStreamers[targetIdx], sidebarStreamers[sourceIdx]];
             }
 
-            // Перерисовываем
             renderActiveViewPanels();
         }
 
-        // Обновление статуса бокса
         async function updateStreamBox(box, loadPlayer = false) {
             const channel = box.dataset.channel;
             const parent = getParentDomain();
@@ -975,11 +995,11 @@
             
             box.classList.remove('loading');
 
-            if (status.online) {
+            if (status.online && status.preview) {
                 box.classList.add('online');
+                box.classList.remove('offline');
                 previewImg.src = status.preview;
                 
-                // Загружаем плеер если нужно
                 if (loadPlayer) {
                     box.classList.add('with-player');
                     const iframe = document.createElement('iframe');
@@ -989,15 +1009,14 @@
                 }
             } else {
                 box.classList.add('offline');
-                // Офлайн - черный фон с красным ником (уже в HTML)
+                box.classList.remove('online');
+                // Офлайн - черный фон с красным ником уже в HTML
             }
         }
 
-        // Отрисовка панелей в активном виде
         function renderActiveViewPanels() {
             const parent = getParentDomain();
 
-            // Нижняя панель
             bottomStreams.innerHTML = '<div class="drag-hint">🔄 Перетащите стримы для замены</div>';
             bottomStreamers.forEach(channel => {
                 const box = createStreamBox(channel, true);
@@ -1014,12 +1033,12 @@
                     miniPlayer.appendChild(iframe);
                 } else {
                     box.classList.add('offline');
+                    box.classList.remove('online');
                 }
                 
                 bottomStreams.appendChild(box);
             });
 
-            // Сайдбар
             sidebar.innerHTML = '';
             sidebarStreamers.forEach(channel => {
                 const box = createStreamBox(channel, true);
@@ -1036,13 +1055,13 @@
                     miniPlayer.appendChild(iframe);
                 } else {
                     box.classList.add('offline');
+                    box.classList.remove('online');
                 }
                 
                 sidebar.appendChild(box);
             });
         }
 
-        // Открытие стрима
         function openStream(channel, name) {
             if (activeChannel === channel) {
                 closeStream();
@@ -1056,7 +1075,6 @@
             playerFrame.src = `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=false&autoplay=true`;
             activeStreamerName.textContent = name;
 
-            // Распределяем остальных стримеров
             const otherStreamers = settings.streamers.filter(s => s !== channel);
             bottomStreamers = otherStreamers.slice(0, 4);
             sidebarStreamers = otherStreamers.slice(4);
@@ -1064,7 +1082,6 @@
             renderActiveViewPanels();
         }
 
-        // Закрытие
         function closeStream() {
             activeChannel = null;
             wrapper.classList.remove('has-active');
@@ -1088,7 +1105,6 @@
             }
         });
 
-        // === Модальное окно ===
         function openModal() {
             modalOverlay.classList.add('active');
             renderStreamerInputs();
@@ -1160,7 +1176,6 @@
             gridValue.textContent = '20';
         });
 
-        // Инициализация
         async function initStreamers() {
             container.innerHTML = '';
             streamStatuses = {};
@@ -1170,20 +1185,17 @@
 
             updateGridLayout();
 
-            // Создаём боксы
             streamersToShow.forEach(channel => {
                 const box = createStreamBox(channel, false);
                 container.appendChild(box);
             });
 
-            // Проверяем статусы (показываем превью, не плееры)
             const boxes = document.querySelectorAll('#container .stream-box');
             for (const box of boxes) {
                 await updateStreamBox(box, false);
             }
         }
 
-        // Обновление каждые 2 минуты
         setInterval(async () => {
             if (!wrapper.classList.contains('has-active')) {
                 const boxes = document.querySelectorAll('#container .stream-box');
