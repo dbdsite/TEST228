@@ -307,6 +307,7 @@
             height: 100vh;
             width: 100vw;
             display: flex;
+            flex-direction: column;
             transition: all 0.4s ease;
         }
 
@@ -318,69 +319,84 @@
             transition: all 0.4s ease;
         }
 
-        /* Боковая панель */
-        .sidebar {
-            width: 0;
-            overflow: hidden;
-            transition: all 0.4s ease;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            padding: 0;
-            overflow-y: auto;
-        }
-
-        .sidebar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .sidebar::-webkit-scrollbar-track {
-            background: #18181b;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background: #9146ff;
-            border-radius: 3px;
-        }
-
         /* Когда есть активный стрим */
         .wrapper.has-active .container {
             display: none;
         }
 
-        .wrapper.has-active .sidebar {
-            width: 200px;
-            padding: 4px;
+        .wrapper.has-active .active-view {
+            display: flex;
         }
 
-        .wrapper.has-active .main-player {
-            display: flex;
+        /* Активный вид */
+        .active-view {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            padding: 4px;
+            gap: 4px;
         }
 
         /* Основной плеер */
         .main-player {
-            display: none;
             flex: 1;
-            flex-direction: column;
             background: #000;
-            margin: 4px;
             border-radius: 8px;
             overflow: hidden;
+            min-height: 0;
         }
 
         .main-player iframe {
-            flex: 1;
             width: 100%;
+            height: 100%;
             border: none;
         }
 
-        .main-player .controls {
-            height: 50px;
-            background: #1f1f23;
+        /* Панель управления под плеером */
+        .player-controls {
             display: flex;
             align-items: center;
-            padding: 0 15px;
-            gap: 15px;
+            justify-content: center;
+            padding: 15px 20px;
+            background: #18181b;
+            border-radius: 8px;
+            gap: 20px;
+        }
+
+        .active-streamer-name {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .close-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            background: #ff4444;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #cc0000;
+            transform: scale(1.1);
+        }
+
+        /* Нижняя панель с превью */
+        .bottom-streams {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            height: 180px;
+            flex-shrink: 0;
         }
 
         /* Стрим бокс */
@@ -413,7 +429,7 @@
             border-color: #2d2d35;
         }
 
-        /* Офлайн стрим */
+        /* Офлайн стрим - черный фон с красным ником */
         .stream-box .streamer-name {
             color: #ff4444;
             font-weight: 700;
@@ -421,11 +437,12 @@
             text-align: center;
             padding: 10px;
             text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+            z-index: 5;
         }
 
-        /* Онлайн стрим */
-        .stream-box.online {
-            cursor: pointer;
+        /* Онлайн стрим - скрываем имя, показываем плеер */
+        .stream-box.online .streamer-name {
+            display: none;
         }
 
         .stream-box.online:hover {
@@ -433,31 +450,40 @@
             transform: scale(1.02);
         }
 
-        .stream-box.online .streamer-name {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9));
-            color: #fff;
-            padding: 25px 8px 8px;
-            font-size: 0.9rem;
-        }
-
-        .stream-box .preview {
+        /* Мини-плеер в боксе */
+        .stream-box .mini-player {
             display: none;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
             position: absolute;
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
         }
 
-        .stream-box.online .preview {
+        .stream-box.online .mini-player {
             display: block;
         }
 
+        .stream-box .mini-player iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
+        }
+
+        /* Оверлей для клика на мини-плеер */
+        .stream-box .click-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            background: transparent;
+        }
+
+        /* Индикатор LIVE */
         .live-indicator {
             display: none;
             position: absolute;
@@ -469,6 +495,7 @@
             border-radius: 4px;
             font-size: 0.75rem;
             font-weight: 700;
+            z-index: 15;
             animation: pulse 2s infinite;
         }
 
@@ -491,6 +518,7 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
             position: absolute;
+            z-index: 5;
         }
 
         .stream-box.loading .loading-spinner {
@@ -505,138 +533,61 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Боксы в сайдбаре */
-        .sidebar .stream-box {
-            min-height: 100px;
-            flex-shrink: 0;
-        }
-
-        .sidebar .stream-box .streamer-name {
-            font-size: 0.85rem;
-        }
-
-        .sidebar .stream-box.online .streamer-name {
-            padding: 15px 5px 5px;
-            font-size: 0.75rem;
-        }
-
-        .sidebar .stream-box .live-indicator {
-            font-size: 0.6rem;
-            padding: 2px 5px;
-        }
-
-        /* Контролы плеера */
-        .control-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: none;
-            background: #9146ff;
-            color: white;
-            cursor: pointer;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .control-btn:hover {
-            background: #772ce8;
-            transform: scale(1.1);
-        }
-
-        .volume-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex: 1;
-            max-width: 250px;
-        }
-
-        .volume-slider {
-            flex: 1;
-            height: 6px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: #464649;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-
-        .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            background: #9146ff;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        .volume-icon {
-            color: #fff;
-            font-size: 1.3rem;
-        }
-
-        .active-streamer-name {
-            color: #fff;
-            font-weight: 600;
-            margin-left: auto;
-            font-size: 1.1rem;
-        }
-
-        .close-btn {
-            background: #ff4444;
-        }
-
-        .close-btn:hover {
-            background: #cc0000;
-        }
-
-        /* Текущий активный в сайдбаре */
-        .sidebar .stream-box.current {
+        /* Текущий активный */
+        .stream-box.current {
             border-color: #9146ff;
             box-shadow: 0 0 15px rgba(145, 70, 255, 0.5);
         }
 
-        /* Responsive */
-        @media (max-width: 1000px) {
-            .wrapper.has-active .sidebar {
-                width: 150px;
-            }
-
-            .sidebar .stream-box {
-                min-height: 80px;
-            }
+        /* Боксы в нижней панели */
+        .bottom-streams .stream-box {
+            height: 100%;
         }
 
-        @media (max-width: 600px) {
-            .wrapper.has-active .sidebar {
-                width: 100px;
-            }
+        .bottom-streams .stream-box .streamer-name {
+            font-size: 1rem;
+        }
 
-            .sidebar .stream-box {
-                min-height: 60px;
-            }
-
-            .sidebar .stream-box .streamer-name {
-                font-size: 0.7rem;
-            }
-
-            .main-player .controls {
-                height: 45px;
-                padding: 0 10px;
-                gap: 8px;
-            }
-
-            .control-btn {
-                width: 32px;
-                height: 32px;
-                font-size: 0.9rem;
+        /* Responsive */
+        @media (max-width: 1000px) {
+            .bottom-streams {
+                grid-template-columns: repeat(3, 1fr);
+                height: 150px;
             }
 
             .active-streamer-name {
-                font-size: 0.9rem;
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .bottom-streams {
+                grid-template-columns: repeat(2, 1fr);
+                height: 120px;
+            }
+
+            .active-streamer-name {
+                font-size: 1rem;
+            }
+
+            .close-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 1rem;
+            }
+
+            .player-controls {
+                padding: 10px 15px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .bottom-streams {
+                height: 100px;
+            }
+
+            .bottom-streams .stream-box .streamer-name {
+                font-size: 0.85rem;
             }
 
             .modal {
@@ -658,18 +609,16 @@
                 <button class="modal-close" id="modalClose">✕</button>
             </div>
             <div class="modal-body">
-                <!-- Предупреждение -->
                 <div class="warning-box">
                     <h4>⚠️ Важно для работы плеера</h4>
                     <p>
                         Twitch плеер работает только на веб-сервере.<br>
-                        Если открываете файл напрямую, запустите локальный сервер:<br><br>
+                        Запустите сервер в папке с файлом:<br><br>
                         <code>python -m http.server 8000</code><br><br>
                         Затем откройте: <code>http://localhost:8000</code>
                     </p>
                 </div>
 
-                <!-- Размер сетки -->
                 <div class="setting-group">
                     <label class="setting-label">Количество стримеров в сетке</label>
                     <p class="setting-description">Выберите от 1 до 20 стримеров для отображения</p>
@@ -679,13 +628,10 @@
                     </div>
                 </div>
 
-                <!-- Список стримеров -->
                 <div class="setting-group">
                     <label class="setting-label">Стримеры</label>
                     <p class="setting-description">Введите ссылки на Twitch каналы или имена стримеров</p>
-                    <div class="streamers-list" id="streamersList">
-                        <!-- Динамически генерируется -->
-                    </div>
+                    <div class="streamers-list" id="streamersList"></div>
                     <button class="add-streamer-btn" id="addStreamerBtn">+ Добавить стримера</button>
                 </div>
             </div>
@@ -697,25 +643,20 @@
     </div>
 
     <div class="wrapper" id="wrapper">
-        <!-- Основной плеер -->
-        <div class="main-player" id="mainPlayer">
-            <iframe id="playerFrame" allowfullscreen></iframe>
-            <div class="controls">
-                <button class="control-btn play-btn" id="playBtn">⏸</button>
-                <div class="volume-container">
-                    <span class="volume-icon" id="volumeIcon">🔊</span>
-                    <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50">
-                </div>
-                <span class="active-streamer-name" id="activeStreamerName"></span>
-                <button class="control-btn close-btn" id="closeBtn">✕</button>
-            </div>
-        </div>
-
-        <!-- Сетка стримов -->
+        <!-- Сетка стримов (основной вид) -->
         <div class="container" id="container"></div>
 
-        <!-- Боковая панель -->
-        <div class="sidebar" id="sidebar"></div>
+        <!-- Активный вид (плеер + превью снизу) -->
+        <div class="active-view" id="activeView">
+            <div class="main-player" id="mainPlayer">
+                <iframe id="playerFrame" allowfullscreen></iframe>
+            </div>
+            <div class="player-controls">
+                <span class="active-streamer-name" id="activeStreamerName"></span>
+                <button class="close-btn" id="closeBtn">✕</button>
+            </div>
+            <div class="bottom-streams" id="bottomStreams"></div>
+        </div>
     </div>
 
     <script>
@@ -724,10 +665,9 @@
             "xqc", "bratishkinoff", "silvername", "c_a_k_e", "shroud",
             "summit1g", "lirik", "pokimane", "pestily", "asmongold",
             "hasanabi", "mizkif", "ludwig", "sykkuno", "kaicenat",
-            "taikiomg", "cohhcarnage", "ironmouse", "nmplol", "esfandtv"
+            "cohhcarnage", "ironmouse", "nmplol", "esfandtv", "tarik"
         ];
 
-        // Загрузка настроек из localStorage
         function loadSettings() {
             const saved = localStorage.getItem('multiStreamSettings');
             if (saved) {
@@ -740,12 +680,10 @@
             return null;
         }
 
-        // Сохранение настроек
         function saveSettings(settings) {
             localStorage.setItem('multiStreamSettings', JSON.stringify(settings));
         }
 
-        // Получение текущих настроек
         function getCurrentSettings() {
             const saved = loadSettings();
             return {
@@ -756,19 +694,15 @@
 
         let settings = getCurrentSettings();
 
-        // DOM элементы
         const wrapper = document.getElementById('wrapper');
         const container = document.getElementById('container');
-        const sidebar = document.getElementById('sidebar');
+        const activeView = document.getElementById('activeView');
         const mainPlayer = document.getElementById('mainPlayer');
         const playerFrame = document.getElementById('playerFrame');
         const activeStreamerName = document.getElementById('activeStreamerName');
-        const playBtn = document.getElementById('playBtn');
         const closeBtn = document.getElementById('closeBtn');
-        const volumeSlider = document.getElementById('volumeSlider');
-        const volumeIcon = document.getElementById('volumeIcon');
+        const bottomStreams = document.getElementById('bottomStreams');
 
-        // Модальное окно
         const settingsBtn = document.getElementById('settingsBtn');
         const modalOverlay = document.getElementById('modalOverlay');
         const modalClose = document.getElementById('modalClose');
@@ -782,91 +716,45 @@
         let activeChannel = null;
         let streamStatuses = {};
 
-        // Извлечение имени канала из URL или текста
         function extractChannelName(input) {
             input = input.trim();
-            
-            // Если это URL Twitch
             const twitchRegex = /(?:https?:\/\/)?(?:www\.)?twitch\.tv\/([a-zA-Z0-9_]+)/i;
             const match = input.match(twitchRegex);
             if (match) {
                 return match[1].toLowerCase();
             }
-            
-            // Иначе считаем это именем канала
             return input.toLowerCase().replace(/[^a-z0-9_]/g, '');
         }
 
-        // Проверка статуса стрима через анализ изображения
+        function getParentDomain() {
+            const hostname = window.location.hostname;
+            if (hostname === '' || hostname === 'null') {
+                return 'localhost';
+            }
+            return hostname;
+        }
+
+        // Проверка статуса стрима
         async function checkStreamStatus(channel) {
             return new Promise((resolve) => {
                 const img = new Image();
-                img.crossOrigin = 'anonymous';
                 const timestamp = Date.now();
                 
-                // URL для превью живого стрима
                 img.src = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${channel}-320x180.jpg?t=${timestamp}`;
                 
                 const timeout = setTimeout(() => {
                     resolve({ online: false });
-                }, 5000);
+                }, 8000);
 
                 img.onload = () => {
                     clearTimeout(timeout);
-                    
-                    // Проверяем, не является ли картинка заглушкой
-                    // Заглушка Twitch обычно имеет серый фон
-                    // Создаем canvas для анализа
-                    try {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        ctx.drawImage(img, 0, 0);
-                        
-                        // Проверяем несколько пикселей в центре
-                        const centerX = Math.floor(img.width / 2);
-                        const centerY = Math.floor(img.height / 2);
-                        const pixelData = ctx.getImageData(centerX, centerY, 10, 10).data;
-                        
-                        // Вычисляем среднюю яркость
-                        let totalBrightness = 0;
-                        let pixelCount = 0;
-                        
-                        for (let i = 0; i < pixelData.length; i += 4) {
-                            const r = pixelData[i];
-                            const g = pixelData[i + 1];
-                            const b = pixelData[i + 2];
-                            totalBrightness += (r + g + b) / 3;
-                            pixelCount++;
-                        }
-                        
-                        const avgBrightness = totalBrightness / pixelCount;
-                        
-                        // Заглушка Twitch обычно имеет специфический серый цвет (~70-100)
-                        // и низкую вариативность цветов
-                        let colorVariance = 0;
-                        for (let i = 0; i < pixelData.length; i += 4) {
-                            const r = pixelData[i];
-                            const g = pixelData[i + 1];
-                            const b = pixelData[i + 2];
-                            const brightness = (r + g + b) / 3;
-                            colorVariance += Math.abs(brightness - avgBrightness);
-                        }
-                        colorVariance = colorVariance / pixelCount;
-                        
-                        // Если картинка имеет высокую вариативность - это реальный стрим
-                        // Заглушка обычно однотонная (низкая вариативность)
-                        const isLive = colorVariance > 15 || avgBrightness > 100 || avgBrightness < 50;
-                        
-                        resolve({ 
-                            online: isLive, 
-                            preview: isLive ? img.src : null 
-                        });
-                    } catch (e) {
-                        // Если canvas не работает (CORS), считаем онлайн по наличию картинки
-                        // но проверяем размер - заглушка часто имеет определенный размер
-                        resolve({ online: true, preview: img.src });
+                    // Twitch возвращает изображение 320x180 для живых стримов
+                    // и 404 или редирект для офлайн
+                    // Проверяем натуральный размер
+                    if (img.naturalWidth >= 320 && img.naturalHeight >= 180) {
+                        resolve({ online: true });
+                    } else {
+                        resolve({ online: false });
                     }
                 };
                 
@@ -889,7 +777,6 @@
             return { cols: 5, rows: 4 };
         }
 
-        // Обновление сетки
         function updateGridLayout() {
             const count = Math.min(settings.gridSize, settings.streamers.length);
             const { cols, rows } = calculateGrid(count);
@@ -898,8 +785,9 @@
         }
 
         // Создание бокса стрима
-        function createStreamBox(channel) {
+        function createStreamBox(channel, forBottom = false) {
             const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
+            const parent = getParentDomain();
             
             const box = document.createElement('div');
             box.className = 'stream-box loading';
@@ -908,13 +796,18 @@
 
             box.innerHTML = `
                 <div class="loading-spinner"></div>
-                <img class="preview" src="" alt="${displayName}">
+                <div class="mini-player">
+                    <iframe src="" allowfullscreen></iframe>
+                </div>
+                <div class="click-overlay"></div>
                 <div class="live-indicator">LIVE</div>
                 <span class="streamer-name">${displayName}</span>
             `;
 
-            box.addEventListener('click', () => {
-                if (!box.classList.contains('offline') && !box.classList.contains('loading')) {
+            // Клик на оверлей открывает стрим
+            const overlay = box.querySelector('.click-overlay');
+            overlay.addEventListener('click', () => {
+                if (box.classList.contains('online')) {
                     openStream(channel, displayName);
                 }
             });
@@ -925,32 +818,35 @@
         // Обновление статуса бокса
         async function updateStreamBox(box) {
             const channel = box.dataset.channel;
+            const parent = getParentDomain();
+            
             box.classList.add('loading');
             box.classList.remove('online', 'offline');
             
             const status = await checkStreamStatus(channel);
-            
             streamStatuses[channel] = status;
+            
             box.classList.remove('loading');
 
-            if (status.online && status.preview) {
+            if (status.online) {
                 box.classList.add('online');
                 box.classList.remove('offline');
-                const preview = box.querySelector('.preview');
-                preview.src = status.preview;
+                
+                // Загружаем мини-плеер без звука
+                const iframe = box.querySelector('.mini-player iframe');
+                if (iframe && !iframe.src.includes(channel)) {
+                    iframe.src = `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=true&autoplay=true&controls=false`;
+                }
             } else {
                 box.classList.add('offline');
                 box.classList.remove('online');
+                
+                // Очищаем iframe для офлайн
+                const iframe = box.querySelector('.mini-player iframe');
+                if (iframe) {
+                    iframe.src = '';
+                }
             }
-        }
-
-        // Получение родительского домена для Twitch
-        function getParentDomain() {
-            const hostname = window.location.hostname;
-            if (hostname === '' || hostname === 'null') {
-                return 'localhost';
-            }
-            return hostname;
         }
 
         // Открытие стрима
@@ -960,37 +856,46 @@
                 return;
             }
 
-            if (!streamStatuses[channel]?.online) {
-                return;
-            }
-
             activeChannel = channel;
             wrapper.classList.add('has-active');
 
-            // Перемещаем боксы в сайдбар
-            sidebar.innerHTML = '';
-            document.querySelectorAll('#container .stream-box').forEach(box => {
-                const clone = box.cloneNode(true);
-                clone.classList.remove('current');
-                
-                if (box.dataset.channel === channel) {
-                    clone.classList.add('current');
-                }
-                
-                clone.addEventListener('click', () => {
-                    if (!clone.classList.contains('offline')) {
-                        openStream(clone.dataset.channel, clone.dataset.name);
-                    }
-                });
-                
-                sidebar.appendChild(clone);
-            });
-
-            // Загружаем плеер
+            // Загружаем основной плеер со звуком
             const parent = getParentDomain();
             playerFrame.src = `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=false&autoplay=true`;
             activeStreamerName.textContent = name;
-            playBtn.textContent = '⏸';
+
+            // Заполняем нижнюю панель другими стримами (до 4)
+            bottomStreams.innerHTML = '';
+            const otherStreamers = settings.streamers.filter(s => s !== channel);
+            const bottomCount = Math.min(4, otherStreamers.length);
+            
+            for (let i = 0; i < bottomCount; i++) {
+                const streamer = otherStreamers[i];
+                const box = createStreamBox(streamer, true);
+                
+                // Если статус уже известен, применяем его
+                if (streamStatuses[streamer]) {
+                    box.classList.remove('loading');
+                    if (streamStatuses[streamer].online) {
+                        box.classList.add('online');
+                        const iframe = box.querySelector('.mini-player iframe');
+                        if (iframe) {
+                            iframe.src = `https://player.twitch.tv/?channel=${streamer}&parent=${parent}&muted=true&autoplay=true&controls=false`;
+                        }
+                    } else {
+                        box.classList.add('offline');
+                    }
+                } else {
+                    updateStreamBox(box);
+                }
+
+                // Помечаем текущий активный
+                if (streamer === channel) {
+                    box.classList.add('current');
+                }
+
+                bottomStreams.appendChild(box);
+            }
         }
 
         // Закрытие стрима
@@ -999,32 +904,10 @@
             wrapper.classList.remove('has-active');
             playerFrame.src = '';
             activeStreamerName.textContent = '';
+            bottomStreams.innerHTML = '';
         }
 
-        // Контролы плеера
         closeBtn.addEventListener('click', closeStream);
-
-        playBtn.addEventListener('click', () => {
-            if (playBtn.textContent === '⏸') {
-                playBtn.textContent = '▶';
-                playerFrame.dataset.src = playerFrame.src;
-                playerFrame.src = '';
-            } else {
-                playBtn.textContent = '⏸';
-                playerFrame.src = playerFrame.dataset.src;
-            }
-        });
-
-        volumeSlider.addEventListener('input', (e) => {
-            const value = e.target.value;
-            if (value == 0) {
-                volumeIcon.textContent = '🔇';
-            } else if (value < 50) {
-                volumeIcon.textContent = '🔉';
-            } else {
-                volumeIcon.textContent = '🔊';
-            }
-        });
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -1062,7 +945,6 @@
                 streamersList.appendChild(row);
             });
 
-            // Обработчики удаления
             streamersList.querySelectorAll('.remove-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const index = parseInt(e.target.dataset.index);
@@ -1090,7 +972,6 @@
         });
 
         saveBtn.addEventListener('click', () => {
-            // Собираем стримеров из инпутов
             const inputs = streamersList.querySelectorAll('.streamer-input');
             const newStreamers = [];
             
@@ -1135,14 +1016,14 @@
                 container.appendChild(box);
             });
 
-            // Проверяем статусы
+            // Проверяем статусы последовательно
             const boxes = document.querySelectorAll('#container .stream-box');
             for (const box of boxes) {
                 await updateStreamBox(box);
             }
         }
 
-        // Обновление статусов периодически
+        // Обновление статусов каждые 2 минуты
         setInterval(async () => {
             if (!wrapper.classList.contains('has-active')) {
                 const boxes = document.querySelectorAll('#container .stream-box');
@@ -1150,7 +1031,7 @@
                     await updateStreamBox(box);
                 }
             }
-        }, 60000);
+        }, 120000);
 
         // Запуск
         initStreamers();
