@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <link rel="icon" href="https://static-cdn.jtvnw.net/jtv_user_pictures/481347b6-d915-4e3f-bb44-613a427e79f1-profile_image-70x70.png" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>by Lagerta_Seeman</title>
+    <title>Multi Stream Viewer</title>
     <style>
         * {
             margin: 0;
@@ -13,109 +12,330 @@
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0e0e10;
             height: 100vh;
             font-family: 'Segoe UI', Arial, sans-serif;
             overflow: hidden;
         }
 
-        /* Страница входа */
-        .login-page {
+        /* Верхняя панель */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #18181b;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            gap: 20px;
+            z-index: 1000;
+            padding: 0 20px;
+            border-bottom: 1px solid #2d2d35;
         }
 
-        .login-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 12px;
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            backdrop-filter: blur(10px);
+        .view-toggle {
+            display: flex;
+            background: #0e0e10;
+            border-radius: 25px;
+            padding: 4px;
         }
 
-        .login-container h2 {
-            color: #333;
-            margin-bottom: 30px;
-            text-align: center;
-            font-size: 2rem;
-        }
-
-        .login-input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        .login-input:focus {
-            outline: none;
-            border-color: #764ba2;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .view-btn {
+            padding: 8px 20px;
             border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            border-radius: 20px;
+            background: transparent;
+            color: #888;
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
+            font-size: 0.9rem;
+            transition: all 0.3s;
         }
 
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        .view-btn:hover {
+            color: #fff;
         }
 
-        .error-message {
-            color: #ff4444;
-            text-align: center;
-            margin-top: 15px;
-            font-weight: 500;
-        }
-
-        /* Основной интерфейс */
-        .main-interface {
-            display: none;
-            height: 100vh;
-            position: relative;
+        .view-btn.active {
+            background: #9146ff;
+            color: #fff;
         }
 
         .settings-btn {
-            position: fixed;
-            top: 15px;
+            position: absolute;
             right: 15px;
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             border: none;
             background: #9146ff;
             color: white;
             cursor: pointer;
-            font-size: 1.4rem;
-            z-index: 1000;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 1.2rem;
         }
 
         .settings-btn:hover {
             background: #772ce8;
-            transform: rotate(90deg);
         }
 
+        /* Навигация групп */
+        .group-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-arrow {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #9146ff;
+            background: transparent;
+            color: #9146ff;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .nav-arrow:hover {
+            background: #9146ff;
+            color: #fff;
+        }
+
+        .nav-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .group-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .group-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #464649;
+            cursor: pointer;
+        }
+
+        .group-dot:hover {
+            background: #9146ff;
+        }
+
+        .group-dot.active {
+            background: #9146ff;
+        }
+
+        .group-name {
+            color: #fff;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* Основной контейнер */
+        .main-wrapper {
+            height: calc(100vh - 50px);
+            margin-top: 50px;
+            display: flex;
+            padding: 6px;
+            gap: 6px;
+        }
+
+        /* Левая часть */
+        .left-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        /* Сетка всех стримов */
+        .grid-view {
+            flex: 1;
+            display: grid;
+            gap: 6px;
+        }
+
+        /* Режим 4 окна */
+        .quad-view {
+            flex: 1;
+            display: none;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 6px;
+        }
+
+        /* Развёрнутый плеер */
+        .expanded-view {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            gap: 6px;
+        }
+
+        .main-player {
+            flex: 1;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .main-player iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            background: #18181b;
+            border-radius: 8px;
+            gap: 15px;
+        }
+
+        .active-name {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .close-expanded {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #ff4444;
+            color: white;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .close-expanded:hover {
+            background: #cc0000;
+        }
+
+        .bottom-streams {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            height: 150px;
+            flex-shrink: 0;
+        }
+
+        /* Колонна справа */
+        .sidebar {
+            width: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #9146ff;
+            border-radius: 3px;
+        }
+
+        .sidebar-title {
+            color: #888;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 5px;
+        }
+
+        /* Стрим бокс */
+        .stream-box {
+            background: #000;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #2d2d35;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 80px;
+        }
+
+        .stream-box:hover {
+            border-color: #9146ff;
+            transform: scale(1.02);
+            z-index: 5;
+        }
+
+        .stream-box.dragging {
+            opacity: 0.5;
+        }
+
+        .stream-box.drag-over {
+            border-color: #00ff00 !important;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .stream-box.has-sound {
+            border-color: #00c853;
+            box-shadow: 0 0 15px rgba(0, 200, 83, 0.3);
+        }
+
+        .stream-box iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
+        }
+
+        .stream-box .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 5;
+        }
+
+        .stream-box .label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            color: #fff;
+            padding: 15px 8px 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 4;
+        }
+
+        .stream-box.has-sound .label::before {
+            content: '🔊 ';
+        }
+
+        .sidebar .stream-box {
+            height: 100px;
+            flex-shrink: 0;
+        }
+
+        .sidebar .stream-box .label {
+            font-size: 0.75rem;
+            padding: 10px 5px 4px;
+        }
+
+        .bottom-streams .stream-box {
+            height: 100%;
+        }
+
+        /* Модальное окно */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -123,10 +343,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             z-index: 2000;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
         .modal-overlay.active {
@@ -136,8 +357,8 @@
         .modal {
             background: #18181b;
             border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
+            width: 100%;
+            max-width: 800px;
             max-height: 85vh;
             overflow: hidden;
             display: flex;
@@ -145,7 +366,7 @@
         }
 
         .modal-header {
-            padding: 20px;
+            padding: 15px 20px;
             background: #1f1f23;
             display: flex;
             justify-content: space-between;
@@ -155,7 +376,31 @@
 
         .modal-header h2 {
             color: #fff;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
+        }
+
+        .modal-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal-tab {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 15px;
+            background: #2d2d35;
+            color: #888;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .modal-tab:hover {
+            color: #fff;
+        }
+
+        .modal-tab.active {
+            background: #9146ff;
+            color: #fff;
         }
 
         .modal-close {
@@ -166,112 +411,122 @@
             cursor: pointer;
         }
 
-        .modal-close:hover {
-            color: #ff4444;
-        }
-
         .modal-body {
             padding: 20px;
             overflow-y: auto;
             flex: 1;
         }
 
-        .setting-group {
-            margin-bottom: 25px;
+        .tab-content {
+            display: none;
         }
 
-        .setting-label {
-            color: #fff;
-            font-weight: 600;
-            margin-bottom: 10px;
+        .tab-content.active {
             display: block;
         }
 
-        .grid-size-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .grid-slider {
-            flex: 1;
-            height: 8px;
-            -webkit-appearance: none;
-            background: #464649;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .grid-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 22px;
-            height: 22px;
-            background: #9146ff;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        .grid-value {
-            color: #9146ff;
-            font-weight: 700;
-            font-size: 1.2rem;
-            min-width: 30px;
-            text-align: center;
-        }
-
-        .streamers-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .streamers-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .streamers-list::-webkit-scrollbar-thumb {
-            background: #9146ff;
-            border-radius: 3px;
-        }
-
-        .streamer-input-row {
-            display: flex;
-            gap: 8px;
-        }
-
-        .streamer-input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 2px solid #2d2d35;
+        .info-box {
+            background: rgba(145, 70, 255, 0.1);
+            border: 1px solid #9146ff;
             border-radius: 8px;
-            background: #0e0e10;
-            color: #fff;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .info-box h4 {
+            color: #9146ff;
+            margin-bottom: 8px;
             font-size: 0.95rem;
         }
 
-        .streamer-input:focus {
+        .info-box p {
+            color: #ccc;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .info-box code {
+            background: #0e0e10;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #00c853;
+        }
+
+        .group-card {
+            background: #0e0e10;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #2d2d35;
+        }
+
+        .group-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .group-header input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #2d2d35;
+            border-radius: 6px;
+            background: #18181b;
+            color: #fff;
+        }
+
+        .group-header input:focus {
             outline: none;
             border-color: #9146ff;
         }
 
-        .remove-btn {
-            width: 44px;
-            height: 44px;
+        .delete-btn {
+            padding: 8px 12px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             background: #ff4444;
             color: white;
             cursor: pointer;
-            font-size: 1.2rem;
         }
 
-        .remove-btn:hover {
-            background: #cc0000;
+        .group-slots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
         }
 
-        .add-streamer-btn {
+        .slot {
+            position: relative;
+        }
+
+        .slot-num {
+            position: absolute;
+            top: -6px;
+            left: 8px;
+            background: #9146ff;
+            color: white;
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            z-index: 1;
+        }
+
+        .slot input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #2d2d35;
+            border-radius: 6px;
+            background: #18181b;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+
+        .slot input:focus {
+            outline: none;
+            border-color: #9146ff;
+        }
+
+        .add-btn {
             width: 100%;
             padding: 12px;
             border: 2px dashed #2d2d35;
@@ -279,41 +534,46 @@
             background: transparent;
             color: #9146ff;
             cursor: pointer;
-            font-size: 1rem;
-            margin-top: 10px;
+            font-size: 0.95rem;
         }
 
-        .add-streamer-btn:hover {
+        .add-btn:hover {
             border-color: #9146ff;
             background: rgba(145, 70, 255, 0.1);
         }
 
-        .password-section {
-            margin-top: 20px;
-            padding: 15px;
-            background: #1f1f23;
-            border-radius: 8px;
-        }
-
-        .password-display {
+        .streamer-row {
             display: flex;
-            gap: 10px;
-            margin: 10px 0;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
-        .password-input {
+        .streamer-row input {
             flex: 1;
-            padding: 10px;
-            background: #0e0e10;
+            padding: 10px 12px;
             border: 2px solid #2d2d35;
-            border-radius: 8px;
+            border-radius: 6px;
+            background: #0e0e10;
             color: #fff;
-            font-family: monospace;
+        }
+
+        .streamer-row input:focus {
+            outline: none;
+            border-color: #9146ff;
+        }
+
+        .remove-btn {
+            width: 40px;
+            border: none;
+            border-radius: 6px;
+            background: #ff4444;
+            color: white;
+            cursor: pointer;
             font-size: 1rem;
         }
 
         .modal-footer {
-            padding: 20px;
+            padding: 15px 20px;
             background: #1f1f23;
             display: flex;
             gap: 10px;
@@ -322,11 +582,10 @@
         }
 
         .btn {
-            padding: 12px 25px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 1rem;
             font-weight: 600;
         }
 
@@ -348,234 +607,73 @@
             background: #464649;
         }
 
-        .wrapper {
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .container {
-            flex: 1;
+        /* Режимы отображения */
+        .main-wrapper[data-mode="grid"] .grid-view {
             display: grid;
-            gap: 4px;
-            padding: 4px;
         }
 
-        .wrapper.has-active .container {
+        .main-wrapper[data-mode="grid"] .quad-view,
+        .main-wrapper[data-mode="grid"] .expanded-view {
             display: none;
         }
 
-        .active-view {
-            display: none;
-            flex: 1;
-            flex-direction: row;
-            gap: 4px;
-            padding: 4px;
-            height: 100vh;
-        }
-
-        .wrapper.has-active .active-view {
-            display: flex;
-        }
-
-        .left-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            min-width: 0;
-        }
-
-        .main-player {
-            flex: 1;
-            background: #000;
-            border-radius: 8px;
-            overflow: hidden;
-            min-height: 0;
-        }
-
-        .main-player iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .player-info {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 20px;
-            background: #18181b;
-            border-radius: 8px;
-            gap: 20px;
-        }
-
-        .active-streamer-name {
-            color: #fff;
-            font-weight: 700;
-            font-size: 1.4rem;
-        }
-
-        .close-btn {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            border: none;
-            background: #ff4444;
-            color: white;
-            cursor: pointer;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-btn:hover {
-            background: #cc0000;
-            transform: scale(1.1);
-        }
-
-        .bottom-streams {
+        .main-wrapper[data-mode="quad"] .quad-view {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
-            height: 160px;
-            flex-shrink: 0;
         }
 
-        .sidebar {
-            width: 180px;
+        .main-wrapper[data-mode="quad"] .grid-view,
+        .main-wrapper[data-mode="quad"] .expanded-view {
+            display: none;
+        }
+
+        .main-wrapper[data-mode="expanded"] .expanded-view {
             display: flex;
-            flex-direction: column;
-            gap: 4px;
-            overflow-y: auto;
-            flex-shrink: 0;
         }
 
-        .sidebar::-webkit-scrollbar {
-            width: 6px;
+        .main-wrapper[data-mode="expanded"] .grid-view,
+        .main-wrapper[data-mode="expanded"] .quad-view {
+            display: none;
         }
 
-        .sidebar::-webkit-scrollbar-thumb {
-            background: #9146ff;
-            border-radius: 3px;
+        /* Скрываем навигацию групп в режиме сетки */
+        .top-bar[data-view="grid"] .group-nav {
+            display: none;
         }
 
-        /* СТРИМ БОКС */
-        .stream-box {
-            background: #000;
-            border-radius: 6px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.2s ease;
-            border: 2px solid #2d2d35;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 80px;
-        }
-
-        .stream-box:hover {
-            border-color: #9146ff;
-            transform: scale(1.02);
-            z-index: 10;
-        }
-
-        .stream-box .streamer-name {
-            color: #ff4444;
-            font-weight: 700;
-            font-size: 1.1rem;
-            text-align: center;
-            padding: 10px;
-            text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
-            z-index: 5;
-            position: relative;
-        }
-
-        .stream-box.online .streamer-name {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9));
-            color: #fff;
-            padding: 20px 8px 6px;
-            font-size: 0.85rem;
-            text-shadow: none;
-        }
-
-        .stream-box .mini-player {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .stream-box .mini-player iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            pointer-events: none;
-        }
-
-        .stream-box .click-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            cursor: pointer;
-        }
-
-        .sidebar .stream-box {
-            min-height: 100px;
-            flex-shrink: 0;
-        }
-
-        .sidebar .stream-box .streamer-name {
-            font-size: 0.85rem;
-        }
-
-        .bottom-streams .stream-box {
-            height: 100%;
-        }
-
-        .bottom-streams .stream-box .streamer-name {
-            font-size: 0.95rem;
-        }
-
-        @media (max-width: 1200px) {
-            .sidebar { width: 150px; }
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .sidebar {
+                width: 150px;
+            }
             .bottom-streams {
                 grid-template-columns: repeat(3, 1fr);
-                height: 140px;
             }
         }
 
-        @media (max-width: 900px) {
-            .sidebar { width: 120px; }
-            .sidebar .stream-box { min-height: 80px; }
-            .bottom-streams { height: 120px; }
-            .active-streamer-name { font-size: 1.1rem; }
+        @media (max-width: 800px) {
+            .sidebar {
+                width: 120px;
+            }
+            .group-slots {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .bottom-streams {
+                height: 120px;
+            }
         }
 
-        @media (max-width: 700px) {
-            .active-view { flex-direction: column; }
+        @media (max-width: 600px) {
+            .main-wrapper {
+                flex-direction: column;
+            }
             .sidebar {
                 width: 100%;
                 flex-direction: row;
-                height: 80px;
+                height: 90px;
                 overflow-x: auto;
-                overflow-y: hidden;
             }
             .sidebar .stream-box {
-                min-width: 100px;
-                min-height: unset;
+                min-width: 120px;
                 height: 100%;
             }
             .bottom-streams {
@@ -586,366 +684,558 @@
     </style>
 </head>
 <body>
-    <!-- Страница входа -->
-    <div class="login-page" id="loginPage">
-        <div class="login-container">
-            <h2>Вход в систему</h2>
-            <input type="text" class="login-input" id="loginUsername" placeholder="Логин" autocomplete="off">
-            <input type="password" class="login-input" id="loginPassword" placeholder="Пароль">
-            <button class="login-btn" id="loginBtn">Войти</button>
-            <div class="error-message" id="loginError"></div>
+    <div class="top-bar" id="topBar" data-view="quad">
+        <div class="view-toggle">
+            <button class="view-btn" data-view="grid">Сетка</button>
+            <button class="view-btn active" data-view="quad">4 окна</button>
         </div>
+
+        <div class="group-nav">
+            <button class="nav-arrow" id="prevGroup">◀</button>
+            <span class="group-name" id="groupName">Группа 1</span>
+            <div class="group-dots" id="groupDots"></div>
+            <button class="nav-arrow" id="nextGroup">▶</button>
+        </div>
+
+        <button class="settings-btn" id="settingsBtn">⚙️</button>
     </div>
 
-    <!-- Основной интерфейс -->
-    <div class="main-interface" id="mainInterface">
-        <button class="settings-btn" id="settingsBtn" style="display: none;">⚙️</button>
-
-        <div class="modal-overlay" id="modalOverlay">
-            <div class="modal">
-                <div class="modal-header">
-                    <h2>⚙️ Настройки</h2>
-                    <button class="modal-close" id="modalClose">✕</button>
+    <div class="main-wrapper" id="mainWrapper" data-mode="quad">
+        <div class="left-section">
+            <!-- Сетка -->
+            <div class="grid-view" id="gridView"></div>
+            
+            <!-- 4 окна -->
+            <div class="quad-view" id="quadView"></div>
+            
+            <!-- Развёрнутый плеер -->
+            <div class="expanded-view" id="expandedView">
+                <div class="main-player">
+                    <iframe id="mainPlayerFrame" allow="autoplay; fullscreen" allowfullscreen></iframe>
                 </div>
-                <div class="modal-body">
-                    <div class="setting-group">
-                        <label class="setting-label">Количество стримеров</label>
-                        <div class="grid-size-container">
-                            <input type="range" class="grid-slider" id="gridSlider" min="1" max="20" value="20">
-                            <span class="grid-value" id="gridValue">20</span>
-                        </div>
-                    </div>
-
-                    <div class="setting-group">
-                        <label class="setting-label">Стримеры</label>
-                        <div class="streamers-list" id="streamersList"></div>
-                        <button class="add-streamer-btn" id="addStreamerBtn">+ Добавить</button>
-                    </div>
+                <div class="player-info">
+                    <span class="active-name" id="activeName"></span>
+                    <button class="close-expanded" id="closeExpanded">✕</button>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" id="resetBtn">Сбросить</button>
-                    <button class="btn btn-primary" id="saveBtn">Сохранить</button>
-                </div>
+                <div class="bottom-streams" id="bottomStreams"></div>
             </div>
         </div>
 
-        <div class="wrapper" id="wrapper">
-            <div class="container" id="container"></div>
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-title">Другие стримы</div>
+        </div>
+    </div>
 
-            <div class="active-view" id="activeView">
-                <div class="left-section">
-                    <div class="main-player" id="mainPlayer">
-                        <iframe id="playerFrame" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                    </div>
-                    <div class="player-info">
-                        <span class="active-streamer-name" id="activeStreamerName"></span>
-                        <button class="close-btn" id="closeBtn">✕</button>
-                    </div>
-                    <div class="bottom-streams" id="bottomStreams"></div>
+    <!-- Модальное окно -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>⚙️ Настройки</h2>
+                <div class="modal-tabs">
+                    <button class="modal-tab active" data-tab="groups">Группы</button>
+                    <button class="modal-tab" data-tab="streamers">Стримеры</button>
+                    <button class="modal-tab" data-tab="help">Помощь</button>
                 </div>
-                <div class="sidebar" id="sidebar"></div>
+                <button class="modal-close" id="modalClose">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="tab-content active" id="tabGroups">
+                    <div class="info-box">
+                        <h4>📺 Группы по 4 стрима</h4>
+                        <p>Создайте группы. Переключайтесь стрелками ◀ ▶</p>
+                    </div>
+                    <div id="groupsList"></div>
+                    <button class="add-btn" id="addGroupBtn">+ Добавить группу</button>
+                </div>
+
+                <div class="tab-content" id="tabStreamers">
+                    <div class="info-box">
+                        <h4>👤 Дополнительные стримеры</h4>
+                        <p>Отображаются в боковой колонке</p>
+                    </div>
+                    <div id="streamersList"></div>
+                    <button class="add-btn" id="addStreamerBtn">+ Добавить</button>
+                </div>
+
+                <div class="tab-content" id="tabHelp">
+                    <div class="info-box">
+                        <h4>🚀 Запуск</h4>
+                        <p>
+                            <code>python -m http.server 8000</code><br><br>
+                            Откройте: <code>http://localhost:8000</code>
+                        </p>
+                    </div>
+                    <div class="info-box">
+                        <h4>🔊 Звук</h4>
+                        <p>Кликните на стрим для включения звука</p>
+                    </div>
+                    <div class="info-box">
+                        <h4>🔄 Drag & Drop</h4>
+                        <p>Перетаскивайте стримы между нижней панелью и колонкой справа</p>
+                    </div>
+                    <div class="info-box">
+                        <h4>⌨️ Горячие клавиши</h4>
+                        <p>
+                            <code>←</code> <code>→</code> — группы<br>
+                            <code>1-4</code> — звук на стриме<br>
+                            <code>M</code> — выключить звук<br>
+                            <code>Esc</code> — закрыть
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="resetBtn">Сбросить</button>
+                <button class="btn btn-primary" id="saveBtn">Сохранить</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Конфигурация - только admin/admin123
-        const ADMIN_USERNAME = 'admin';
-        const ADMIN_PASSWORD = 'admin123';
-        
-        // Глобальные переменные
-        let settings = { gridSize: 20, streamers: [] };
-        let currentUser = null;
-        let activeChannel = null;
-        let bottomStreamers = [];
-        let sidebarStreamers = [];
+        // Дефолтные данные
+        const defaultGroups = [
+            { name: "Группа 1", streamers: ["xqc", "shroud", "summit1g", "lirik"] },
+            { name: "Группа 2", streamers: ["pokimane", "hasanabi", "mizkif", "ludwig"] },
+            { name: "Группа 3", streamers: ["pestily", "asmongold", "nmplol", "sykkuno"] }
+        ];
 
-        // DOM элементы
-        const loginPage = document.getElementById('loginPage');
-        const mainInterface = document.getElementById('mainInterface');
-        const loginBtn = document.getElementById('loginBtn');
-        const loginUsername = document.getElementById('loginUsername');
-        const loginPassword = document.getElementById('loginPassword');
-        const loginError = document.getElementById('loginError');
+        const defaultStreamers = [
+            "bratishkinoff", "silvername", "kaicenat", "cohhcarnage",
+            "ironmouse", "esfandtv", "tarik", "caseoh_"
+        ];
+
+        // Загрузка настроек
+        function loadSettings() {
+            try {
+                const saved = localStorage.getItem('msvSettings');
+                return saved ? JSON.parse(saved) : null;
+            } catch { return null; }
+        }
+
+        function saveSettings() {
+            localStorage.setItem('msvSettings', JSON.stringify({
+                groups: settings.groups,
+                streamers: settings.streamers,
+                currentGroup: settings.currentGroup
+            }));
+        }
+
+        const saved = loadSettings();
+        const settings = {
+            groups: saved?.groups || JSON.parse(JSON.stringify(defaultGroups)),
+            streamers: saved?.streamers || [...defaultStreamers],
+            currentGroup: saved?.currentGroup || 0
+        };
+
+        // Состояние
+        let viewMode = 'quad'; // 'grid', 'quad', 'expanded'
+        let activeChannel = null; // Развёрнутый канал
+        let soundChannel = null; // Канал со звуком
+        let bottomChannels = []; // Каналы в нижней панели
+        let sidebarChannels = []; // Каналы в сайдбаре
+
+        // DOM
+        const topBar = document.getElementById('topBar');
+        const mainWrapper = document.getElementById('mainWrapper');
+        const gridView = document.getElementById('gridView');
+        const quadView = document.getElementById('quadView');
+        const expandedView = document.getElementById('expandedView');
+        const mainPlayerFrame = document.getElementById('mainPlayerFrame');
+        const activeName = document.getElementById('activeName');
+        const closeExpanded = document.getElementById('closeExpanded');
+        const bottomStreams = document.getElementById('bottomStreams');
+        const sidebar = document.getElementById('sidebar');
+        const groupName = document.getElementById('groupName');
+        const groupDots = document.getElementById('groupDots');
+        const prevGroup = document.getElementById('prevGroup');
+        const nextGroup = document.getElementById('nextGroup');
         const settingsBtn = document.getElementById('settingsBtn');
         const modalOverlay = document.getElementById('modalOverlay');
         const modalClose = document.getElementById('modalClose');
-        const gridSlider = document.getElementById('gridSlider');
-        const gridValue = document.getElementById('gridValue');
-        const streamersList = document.getElementById('streamersList');
-        const addStreamerBtn = document.getElementById('addStreamerBtn');
         const saveBtn = document.getElementById('saveBtn');
         const resetBtn = document.getElementById('resetBtn');
-        const container = document.getElementById('container');
-        const wrapper = document.getElementById('wrapper');
-        const playerFrame = document.getElementById('playerFrame');
-        const activeStreamerName = document.getElementById('activeStreamerName');
-        const closeBtn = document.getElementById('closeBtn');
-        const bottomStreams = document.getElementById('bottomStreams');
-        const sidebar = document.getElementById('sidebar');
+        const addGroupBtn = document.getElementById('addGroupBtn');
+        const addStreamerBtn = document.getElementById('addStreamerBtn');
 
-        // Дефолтные стримеры
-        const defaultStreamers = [
-            "xqc", "bratishkinoff", "silvername", "c_a_k_e", "shroud",
-            "summit1g", "lirik", "pokimane", "pestily", "asmongold",
-            "ailisiq", "akuma_dgm", "irvincheg", "sh4dowfi4sh"
-        ];
-
-        // Загрузка данных из файла
-        async function loadData() {
-            try {
-                const dataResponse = await fetch('/data.txt?' + Date.now());
-                if (dataResponse.ok) {
-                    const data = await dataResponse.text();
-                    settings.streamers = data.split('\n')
-                        .map(line => line.trim())
-                        .filter(line => line && !line.startsWith('#'));
-                } else {
-                    settings.streamers = [...defaultStreamers];
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки данных:', error);
-                settings.streamers = [...defaultStreamers];
-            }
+        function getParent() {
+            const h = window.location.hostname;
+            return (!h || h === 'null') ? 'localhost' : h;
         }
 
-        // Сохранение стримеров в data.txt
-        async function saveStreamersToFile() {
-            try {
-                const response = await fetch('/save_data.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'streamers=' + encodeURIComponent(settings.streamers.join('\n'))
-                });
-                if (!response.ok) console.error('Ошибка сохранения data.txt');
-            } catch (error) {
-                console.error('Ошибка сохранения:', error);
-            }
-        }
-
-        // Вход в систему - только admin/admin123
-        loginBtn.addEventListener('click', async () => {
-            const username = loginUsername.value.trim();
-            const password = loginPassword.value.trim();
-
-            if (!username || !password) {
-                loginError.textContent = 'Введите логин и пароль';
-                return;
-            }
-
-            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-                currentUser = 'admin';
-                loginPage.style.display = 'none';
-                mainInterface.style.display = 'block';
-                settingsBtn.style.display = 'flex';
-                await loadData();
-                initStreamers();
-                return;
-            }
-
-            loginError.textContent = 'Неверный логин или пароль';
-        });
-
-        // Enter для входа
-        loginPassword.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') loginBtn.click();
-        });
-
-        // Функции интерфейса
-        function extractChannelName(input) {
+        function extractChannel(input) {
+            if (!input) return '';
             input = input.trim();
             const match = input.match(/(?:https?:\/\/)?(?:www\.)?twitch\.tv\/([a-zA-Z0-9_]+)/i);
-            if (match) return match[1].toLowerCase();
-            return input.toLowerCase().replace(/[^a-z0-9_]/g, '');
+            return match ? match[1].toLowerCase() : input.toLowerCase().replace(/[^a-z0-9_]/g, '');
         }
 
-        function getParentDomain() {
-            const hostname = window.location.hostname;
-            return (hostname === '' || hostname === 'null') ? 'localhost' : hostname;
+        function capitalize(str) {
+            return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
         }
 
-        function calculateGrid(count) {
-            if (count <= 1) return { cols: 1, rows: 1 };
-            if (count <= 2) return { cols: 2, rows: 1 };
-            if (count <= 4) return { cols: 2, rows: 2 };
-            if (count <= 6) return { cols: 3, rows: 2 };
-            if (count <= 9) return { cols: 3, rows: 3 };
-            if (count <= 12) return { cols: 4, rows: 3 };
-            if (count <= 16) return { cols: 4, rows: 4 };
-            return { cols: 5, rows: 4 };
+        // Создание iframe плеера
+        function createPlayerIframe(channel, muted = true) {
+            const parent = getParent();
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=${muted}&autoplay=true`;
+            iframe.allow = 'autoplay; fullscreen';
+            iframe.allowFullscreen = true;
+            return iframe;
         }
 
-        function updateGridLayout() {
-            const count = Math.min(settings.gridSize, settings.streamers.length);
-            const { cols, rows } = calculateGrid(count);
-            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-            container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-        }
-
-        function createGridBox(channel) {
-            const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
-            const parent = getParentDomain();
+        // Создание бокса стрима
+        function createStreamBox(channel, options = {}) {
+            const { draggable = false, location = '', onClick = null } = options;
+            const hasSound = soundChannel === channel;
             
             const box = document.createElement('div');
-            box.className = 'stream-box online';
+            box.className = 'stream-box' + (hasSound ? ' has-sound' : '');
             box.dataset.channel = channel;
-            box.dataset.name = displayName;
+            if (location) box.dataset.location = location;
+            if (draggable) box.draggable = true;
 
-            box.innerHTML = `
-                <div class="mini-player">
-                    <iframe 
-                        src="https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=true&autoplay=true&controls=false"
-                        allow="autoplay; fullscreen"
-                        allowfullscreen>
-                    </iframe>
-                </div>
-                <div class="click-overlay"></div>
-                <span class="streamer-name">${displayName}</span>
-            `;
+            const iframe = createPlayerIframe(channel, !hasSound);
+            box.appendChild(iframe);
 
-            const overlay = box.querySelector('.click-overlay');
-            overlay.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openStream(channel, displayName);
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            box.appendChild(overlay);
+
+            const label = document.createElement('div');
+            label.className = 'label';
+            label.textContent = capitalize(channel);
+            box.appendChild(label);
+
+            // Клик
+            overlay.addEventListener('click', () => {
+                if (onClick) {
+                    onClick(channel);
+                } else {
+                    toggleSound(channel);
+                }
             });
+
+            // Drag & Drop
+            if (draggable) {
+                box.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('channel', channel);
+                    e.dataTransfer.setData('location', location);
+                    box.classList.add('dragging');
+                });
+
+                box.addEventListener('dragend', () => {
+                    box.classList.remove('dragging');
+                    document.querySelectorAll('.stream-box').forEach(b => b.classList.remove('drag-over'));
+                });
+
+                box.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (!box.classList.contains('dragging')) {
+                        box.classList.add('drag-over');
+                    }
+                });
+
+                box.addEventListener('dragleave', () => {
+                    box.classList.remove('drag-over');
+                });
+
+                box.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    box.classList.remove('drag-over');
+                    
+                    const draggedChannel = e.dataTransfer.getData('channel');
+                    const draggedLocation = e.dataTransfer.getData('location');
+                    const targetChannel = channel;
+                    const targetLocation = location;
+
+                    if (draggedChannel !== targetChannel) {
+                        swapChannels(draggedChannel, draggedLocation, targetChannel, targetLocation);
+                    }
+                });
+            }
 
             return box;
         }
 
-        function createActiveBox(channel, location) {
-            const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
-            const parent = getParentDomain();
+        // Обмен каналов
+        function swapChannels(ch1, loc1, ch2, loc2) {
+            const getArray = (loc) => loc === 'bottom' ? bottomChannels : sidebarChannels;
             
-            const box = document.createElement('div');
-            box.className = 'stream-box online';
-            box.dataset.channel = channel;
-            box.dataset.name = displayName;
+            const arr1 = getArray(loc1);
+            const arr2 = getArray(loc2);
+            const idx1 = arr1.indexOf(ch1);
+            const idx2 = arr2.indexOf(ch2);
 
-            box.innerHTML = `
-                <div class="mini-player">
-                    <iframe 
-                        src="https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=true&autoplay=true&controls=false"
-                        allow="autoplay; fullscreen"
-                        allowfullscreen>
-                    </iframe>
-                </div>
-                <div class="click-overlay"></div>
-                <span class="streamer-name">${displayName}</span>
-            `;
+            if (idx1 === -1 || idx2 === -1) return;
 
-            const overlay = box.querySelector('.click-overlay');
-            overlay.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openStream(channel, displayName);
-            });
+            if (loc1 === loc2) {
+                [arr1[idx1], arr1[idx2]] = [arr1[idx2], arr1[idx1]];
+            } else {
+                arr1[idx1] = ch2;
+                arr2[idx2] = ch1;
+            }
 
-            return box;
+            renderExpandedPanels();
         }
 
-        function renderPanels() {
-            bottomStreams.innerHTML = '';
-            bottomStreamers.forEach(channel => {
-                const box = createActiveBox(channel, 'bottom');
-                bottomStreams.appendChild(box);
+        // Переключение звука
+        function toggleSound(channel) {
+            soundChannel = (soundChannel === channel) ? null : channel;
+            render();
+        }
+
+        // Развернуть стрим
+        function expandStream(channel) {
+            activeChannel = channel;
+            soundChannel = channel;
+            viewMode = 'expanded';
+            
+            // Распределяем остальные каналы
+            const allChannels = getAllChannels().filter(ch => ch !== channel);
+            bottomChannels = allChannels.slice(0, 4);
+            sidebarChannels = allChannels.slice(4);
+            
+            render();
+        }
+
+        // Закрыть развёрнутый
+        function closeExpandedView() {
+            activeChannel = null;
+            viewMode = topBar.dataset.view;
+            render();
+        }
+
+        // Получить все каналы
+        function getAllChannels() {
+            const channels = [];
+            settings.groups.forEach(g => {
+                g.streamers.forEach(ch => {
+                    if (ch && !channels.includes(ch)) channels.push(ch);
+                });
+            });
+            settings.streamers.forEach(ch => {
+                if (ch && !channels.includes(ch)) channels.push(ch);
+            });
+            return channels;
+        }
+
+        // Рендер
+        function render() {
+            mainWrapper.dataset.mode = viewMode;
+
+            if (viewMode === 'quad') {
+                renderQuadView();
+                renderSidebarForQuad();
+            } else if (viewMode === 'grid') {
+                renderGridView();
+                renderSidebarForGrid();
+            } else if (viewMode === 'expanded') {
+                renderExpandedView();
+            }
+
+            updateGroupNav();
+        }
+
+        // Рендер режима 4 окна
+        function renderQuadView() {
+            quadView.innerHTML = '';
+            const group = settings.groups[settings.currentGroup];
+            if (!group) return;
+
+            group.streamers.forEach(channel => {
+                if (channel) {
+                    const box = createStreamBox(channel, {
+                        onClick: (ch) => expandStream(ch)
+                    });
+                    quadView.appendChild(box);
+                } else {
+                    const empty = document.createElement('div');
+                    empty.className = 'stream-box';
+                    empty.style.background = '#18181b';
+                    empty.innerHTML = '<div class="label" style="color:#666">Пусто</div>';
+                    quadView.appendChild(empty);
+                }
             });
 
-            sidebar.innerHTML = '';
-            sidebarStreamers.forEach(channel => {
-                const box = createActiveBox(channel, 'sidebar');
+            // Добить до 4
+            while (quadView.children.length < 4) {
+                const empty = document.createElement('div');
+                empty.className = 'stream-box';
+                empty.style.background = '#18181b';
+                empty.innerHTML = '<div class="label" style="color:#666">Пусто</div>';
+                quadView.appendChild(empty);
+            }
+        }
+
+        // Рендер сайдбара для quad
+        function renderSidebarForQuad() {
+            sidebar.innerHTML = '<div class="sidebar-title">Другие стримы</div>';
+            
+            const currentGroup = settings.groups[settings.currentGroup]?.streamers || [];
+            const others = getAllChannels().filter(ch => !currentGroup.includes(ch));
+
+            others.forEach(channel => {
+                const box = createStreamBox(channel, {
+                    onClick: (ch) => expandStream(ch)
+                });
                 sidebar.appendChild(box);
             });
         }
 
-        function openStream(channel, name) {
-            if (activeChannel === channel) {
-                closeStream();
-                return;
-            }
-
-            activeChannel = channel;
-            wrapper.classList.add('has-active');
-
-            const parent = getParentDomain();
-            playerFrame.src = `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=false&autoplay=true`;
-            activeStreamerName.textContent = name;
-
-            const otherStreamers = settings.streamers.filter(s => s !== channel);
-            const count = Math.min(settings.gridSize, otherStreamers.length);
-            const streamersToUse = otherStreamers.slice(0, count);
+        // Рендер режима сетки
+        function renderGridView() {
+            gridView.innerHTML = '';
+            const channels = getAllChannels();
             
-            bottomStreamers = streamersToUse.slice(0, 4);
-            sidebarStreamers = streamersToUse.slice(4);
+            const count = channels.length;
+            const cols = count <= 4 ? 2 : count <= 9 ? 3 : count <= 16 ? 4 : 5;
+            gridView.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
-            renderPanels();
-        }
-
-        function closeStream() {
-            activeChannel = null;
-            wrapper.classList.remove('has-active');
-            playerFrame.src = '';
-            activeStreamerName.textContent = '';
-            bottomStreams.innerHTML = '';
-            sidebar.innerHTML = '';
-            bottomStreamers = [];
-            sidebarStreamers = [];
-        }
-
-        function initStreamers() {
-            container.innerHTML = '';
-
-            const count = Math.min(settings.gridSize, settings.streamers.length);
-            const streamersToShow = settings.streamers.slice(0, count);
-
-            updateGridLayout();
-
-            streamersToShow.forEach(channel => {
-                const box = createGridBox(channel);
-                container.appendChild(box);
+            channels.forEach(channel => {
+                const box = createStreamBox(channel, {
+                    onClick: (ch) => expandStream(ch)
+                });
+                gridView.appendChild(box);
             });
         }
 
-        // Обработчики интерфейса
-        closeBtn.addEventListener('click', closeStream);
+        // Рендер сайдбара для grid
+        function renderSidebarForGrid() {
+            sidebar.innerHTML = '<div class="sidebar-title">Все стримы</div>';
+            // В режиме сетки сайдбар может быть пустым или содержать доп. инфо
+        }
 
+        // Рендер развёрнутого вида
+        function renderExpandedView() {
+            // Основной плеер
+            mainPlayerFrame.src = `https://player.twitch.tv/?channel=${activeChannel}&parent=${getParent()}&muted=false&autoplay=true`;
+            activeName.textContent = capitalize(activeChannel);
+
+            renderExpandedPanels();
+        }
+
+        // Рендер панелей в развёрнутом виде
+        function renderExpandedPanels() {
+            // Нижние стримы
+            bottomStreams.innerHTML = '';
+            bottomChannels.forEach(channel => {
+                const box = createStreamBox(channel, {
+                    draggable: true,
+                    location: 'bottom',
+                    onClick: (ch) => expandStream(ch)
+                });
+                bottomStreams.appendChild(box);
+            });
+
+            // Добить до 4
+            while (bottomStreams.children.length < 4) {
+                const empty = document.createElement('div');
+                empty.className = 'stream-box';
+                empty.style.background = '#18181b';
+                empty.innerHTML = '<div class="label" style="color:#666">Пусто</div>';
+                bottomStreams.appendChild(empty);
+            }
+
+            // Сайдбар
+            sidebar.innerHTML = '<div class="sidebar-title">Перетащите сюда ↓</div>';
+            sidebarChannels.forEach(channel => {
+                const box = createStreamBox(channel, {
+                    draggable: true,
+                    location: 'sidebar',
+                    onClick: (ch) => expandStream(ch)
+                });
+                sidebar.appendChild(box);
+            });
+        }
+
+        // Обновление навигации групп
+        function updateGroupNav() {
+            const group = settings.groups[settings.currentGroup];
+            groupName.textContent = group?.name || `Группа ${settings.currentGroup + 1}`;
+
+            groupDots.innerHTML = '';
+            settings.groups.forEach((_, idx) => {
+                const dot = document.createElement('div');
+                dot.className = 'group-dot' + (idx === settings.currentGroup ? ' active' : '');
+                dot.addEventListener('click', () => goToGroup(idx));
+                groupDots.appendChild(dot);
+            });
+
+            prevGroup.disabled = settings.currentGroup === 0;
+            nextGroup.disabled = settings.currentGroup >= settings.groups.length - 1;
+        }
+
+        function goToGroup(idx) {
+            if (idx >= 0 && idx < settings.groups.length) {
+                settings.currentGroup = idx;
+                saveSettings();
+                render();
+            }
+        }
+
+        // Переключение режима вида
+        function setViewMode(mode) {
+            topBar.dataset.view = mode;
+            if (viewMode !== 'expanded') {
+                viewMode = mode;
+            }
+            
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === mode);
+            });
+
+            render();
+        }
+
+        // События
+        prevGroup.addEventListener('click', () => goToGroup(settings.currentGroup - 1));
+        nextGroup.addEventListener('click', () => goToGroup(settings.currentGroup + 1));
+
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', () => setViewMode(btn.dataset.view));
+        });
+
+        closeExpanded.addEventListener('click', closeExpandedView);
+
+        // Горячие клавиши
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                if (modalOverlay.classList.contains('active')) {
-                    closeModal();
-                } else if (activeChannel) {
-                    closeStream();
+            if (modalOverlay.classList.contains('active')) {
+                if (e.key === 'Escape') closeModal();
+                return;
+            }
+
+            if (e.key === 'Escape' && viewMode === 'expanded') {
+                closeExpandedView();
+            } else if (e.key === 'ArrowLeft') {
+                goToGroup(settings.currentGroup - 1);
+            } else if (e.key === 'ArrowRight') {
+                goToGroup(settings.currentGroup + 1);
+            } else if (e.key >= '1' && e.key <= '4') {
+                const idx = parseInt(e.key) - 1;
+                let channels;
+                if (viewMode === 'expanded') {
+                    channels = bottomChannels;
+                } else if (viewMode === 'quad') {
+                    channels = settings.groups[settings.currentGroup]?.streamers || [];
                 }
+                if (channels && channels[idx]) {
+                    toggleSound(channels[idx]);
+                }
+            } else if (e.key.toLowerCase() === 'm') {
+                soundChannel = null;
+                render();
             }
         });
 
+        // Модальное окно
         function openModal() {
             modalOverlay.classList.add('active');
-            renderStreamerInputs();
-            gridSlider.value = settings.gridSize;
-            gridValue.textContent = settings.gridSize;
+            renderGroupsTab();
+            renderStreamersTab();
         }
 
         function closeModal() {
             modalOverlay.classList.remove('active');
-        }
-
-        function renderStreamerInputs() {
-            streamersList.innerHTML = '';
-            settings.streamers.forEach((channel, index) => {
-                const row = document.createElement('div');
-                row.className = 'streamer-input-row';
-                row.innerHTML = `
-                    <input type="text" class="streamer-input" value="https://www.twitch.tv/${channel}" data-index="${index}">
-                    <button class="remove-btn" data-index="${index}">✕</button>
-                `;
-                streamersList.appendChild(row);
-            });
-
-            streamersList.querySelectorAll('.remove-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    settings.streamers.splice(parseInt(e.target.dataset.index), 1);
-                    renderStreamerInputs();
-                });
-            });
         }
 
         settingsBtn.addEventListener('click', openModal);
@@ -954,41 +1244,136 @@
             if (e.target === modalOverlay) closeModal();
         });
 
-        gridSlider.addEventListener('input', (e) => {
-            gridValue.textContent = e.target.value;
+        // Вкладки
+        document.querySelectorAll('.modal-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                const tabId = 'tab' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1);
+                document.getElementById(tabId).classList.add('active');
+            });
         });
+
+        // Рендер вкладки групп
+        function renderGroupsTab() {
+            const container = document.getElementById('groupsList');
+            container.innerHTML = '';
+
+            settings.groups.forEach((group, gIdx) => {
+                const card = document.createElement('div');
+                card.className = 'group-card';
+                card.innerHTML = `
+                    <div class="group-header">
+                        <input type="text" value="${group.name}" data-gidx="${gIdx}" class="group-name-input">
+                        <button class="delete-btn" data-gidx="${gIdx}">🗑️</button>
+                    </div>
+                    <div class="group-slots">
+                        ${[0,1,2,3].map(i => `
+                            <div class="slot">
+                                <span class="slot-num">${i+1}</span>
+                                <input type="text" value="${group.streamers[i] || ''}" 
+                                    placeholder="ник или ссылка" data-gidx="${gIdx}" data-sidx="${i}">
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // События
+            container.querySelectorAll('.group-name-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    settings.groups[e.target.dataset.gidx].name = e.target.value;
+                });
+            });
+
+            container.querySelectorAll('.group-slots input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const gIdx = parseInt(e.target.dataset.gidx);
+                    const sIdx = parseInt(e.target.dataset.sidx);
+                    settings.groups[gIdx].streamers[sIdx] = extractChannel(e.target.value);
+                });
+            });
+
+            container.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (settings.groups.length > 1) {
+                        const idx = parseInt(e.target.dataset.gidx);
+                        settings.groups.splice(idx, 1);
+                        if (settings.currentGroup >= settings.groups.length) {
+                            settings.currentGroup = settings.groups.length - 1;
+                        }
+                        renderGroupsTab();
+                    }
+                });
+            });
+        }
+
+        addGroupBtn.addEventListener('click', () => {
+            settings.groups.push({
+                name: `Группа ${settings.groups.length + 1}`,
+                streamers: ['', '', '', '']
+            });
+            renderGroupsTab();
+        });
+
+        // Рендер вкладки стримеров
+        function renderStreamersTab() {
+            const container = document.getElementById('streamersList');
+            container.innerHTML = '';
+
+            settings.streamers.forEach((ch, idx) => {
+                const row = document.createElement('div');
+                row.className = 'streamer-row';
+                row.innerHTML = `
+                    <input type="text" value="${ch || ''}" placeholder="ник или ссылка" data-idx="${idx}">
+                    <button class="remove-btn" data-idx="${idx}">✕</button>
+                `;
+                container.appendChild(row);
+            });
+
+            container.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    settings.streamers[e.target.dataset.idx] = extractChannel(e.target.value);
+                });
+            });
+
+            container.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    settings.streamers.splice(parseInt(e.target.dataset.idx), 1);
+                    renderStreamersTab();
+                });
+            });
+        }
 
         addStreamerBtn.addEventListener('click', () => {
             settings.streamers.push('');
-            renderStreamerInputs();
-            const inputs = streamersList.querySelectorAll('.streamer-input');
-            inputs[inputs.length - 1].focus();
+            renderStreamersTab();
         });
 
+        // Сохранение
         saveBtn.addEventListener('click', () => {
-            const inputs = streamersList.querySelectorAll('.streamer-input');
-            const newStreamers = [];
-            inputs.forEach(input => {
-                const channel = extractChannelName(input.value);
-                if (channel) newStreamers.push(channel);
+            settings.groups.forEach(g => {
+                g.streamers = g.streamers.map(s => extractChannel(s));
             });
-
-            settings.streamers = newStreamers;
-            settings.gridSize = parseInt(gridSlider.value);
-            
-            saveStreamersToFile();
+            settings.streamers = settings.streamers.map(s => extractChannel(s)).filter(s => s);
+            saveSettings();
             closeModal();
-            
-            if (activeChannel) {
-                closeStream();
-            }
-            initStreamers();
+            render();
         });
 
+        // Сброс
         resetBtn.addEventListener('click', () => {
+            settings.groups = JSON.parse(JSON.stringify(defaultGroups));
             settings.streamers = [...defaultStreamers];
-            renderStreamerInputs();
+            settings.currentGroup = 0;
+            renderGroupsTab();
+            renderStreamersTab();
         });
+
+        // Инициализация
+        render();
     </script>
 </body>
 </html>
