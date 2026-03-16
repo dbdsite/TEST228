@@ -4,7 +4,7 @@
     <link rel="icon" href="https://static-cdn.jtvnw.net/jtv_user_pictures/481347b6-d915-4e3f-bb44-613a427e79f1-profile_image-70x70.png" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RGG Live + Multistream</title>
+    <title>by Lagerta_Seeman</title>
     <style>
         * {
             margin: 0;
@@ -14,9 +14,9 @@
 
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
             font-family: 'Segoe UI', Arial, sans-serif;
             overflow: hidden;
-            height: 100vh;
         }
 
         /* Страница входа */
@@ -312,20 +312,6 @@
             font-size: 1rem;
         }
 
-        .generate-btn {
-            padding: 10px 20px;
-            background: #9146ff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .generate-btn:hover {
-            background: #772ce8;
-        }
-
         .modal-footer {
             padding: 20px;
             background: #1f1f23;
@@ -362,94 +348,22 @@
             background: #464649;
         }
 
-        .warning-box {
-            background: rgba(255, 165, 0, 0.1);
-            border: 1px solid #ffa500;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .warning-box h4 {
-            color: #ffa500;
-            margin-bottom: 8px;
-        }
-
-        .warning-box p {
-            color: #ccc;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .warning-box code {
-            background: #0e0e10;
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #9146ff;
-        }
-
         .wrapper {
             height: 100vh;
             width: 100vw;
             display: flex;
             flex-direction: column;
-            background: #111;
         }
 
-        .wrapper:not(.has-active) .main-grid-container {
-            display: block;
+        .container {
+            flex: 1;
+            display: grid;
+            gap: 4px;
+            padding: 4px;
         }
 
-        .wrapper.has-active .main-grid-container {
+        .wrapper.has-active .container {
             display: none;
-        }
-
-        .main-grid-container {
-            position: relative;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .grid-overlay {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-wrap: wrap;
-            overflow: hidden;
-            background: #111;
-        }
-
-        .grid-cell {
-            position: relative;
-            border: 2px solid #2d2d35;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #000;
-            transition: all 0.3s ease;
-        }
-
-        .grid-cell.player-active {
-            border-color: #9146ff;
-            box-shadow: 0 0 20px rgba(145, 70, 255, 0.5);
-        }
-
-        .grid-cell iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .grid-cell .streamer-label {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9));
-            color: white;
-            padding: 20px 8px 6px;
-            font-size: 0.9rem;
-            text-align: center;
-            pointer-events: none;
         }
 
         .active-view {
@@ -569,26 +483,6 @@
             z-index: 10;
         }
 
-        .stream-box.dragging {
-            opacity: 0.5;
-            transform: scale(0.95);
-        }
-
-        .stream-box.drag-over {
-            border-color: #00ff00 !important;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
-        }
-
-        .stream-box.offline {
-            cursor: default;
-            background: #000;
-        }
-
-        .stream-box.offline:hover {
-            transform: none;
-            border-color: #2d2d35;
-        }
-
         .stream-box .streamer-name {
             color: #ff4444;
             font-weight: 700;
@@ -612,35 +506,13 @@
             text-shadow: none;
         }
 
-        .stream-box .preview-img {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .stream-box.online .preview-img {
-            display: block;
-        }
-
         .stream-box .mini-player {
-            display: none;
+            display: block;
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-        }
-
-        .stream-box.online.with-player .preview-img {
-            display: none;
-        }
-
-        .stream-box.online.with-player .mini-player {
-            display: block;
         }
 
         .stream-box .mini-player iframe {
@@ -657,6 +529,7 @@
             width: 100%;
             height: 100%;
             z-index: 10;
+            cursor: pointer;
         }
 
         .sidebar .stream-box {
@@ -674,24 +547,6 @@
 
         .bottom-streams .stream-box .streamer-name {
             font-size: 0.95rem;
-        }
-
-        .drag-hint {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(145, 70, 255, 0.9);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            z-index: 100;
-            display: none;
-        }
-
-        .wrapper.has-active .drag-hint {
-            display: block;
         }
 
         @media (max-width: 1200px) {
@@ -749,17 +604,12 @@
         <div class="modal-overlay" id="modalOverlay">
             <div class="modal">
                 <div class="modal-header">
-                    <h2>⚙️ Настройки администратора</h2>
+                    <h2>⚙️ Настройки</h2>
                     <button class="modal-close" id="modalClose">✕</button>
                 </div>
                 <div class="modal-body">
-                    <div class="warning-box">
-                        <h4>⚠️ Режим администратора</h4>
-                        <p>Здесь вы можете настроить список стримеров, количество одновременно отображаемых на главном экране и управлять доступом пользователей.</p>
-                    </div>
-
                     <div class="setting-group">
-                        <label class="setting-label">Количество стримеров на главном экране</label>
+                        <label class="setting-label">Количество стримеров</label>
                         <div class="grid-size-container">
                             <input type="range" class="grid-slider" id="gridSlider" min="1" max="20" value="20">
                             <span class="grid-value" id="gridValue">20</span>
@@ -767,18 +617,9 @@
                     </div>
 
                     <div class="setting-group">
-                        <label class="setting-label">Список стримеров</label>
+                        <label class="setting-label">Стримеры</label>
                         <div class="streamers-list" id="streamersList"></div>
-                        <button class="add-streamer-btn" id="addStreamerBtn">+ Добавить стримера</button>
-                    </div>
-
-                    <div class="password-section">
-                        <label class="setting-label">Пароль для пользователей</label>
-                        <div class="password-display">
-                            <input type="text" class="password-input" id="currentPassword" readonly placeholder="Текущий пароль" value="Не установлен">
-                            <button class="generate-btn" id="generatePassword">Сгенерировать</button>
-                        </div>
-                        <p style="color: #ccc; font-size: 0.85rem;">Пользователи будут входить с этим паролем (логин любой)</p>
+                        <button class="add-streamer-btn" id="addStreamerBtn">+ Добавить</button>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -789,12 +630,8 @@
         </div>
 
         <div class="wrapper" id="wrapper">
-            <!-- Главная сетка (RGG Live стиль) -->
-            <div class="main-grid-container">
-                <div class="grid-overlay" id="gridContainer"></div>
-            </div>
+            <div class="container" id="container"></div>
 
-            <!-- Активный вид (Multistream стиль) -->
             <div class="active-view" id="activeView">
                 <div class="left-section">
                     <div class="main-player" id="mainPlayer">
@@ -812,18 +649,16 @@
     </div>
 
     <script>
-        // Конфигурация
+        // Конфигурация - только admin/admin123
         const ADMIN_USERNAME = 'admin';
         const ADMIN_PASSWORD = 'admin123';
         
         // Глобальные переменные
         let settings = { gridSize: 20, streamers: [] };
         let currentUser = null;
-        let currentPassword = null;
         let activeChannel = null;
         let bottomStreamers = [];
         let sidebarStreamers = [];
-        let gridPositions = [];
 
         // DOM элементы
         const loginPage = document.getElementById('loginPage');
@@ -841,9 +676,7 @@
         const addStreamerBtn = document.getElementById('addStreamerBtn');
         const saveBtn = document.getElementById('saveBtn');
         const resetBtn = document.getElementById('resetBtn');
-        const generatePassword = document.getElementById('generatePassword');
-        const currentPasswordInput = document.getElementById('currentPassword');
-        const gridContainer = document.getElementById('gridContainer');
+        const container = document.getElementById('container');
         const wrapper = document.getElementById('wrapper');
         const playerFrame = document.getElementById('playerFrame');
         const activeStreamerName = document.getElementById('activeStreamerName');
@@ -858,19 +691,9 @@
             "ailisiq", "akuma_dgm", "irvincheg", "sh4dowfi4sh"
         ];
 
-        // Загрузка данных из файлов
+        // Загрузка данных из файла
         async function loadData() {
             try {
-                // Загружаем пароль
-                const passResponse = await fetch('/password.txt?' + Date.now());
-                if (passResponse.ok) {
-                    currentPassword = (await passResponse.text()).trim();
-                    if (currentPassword) {
-                        currentPasswordInput.value = currentPassword;
-                    }
-                }
-
-                // Загружаем стримеров
                 const dataResponse = await fetch('/data.txt?' + Date.now());
                 if (dataResponse.ok) {
                     const data = await dataResponse.text();
@@ -900,34 +723,7 @@
             }
         }
 
-        // Сохранение пароля в password.txt
-        async function savePasswordToFile(password) {
-            try {
-                const response = await fetch('/save_password.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'password=' + encodeURIComponent(password)
-                });
-                if (response.ok) {
-                    currentPassword = password;
-                    currentPasswordInput.value = password;
-                }
-            } catch (error) {
-                console.error('Ошибка сохранения пароля:', error);
-            }
-        }
-
-        // Генерация случайного пароля
-        function generateRandomPassword() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let password = '';
-            for (let i = 0; i < 12; i++) {
-                password += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return password;
-        }
-
-        // Вход в систему
+        // Вход в систему - только admin/admin123
         loginBtn.addEventListener('click', async () => {
             const username = loginUsername.value.trim();
             const password = loginPassword.value.trim();
@@ -937,25 +733,13 @@
                 return;
             }
 
-            // Проверка администратора
             if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
                 currentUser = 'admin';
                 loginPage.style.display = 'none';
                 mainInterface.style.display = 'block';
                 settingsBtn.style.display = 'flex';
                 await loadData();
-                initMainGrid();
-                return;
-            }
-
-            // Проверка пользователя
-            if (currentPassword && password === currentPassword) {
-                currentUser = 'user';
-                loginPage.style.display = 'none';
-                mainInterface.style.display = 'block';
-                settingsBtn.style.display = 'none';
-                await loadData();
-                initMainGrid();
+                initStreamers();
                 return;
             }
 
@@ -965,12 +749,6 @@
         // Enter для входа
         loginPassword.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') loginBtn.click();
-        });
-
-        // Генерация нового пароля
-        generatePassword.addEventListener('click', () => {
-            const newPassword = generateRandomPassword();
-            savePasswordToFile(newPassword);
         });
 
         // Функции интерфейса
@@ -997,56 +775,21 @@
             return { cols: 5, rows: 4 };
         }
 
-        function initMainGrid() {
-            gridContainer.innerHTML = '';
-            
+        function updateGridLayout() {
             const count = Math.min(settings.gridSize, settings.streamers.length);
-            const streamersToShow = settings.streamers.slice(0, count);
-            
             const { cols, rows } = calculateGrid(count);
-            
-            // Создаем CSS Grid
-            gridContainer.style.display = 'grid';
-            gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-            gridContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-            gridContainer.style.gap = '4px';
-            gridContainer.style.padding = '4px';
-            
-            streamersToShow.forEach(channel => {
-                const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
-                const parent = getParentDomain();
-                
-                const cell = document.createElement('div');
-                cell.className = 'grid-cell';
-                cell.dataset.channel = channel;
-                
-                cell.innerHTML = `
-                    <iframe 
-                        src="https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=true&autoplay=true&controls=false"
-                        allow="autoplay; fullscreen"
-                        allowfullscreen>
-                    </iframe>
-                    <div class="streamer-label">${displayName}</div>
-                `;
-                
-                cell.addEventListener('click', () => {
-                    openStream(channel, displayName);
-                });
-                
-                gridContainer.appendChild(cell);
-            });
+            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
         }
 
-        function createActiveBox(channel, location) {
+        function createGridBox(channel) {
             const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
             const parent = getParentDomain();
             
             const box = document.createElement('div');
-            box.className = 'stream-box online with-player';
+            box.className = 'stream-box online';
             box.dataset.channel = channel;
             box.dataset.name = displayName;
-            box.dataset.location = location;
-            box.draggable = currentUser === 'admin';
 
             box.innerHTML = `
                 <div class="mini-player">
@@ -1061,80 +804,45 @@
             `;
 
             const overlay = box.querySelector('.click-overlay');
-            overlay.addEventListener('click', () => {
+            overlay.addEventListener('click', (e) => {
+                e.stopPropagation();
                 openStream(channel, displayName);
             });
-
-            if (currentUser === 'admin') {
-                box.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', channel);
-                    e.dataTransfer.setData('location', location);
-                    box.classList.add('dragging');
-                });
-
-                box.addEventListener('dragend', () => {
-                    box.classList.remove('dragging');
-                    document.querySelectorAll('.stream-box').forEach(b => b.classList.remove('drag-over'));
-                });
-
-                box.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    box.classList.add('drag-over');
-                });
-
-                box.addEventListener('dragleave', () => {
-                    box.classList.remove('drag-over');
-                });
-
-                box.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    box.classList.remove('drag-over');
-                    
-                    const draggedChannel = e.dataTransfer.getData('text/plain');
-                    const draggedLocation = e.dataTransfer.getData('location');
-                    const targetChannel = channel;
-                    const targetLocation = location;
-
-                    if (draggedChannel === targetChannel) return;
-
-                    swapStreamers(draggedChannel, draggedLocation, targetChannel, targetLocation);
-                });
-            }
 
             return box;
         }
 
-        function swapStreamers(channel1, loc1, channel2, loc2) {
-            let idx1, idx2;
+        function createActiveBox(channel, location) {
+            const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
+            const parent = getParentDomain();
             
-            if (loc1 === 'bottom') {
-                idx1 = bottomStreamers.indexOf(channel1);
-            } else {
-                idx1 = sidebarStreamers.indexOf(channel1);
-            }
-            
-            if (loc2 === 'bottom') {
-                idx2 = bottomStreamers.indexOf(channel2);
-            } else {
-                idx2 = sidebarStreamers.indexOf(channel2);
-            }
+            const box = document.createElement('div');
+            box.className = 'stream-box online';
+            box.dataset.channel = channel;
+            box.dataset.name = displayName;
 
-            if (loc1 === 'bottom' && loc2 === 'bottom') {
-                [bottomStreamers[idx1], bottomStreamers[idx2]] = [bottomStreamers[idx2], bottomStreamers[idx1]];
-            } else if (loc1 === 'sidebar' && loc2 === 'sidebar') {
-                [sidebarStreamers[idx1], sidebarStreamers[idx2]] = [sidebarStreamers[idx2], sidebarStreamers[idx1]];
-            } else if (loc1 === 'bottom' && loc2 === 'sidebar') {
-                bottomStreamers[idx1] = channel2;
-                sidebarStreamers[idx2] = channel1;
-            } else if (loc1 === 'sidebar' && loc2 === 'bottom') {
-                sidebarStreamers[idx1] = channel2;
-                bottomStreamers[idx2] = channel1;
-            }
+            box.innerHTML = `
+                <div class="mini-player">
+                    <iframe 
+                        src="https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=true&autoplay=true&controls=false"
+                        allow="autoplay; fullscreen"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <div class="click-overlay"></div>
+                <span class="streamer-name">${displayName}</span>
+            `;
 
-            renderActivePanels();
+            const overlay = box.querySelector('.click-overlay');
+            overlay.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openStream(channel, displayName);
+            });
+
+            return box;
         }
 
-        function renderActivePanels() {
+        function renderPanels() {
             bottomStreams.innerHTML = '';
             bottomStreamers.forEach(channel => {
                 const box = createActiveBox(channel, 'bottom');
@@ -1168,7 +876,7 @@
             bottomStreamers = streamersToUse.slice(0, 4);
             sidebarStreamers = streamersToUse.slice(4);
 
-            renderActivePanels();
+            renderPanels();
         }
 
         function closeStream() {
@@ -1180,6 +888,20 @@
             sidebar.innerHTML = '';
             bottomStreamers = [];
             sidebarStreamers = [];
+        }
+
+        function initStreamers() {
+            container.innerHTML = '';
+
+            const count = Math.min(settings.gridSize, settings.streamers.length);
+            const streamersToShow = settings.streamers.slice(0, count);
+
+            updateGridLayout();
+
+            streamersToShow.forEach(channel => {
+                const box = createGridBox(channel);
+                container.appendChild(box);
+            });
         }
 
         // Обработчики интерфейса
@@ -1220,8 +942,7 @@
 
             streamersList.querySelectorAll('.remove-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const index = parseInt(e.target.dataset.index);
-                    settings.streamers.splice(index, 1);
+                    settings.streamers.splice(parseInt(e.target.dataset.index), 1);
                     renderStreamerInputs();
                 });
             });
@@ -1261,14 +982,12 @@
             if (activeChannel) {
                 closeStream();
             }
-            initMainGrid();
+            initStreamers();
         });
 
         resetBtn.addEventListener('click', () => {
-            settings = { gridSize: 20, streamers: [...defaultStreamers] };
+            settings.streamers = [...defaultStreamers];
             renderStreamerInputs();
-            gridSlider.value = 20;
-            gridValue.textContent = '20';
         });
     </script>
 </body>
