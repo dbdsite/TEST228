@@ -948,7 +948,7 @@
 
 <!-- Footer -->
     <footer>
-        <p class="footer-copyright">Сайт создан по заказу Lagerta_Seeman</p>
+        <p class="footer-copyright">Сайт создан по заказу для Lagerta_Seeman</p>
     </footer>
 
     <div class="modal-overlay" id="modalOverlay">
@@ -1028,16 +1028,16 @@
         </div>
     </div>
 
-<!-- Footer -->
-    <footer>
-            <p class="footer-copyright">Сайт создан при поддержке by PHG community</p>
-    </footer>
-
     <script>
         // ============ КОНСТАНТЫ ============
         const STORAGE_KEY = 'hlsMultiStreamData';
         const DEFAULT_PASSWORD = 'admin';
         const API_BASE = 'https://test228.onrender.com/api';
+
+        // wake render server
+        fetch('https://test228.onrender.com/api/status/xqc').catch(()=>{});
+
+        function createHlsPlayer(container, channel) {
 
         const defaultGroups = [
             { name: "Группа 1", streamers: ["xqc", "shroud", "summit1g", "lirik"] },
@@ -1802,8 +1802,14 @@
         }, 30000);
 
         // ============ INIT ============
-        console.log('HLS Multi Stream Viewer');
-        render();
+           fetch('https://test228.onrender.com/api/ping').catch(()=>{});
+       setInterval(() => {
+           fetch('https://test228.onrender.com/api/ping').catch(()=>{});
+           }, 300000);
+ 
+           console.log('HLS Multi Stream Viewer');
+           render();
+           });
     </script>
 </body>
 </html>
