@@ -1037,8 +1037,6 @@
         // wake render server
         fetch('https://test228.onrender.com/api/status/xqc').catch(()=>{});
 
-        function createHlsPlayer(container, channel) {
-
         const defaultGroups = [
             { name: "Группа 1", streamers: ["xqc", "shroud", "summit1g", "lirik"] },
             { name: "Группа 2", streamers: ["pokimane", "hasanabi", "mizkif", "ludwig"] },
@@ -1801,15 +1799,14 @@
             });
         }, 30000);
 
-        // ============ INIT ============
-           fetch('https://test228.onrender.com/api/ping').catch(()=>{});
-       setInterval(() => {
-           fetch('https://test228.onrender.com/api/ping').catch(()=>{});
-           }, 300000);
+                // ============ INIT ============
+        fetch('https://test228.onrender.com/api/ping').catch(()=>{});
+        setInterval(() => {
+            fetch('https://test228.onrender.com/api/ping').catch(()=>{});
+        }, 300000);
  
-           console.log('HLS Multi Stream Viewer');
-           render();
-           });
-    </script>
+        console.log('HLS Multi Stream Viewer');
+        render();
+    </script> // Одна закрывающая скобка
 </body>
 </html>
