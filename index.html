@@ -71,12 +71,43 @@
 
         .settings-btn:hover { background: #772ce8; }
 
-        .grid-count-control {
+        .left-controls {
             display: flex;
             align-items: center;
             gap: 10px;
             position: absolute;
             left: 15px;
+        }
+
+        /* Кнопка сворачивания */
+        .collapse-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #ff4444;
+            background: transparent;
+            color: #ff4444;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .collapse-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .collapse-btn.visible {
+            display: flex;
+        }
+
+        .grid-count-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .grid-count-control label { color: #888; font-size: 0.85rem; }
@@ -154,7 +185,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 0;
             min-width: 0;
             height: 100%;
             overflow: hidden;
@@ -187,7 +218,7 @@
             display: none;
             flex-direction: column;
             flex: 1;
-            gap: 8px;
+            gap: 0;
             height: 100%;
             overflow: hidden;
         }
@@ -195,11 +226,10 @@
         .main-player {
             flex: 1;
             background: #000;
-            border-radius: 8px;
+            border-radius: 8px 8px 0 0;
             overflow: hidden;
             position: relative;
             min-height: 0;
-            max-height: calc(100% - 160px);
         }
 
         .main-player video {
@@ -208,41 +238,36 @@
             object-fit: contain;
         }
 
-        .player-info {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 20px;
-            background: #18181b;
-            border-radius: 8px;
-            gap: 15px;
-            flex-shrink: 0;
-            height: 50px;
+        /* Ник на большом плеере - внизу по центру */
+        .player-label {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 2rem;
+            font-weight: 700;
+            z-index: 100;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
+            letter-spacing: 1px;
+            text-align: center;
+            white-space: nowrap;
+            max-width: 90%;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-
-        .active-name { color: #fff; font-weight: 700; font-size: 1.2rem; }
-
-        .close-expanded {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: none;
-            background: #ff4444;
-            color: white;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
-        .close-expanded:hover { background: #cc0000; }
 
         .bottom-streams {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 8px;
-            height: 100px;
+            height: 140px;
             flex-shrink: 0;
             min-height: 0;
             overflow: hidden;
+            background: #0e0e10;
+            border-radius: 0 0 8px 8px;
+            padding: 4px 4px 4px 4px;
         }
 
         .sidebar {
@@ -337,25 +362,49 @@
             z-index: 5;
         }
 
+        /* Ники по центру внизу, крупнее */
         .stream-box .label {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
             color: #fff;
-            padding: 12px 6px 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 1.1rem;
+            font-weight: 700;
             z-index: 4;
             pointer-events: none;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.6);
+            padding: 5px 15px;
+            border-radius: 25px;
             white-space: nowrap;
+            max-width: 90%;
             overflow: hidden;
             text-overflow: ellipsis;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        .stream-box.has-sound .label::before { content: '🔊 '; }
-        .stream-box.offline .label { color: #ff4444; }
+        /* Для маленьких окошек (сайдбар и нижние стримы) - ники чуть меньше, но все еще крупные */
+        .sidebar .stream-box .label,
+        .bottom-streams .stream-box .label {
+            font-size: 0.95rem;
+            padding: 4px 12px;
+            bottom: 5px;
+        }
+
+        .stream-box.has-sound .label::before { 
+            content: '🔊 ';
+            font-size: 1rem;
+            margin-right: 3px;
+        }
+
+        .stream-box.offline .label { 
+            color: #ff4444; 
+            background: rgba(0,0,0,0.8);
+        }
 
         .stream-box .status {
             position: absolute;
@@ -788,21 +837,25 @@
             .bottom-streams { grid-template-columns: repeat(3, 1fr); }
             .grid-count-control { display: none !important; }
             .main-wrapper { padding: 6px; gap: 6px; }
+            .left-controls { gap: 5px; }
         }
 
         @media (max-width: 800px) {
             .sidebar { width: 120px; }
             .group-slots { grid-template-columns: repeat(2, 1fr); }
-            .bottom-streams { height: 90px; }
+            .bottom-streams { height: 120px; }
             .main-wrapper { padding: 4px; gap: 4px; }
+            .player-label { font-size: 1.6rem; }
+            .collapse-btn { width: 35px; height: 35px; }
         }
 
         @media (max-width: 600px) {
             .main-wrapper { flex-direction: column; }
             .sidebar { width: 100%; flex-direction: row; height: 100px; overflow-x: auto; }
             .sidebar .stream-box { min-width: 160px; height: 100%; }
-            .bottom-streams { grid-template-columns: repeat(2, 1fr); height: 90px; }
+            .bottom-streams { grid-template-columns: repeat(2, 1fr); height: 100px; }
             .main-wrapper { padding: 4px; gap: 4px; }
+            .player-label { font-size: 1.4rem; bottom: 15px; }
         }
     </style>
 </head>
@@ -818,10 +871,15 @@
     </div>
 
     <div class="top-bar" id="topBar" data-view="quad">
-        <div class="grid-count-control">
-            <label>Стримов:</label>
-            <input type="range" class="grid-count-slider" id="gridCountSlider" min="1" max="20" value="12">
-            <span class="grid-count-value" id="gridCountValue">12</span>
+        <div class="left-controls">
+            <!-- Кнопка сворачивания перед ползунком -->
+            <button class="collapse-btn" id="collapseExpandedBtn" title="Свернуть (Esc)">✕</button>
+            
+            <div class="grid-count-control">
+                <label>Стримов:</label>
+                <input type="range" class="grid-count-slider" id="gridCountSlider" min="1" max="20" value="12">
+                <span class="grid-count-value" id="gridCountValue">12</span>
+            </div>
         </div>
 
         <div class="view-toggle">
@@ -845,10 +903,8 @@
             <div class="quad-view" id="quadView"></div>
             
             <div class="expanded-view" id="expandedView">
-                <div class="main-player" id="mainPlayer"></div>
-                <div class="player-info">
-                    <span class="active-name" id="activeName"></span>
-                    <button class="close-expanded" id="closeExpanded">✕</button>
+                <div class="main-player" id="mainPlayer">
+                    <!-- Ник будет добавлен сюда динамически -->
                 </div>
                 <div class="bottom-streams" id="bottomStreams"></div>
             </div>
@@ -940,7 +996,7 @@
         // ============ КОНСТАНТЫ ============
         const STORAGE_KEY = 'hlsMultiStreamData';
         const DEFAULT_PASSWORD = 'admin';
-        const API_BASE = 'https://api.allorigins.win/raw?url=http://217.160.125.128:15492/api';
+        const API_BASE = '/api';
 
         const defaultGroups = [
             { name: "Группа 1", streamers: ["xqc", "shroud", "summit1g", "lirik"] },
@@ -983,12 +1039,12 @@
         };
 
         // ============ СОСТОЯНИЕ ============
-        let viewMode = 'quad';
+        let viewMode = 'quad'; // Текущий режим отображения
         let activeChannel = null;
         let soundChannel = null;
         let bottomChannels = [];
         let sidebarChannels = [];
-        let hlsPlayers = new Map(); // Изменено на Map для лучшего управления
+        let hlsPlayers = new Map();
 
         // ============ DOM ============
         const topBar = document.getElementById('topBar');
@@ -996,23 +1052,21 @@
         const gridView = document.getElementById('gridView');
         const quadView = document.getElementById('quadView');
         const mainPlayer = document.getElementById('mainPlayer');
-        const activeName = document.getElementById('activeName');
-        const closeExpanded = document.getElementById('closeExpanded');
         const bottomStreams = document.getElementById('bottomStreams');
         const sidebar = document.getElementById('sidebar');
         const groupName = document.getElementById('groupName');
         const groupDots = document.getElementById('groupDots');
         const gridCountSlider = document.getElementById('gridCountSlider');
         const gridCountValue = document.getElementById('gridCountValue');
+        const collapseBtn = document.getElementById('collapseExpandedBtn');
+        const viewBtns = document.querySelectorAll('.view-btn');
 
         // ============ HLS ПЛЕЕР ============
         function createHlsPlayer(container, channel, options = {}) {
             const { muted = true, autoplay = true } = options;
             
-            // Проверяем, существует ли уже плеер для этого канала
             const existingPlayer = hlsPlayers.get(channel);
             if (existingPlayer && existingPlayer.container === container) {
-                // Если плеер уже в этом контейнере, просто обновляем звук
                 if (existingPlayer.video) {
                     existingPlayer.video.muted = muted;
                     existingPlayer.video.volume = muted ? 0 : 0.5;
@@ -1020,7 +1074,6 @@
                 return existingPlayer;
             }
 
-            // Если плеер существует но в другом контейнере, уничтожаем его
             if (existingPlayer) {
                 try {
                     existingPlayer.hls.destroy();
@@ -1073,7 +1126,6 @@
                     video.play().catch(e => console.log('Autoplay blocked'));
                 }
 
-                // Качество
                 qualitySelect.innerHTML = '<option value="-1">Auto</option>';
                 data.levels.forEach((level, idx) => {
                     qualitySelect.innerHTML += `<option value="${idx}">${level.height}p</option>`;
@@ -1087,7 +1139,6 @@
                 }
             });
 
-            // Контролы
             playBtn.onclick = (e) => {
                 e.stopPropagation();
                 if (video.paused) {
@@ -1105,10 +1156,8 @@
                 muteBtn.textContent = video.muted ? '🔇' : '🔊';
                 volumeSlider.value = video.muted ? 0 : video.volume * 100;
                 
-                // Обновляем глобальное состояние звука
                 if (!video.muted) {
                     if (soundChannel !== channel) {
-                        // Выключаем звук на других каналах
                         hlsPlayers.forEach((player, ch) => {
                             if (ch !== channel && player.video) {
                                 player.video.muted = true;
@@ -1209,7 +1258,6 @@
                 box.appendChild(hint);
             }
 
-            // Создаём или переносим плеер
             setTimeout(() => {
                 createHlsPlayer(playerContainer, channel, { 
                     muted: channel !== soundChannel, 
@@ -1217,13 +1265,11 @@
                 });
             }, 10);
 
-            // Клик
             overlay.onclick = (e) => {
                 e.stopPropagation();
                 if (onClick) onClick(channel);
             };
 
-            // Drag & Drop
             if (draggable) {
                 box.ondragstart = (e) => {
                     e.dataTransfer.setData('channel', channel);
@@ -1259,7 +1305,6 @@
             const idx1 = arr1.indexOf(ch1), idx2 = arr2.indexOf(ch2);
             if (idx1 === -1 || idx2 === -1) return;
             
-            // Меняем каналы местами
             if (loc1 === loc2) { 
                 [arr1[idx1], arr1[idx2]] = [arr1[idx2], arr1[idx1]]; 
             } else { 
@@ -1272,14 +1317,12 @@
 
         function toggleSound(channel) {
             if (soundChannel === channel) {
-                // Выключаем звук
                 const player = hlsPlayers.get(channel);
                 if (player && player.video) {
                     player.video.muted = true;
                 }
                 soundChannel = null;
             } else {
-                // Выключаем звук на всех каналах
                 hlsPlayers.forEach((player, ch) => {
                     if (player.video) {
                         player.video.muted = (ch !== channel);
@@ -1295,7 +1338,6 @@
             soundChannel = channel;
             viewMode = 'expanded';
             
-            // Выключаем звук на всех каналах кроме активного
             hlsPlayers.forEach((player, ch) => {
                 if (player.video) {
                     player.video.muted = (ch !== channel);
@@ -1306,12 +1348,20 @@
             bottomChannels = all.slice(0, 4);
             sidebarChannels = all.slice(4);
             render();
+            
+            // Показываем кнопку сворачивания
+            collapseBtn.classList.add('visible');
         }
 
         function closeExpandedView() {
             activeChannel = null;
+            // Возвращаемся к режиму, который был выбран в topBar.dataset.view
             viewMode = topBar.dataset.view;
+            soundChannel = null;
             render();
+            
+            // Скрываем кнопку сворачивания
+            collapseBtn.classList.remove('visible');
         }
 
         function getAllChannels() {
@@ -1325,7 +1375,6 @@
         function render() {
             mainWrapper.dataset.mode = viewMode;
             
-            // Не уничтожаем все плееры, только те, что больше не нужны
             const visibleChannels = getVisibleChannels();
             hlsPlayers.forEach((player, channel) => {
                 if (!visibleChannels.includes(channel)) {
@@ -1333,12 +1382,27 @@
                 }
             });
 
-            if (viewMode === 'quad') { renderQuadView(); renderSidebarForQuad(); }
-            else if (viewMode === 'grid') { renderGridView(); renderSidebarForGrid(); }
-            else if (viewMode === 'expanded') { renderExpandedView(); }
+            if (viewMode === 'quad') { 
+                renderQuadView(); 
+                renderSidebarForQuad(); 
+            }
+            else if (viewMode === 'grid') { 
+                renderGridView(); 
+                renderSidebarForGrid(); 
+            }
+            else if (viewMode === 'expanded') { 
+                renderExpandedView(); 
+            }
             
             updateGroupNav();
             updateSoundIndicators();
+            
+            // Обновляем видимость кнопки сворачивания
+            if (viewMode === 'expanded') {
+                collapseBtn.classList.add('visible');
+            } else {
+                collapseBtn.classList.remove('visible');
+            }
         }
 
         function getVisibleChannels() {
@@ -1407,8 +1471,16 @@
 
         function renderExpandedView() {
             mainPlayer.innerHTML = '';
+            
+            // Создаем плеер
             createHlsPlayer(mainPlayer, activeChannel, { muted: false, autoplay: true });
-            activeName.textContent = activeChannel.charAt(0).toUpperCase() + activeChannel.slice(1);
+            
+            // Добавляем ник на плеер - внизу по центру, без фона и LIVE
+            const label = document.createElement('div');
+            label.className = 'player-label';
+            label.textContent = activeChannel.charAt(0).toUpperCase() + activeChannel.slice(1);
+            mainPlayer.appendChild(label);
+            
             renderExpandedPanels();
         }
 
@@ -1489,12 +1561,24 @@
         }
 
         function setViewMode(mode) {
+            // Обновляем data-view на topBar
             topBar.dataset.view = mode;
+            
+            // Обновляем активные кнопки
+            viewBtns.forEach(b => {
+                if (b.dataset.view === mode) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+            
+            // Если не в развернутом режиме, меняем режим
             if (viewMode !== 'expanded') { 
                 viewMode = mode; 
                 soundChannel = null; 
             }
-            document.querySelectorAll('.view-btn').forEach(b => b.classList.toggle('active', b.dataset.view === mode));
+            
             render();
         }
 
@@ -1510,8 +1594,14 @@
 
         document.getElementById('prevGroup').onclick = () => goToGroup(settings.currentGroup - 1);
         document.getElementById('nextGroup').onclick = () => goToGroup(settings.currentGroup + 1);
-        document.querySelectorAll('.view-btn').forEach(b => b.onclick = () => setViewMode(b.dataset.view));
-        closeExpanded.onclick = closeExpandedView;
+        
+        // Исправляем обработчики для кнопок переключения режимов
+        viewBtns.forEach(b => {
+            b.onclick = () => setViewMode(b.dataset.view);
+        });
+        
+        // Кнопка сворачивания
+        collapseBtn.onclick = closeExpandedView;
 
         document.onkeydown = (e) => {
             if (document.getElementById('passwordOverlay').classList.contains('active')) {
@@ -1652,16 +1742,13 @@
         };
 
         // ============ ПЕРИОДИЧЕСКОЕ ОБНОВЛЕНИЕ ============
-        // Добавляем периодическую проверку соединений для предотвращения разрывов
         setInterval(() => {
             hlsPlayers.forEach((player, channel) => {
                 if (player.video && player.video.readyState === 0) {
-                    // Видео "зависло", пробуем перезагрузить
                     console.log(`Reconnecting ${channel}`);
                     try {
                         player.hls.recoverMediaError();
                     } catch (e) {
-                        // Если не получается восстановить, пересоздаем плеер
                         const container = player.container;
                         const muted = player.video.muted;
                         destroyPlayer(channel);
@@ -1671,7 +1758,7 @@
                     }
                 }
             });
-        }, 30000); // Проверка каждые 30 секунд
+        }, 30000);
 
         // ============ INIT ============
         console.log('HLS Multi Stream Viewer');
