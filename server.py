@@ -4,7 +4,9 @@ Twitch HLS Proxy Server
 Запуск: python server.py
 Откройте: http://localhost:8080
 """
+import time
 
+playlist_cache = {}
 import http.server
 import socketserver
 import json
@@ -40,15 +42,20 @@ class TwitchProxyHandler(TimeoutHTTPHandler):
     
     def do_GET(self):
         try:
-            # API для получения плейлиста
+            if self.path.startswith('/api/ping'):
+               self.send_response(200)
+               self.send_header('Content-Type', 'text/plain')
+               self.send_header('Access-Control-Allow-Origin', '*')
+               self.end_headers()
+               self.wfile.write(b'ok')
+            
             if self.path.startswith('/api/playlist/'):
                 channel = self.path.split('/api/playlist/')[1].split('?')[0].lower()
                 self.get_playlist(channel)
-            # API для проверки онлайн статуса
             elif self.path.startswith('/api/status/'):
                 channel = self.path.split('/api/status/')[1].split('?')[0].lower()
                 self.get_status(channel)
-            # Прокси для сегментов видео
+            
             elif self.path.startswith('/api/proxy/'):
                 url = urllib.parse.unquote(self.path.split('/api/proxy/')[1])
                 self.proxy_request(url)
@@ -120,6 +127,20 @@ class TwitchProxyHandler(TimeoutHTTPHandler):
         return None
     
     def get_playlist(self, channel):
+    cache_key = channel
+    current_time = time.time()
+
+    if cache_key in playlist_cache:
+        cached_data, cached_time = playlist_cache[cache_key]
+        if current_time - cached_time < 5:
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/vnd.apple.mpegurl')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Cache-Control', 'no-cache')
+            self.end_headers()
+            self.wfile.write(cached_data.encode('utf-8'))
+            return
+        
         """Получение HLS плейлиста"""
         try:
             token_data = self.get_access_token(channel)
@@ -159,6 +180,8 @@ class TwitchProxyHandler(TimeoutHTTPHandler):
             
             with urllib.request.urlopen(req, timeout=15) as response:
                 playlist = response.read().decode('utf-8')
+                
+                playlist_cache[channel] = (playlist, time.time())
                 
                 # Проксируем URL-ы сегментов через наш сервер
                 lines = playlist.split('\n')
@@ -259,7 +282,7 @@ class TwitchProxyHandler(TimeoutHTTPHandler):
                 self.send_response(200)
                 self.send_header('Content-Type', content_type)
                 self.send_header('Access-Control-Allow-Origin', '*')
-                self.send_header('Cache-Control', 'max-age=30')  # Кэшируем на 30 секунд
+                self.send_header('Cache-Control', 'public, max-age=60')  # Кэшируем на 30 секунд
                 if content_length:
                     self.send_header('Content-Length', content_length)
                 self.end_headers()
@@ -267,7 +290,7 @@ class TwitchProxyHandler(TimeoutHTTPHandler):
                 # Отправляем контент частями
                 while True:
                     try:
-                        chunk = response.read(8192)
+                        chunk = response.read(65536)
                         if not chunk:
                             break
                         self.wfile.write(chunk)
