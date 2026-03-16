@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <link rel="icon" href="https://static-cdn.jtvnw.net/jtv_user_pictures/481347b6-d915-4e3f-bb44-613a427e79f1-profile_image-70x70.png" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi Stream Viewer</title>
+    <title>Specially for Lagerta_Seeman</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * {
@@ -857,6 +858,36 @@
             .main-wrapper { padding: 4px; gap: 4px; }
             .player-label { font-size: 1.4rem; bottom: 15px; }
         }
+         /* Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #18181b;
+            color: #888;
+            text-align: center;
+            padding: 5px;
+            font-size: 0.8rem;
+            border-top: 1px solid #2d2d35;
+            z-index: 500;
+            height: 25px;
+        }
+
+        .footer-copyright {
+            margin: 0;
+            line-height: 15px;
+        }
+
+        /* Уменьшаем высоту main-wrapper чтобы освободить место для футера */
+        .main-wrapper {
+            height: calc(100vh - 75px); /* 50px (top-bar) + 25px (footer) = 75px */
+            margin-top: 50px;
+            display: flex;
+            padding: 8px;
+            gap: 8px;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
@@ -914,6 +945,11 @@
             <div class="sidebar-title">Другие стримы</div>
         </div>
     </div>
+
+<!-- Footer -->
+    <footer>
+        <p class="footer-copyright">Сайт создан по заказу Lagerta_Seeman</p>
+    </footer>
 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
@@ -992,12 +1028,29 @@
         </div>
     </div>
 
+<!-- Footer -->
+    <footer>
+            <p class="footer-copyright">Сайт создан при поддержке by PHG community</p>
+    </footer>
+
     <script>
         // ============ КОНСТАНТЫ ============
         const STORAGE_KEY = 'hlsMultiStreamData';
         const DEFAULT_PASSWORD = 'admin';
-        const API_BASE = '/api';
+        
+        // Массив публичных CORS-прокси для обхода блокировок
+        const PROXIES = [
+            'https://corsproxy.io/?',
+            'https://api.codetabs.com/v1/proxy?quest=',
+            'https://cors-anywhere.herokuapp.com/',
+            'https://thingproxy.freeboard.io/fetch/'
+        ];
+        
+        // Twitch API endpoint
+        const TWITCH_GQL = 'https://gql.twitch.tv/gql';
+        const TWITCH_CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
 
+        // Группы по умолчанию
         const defaultGroups = [
             { name: "Группа 1", streamers: ["xqc", "shroud", "summit1g", "lirik"] },
             { name: "Группа 2", streamers: ["pokimane", "hasanabi", "mizkif", "ludwig"] },
