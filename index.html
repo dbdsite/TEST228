@@ -4,7 +4,7 @@
     <link rel="icon" href="https://static-cdn.jtvnw.net/jtv_user_pictures/481347b6-d915-4e3f-bb44-613a427e79f1-profile_image-70x70.png" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>by Lagerta_Seeman</title>
+    <title>RGG Live + Multistream</title>
     <style>
         * {
             margin: 0;
@@ -14,9 +14,9 @@
 
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
             font-family: 'Segoe UI', Arial, sans-serif;
             overflow: hidden;
+            height: 100vh;
         }
 
         /* Страница входа */
@@ -393,17 +393,63 @@
             width: 100vw;
             display: flex;
             flex-direction: column;
+            background: #111;
         }
 
-        .container {
-            flex: 1;
-            display: grid;
-            gap: 4px;
-            padding: 4px;
+        .wrapper:not(.has-active) .main-grid-container {
+            display: block;
         }
 
-        .wrapper.has-active .container {
+        .wrapper.has-active .main-grid-container {
             display: none;
+        }
+
+        .main-grid-container {
+            position: relative;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-wrap: wrap;
+            overflow: hidden;
+            background: #111;
+        }
+
+        .grid-cell {
+            position: relative;
+            border: 2px solid #2d2d35;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+            transition: all 0.3s ease;
+        }
+
+        .grid-cell.player-active {
+            border-color: #9146ff;
+            box-shadow: 0 0 20px rgba(145, 70, 255, 0.5);
+        }
+
+        .grid-cell iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .grid-cell .streamer-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            color: white;
+            padding: 20px 8px 6px;
+            font-size: 0.9rem;
+            text-align: center;
+            pointer-events: none;
         }
 
         .active-view {
@@ -482,7 +528,6 @@
             gap: 4px;
             height: 160px;
             flex-shrink: 0;
-            position: relative;
         }
 
         .sidebar {
@@ -614,30 +659,6 @@
             z-index: 10;
         }
 
-        .stream-box .loading-spinner {
-            display: none;
-            width: 30px;
-            height: 30px;
-            border: 3px solid #2d2d35;
-            border-top-color: #9146ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            position: absolute;
-            z-index: 5;
-        }
-
-        .stream-box.loading .loading-spinner {
-            display: block;
-        }
-
-        .stream-box.loading .streamer-name {
-            display: none;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
         .sidebar .stream-box {
             min-height: 100px;
             flex-shrink: 0;
@@ -732,9 +753,13 @@
                     <button class="modal-close" id="modalClose">✕</button>
                 </div>
                 <div class="modal-body">
+                    <div class="warning-box">
+                        <h4>⚠️ Режим администратора</h4>
+                        <p>Здесь вы можете настроить список стримеров, количество одновременно отображаемых на главном экране и управлять доступом пользователей.</p>
+                    </div>
 
                     <div class="setting-group">
-                        <label class="setting-label">Количество стримеров</label>
+                        <label class="setting-label">Количество стримеров на главном экране</label>
                         <div class="grid-size-container">
                             <input type="range" class="grid-slider" id="gridSlider" min="1" max="20" value="20">
                             <span class="grid-value" id="gridValue">20</span>
@@ -742,18 +767,18 @@
                     </div>
 
                     <div class="setting-group">
-                        <label class="setting-label">Стримеры</label>
+                        <label class="setting-label">Список стримеров</label>
                         <div class="streamers-list" id="streamersList"></div>
-                        <button class="add-streamer-btn" id="addStreamerBtn">+ Добавить</button>
+                        <button class="add-streamer-btn" id="addStreamerBtn">+ Добавить стримера</button>
                     </div>
 
                     <div class="password-section">
-                        <label class="setting-label">Управление доступом пользователей</label>
+                        <label class="setting-label">Пароль для пользователей</label>
                         <div class="password-display">
                             <input type="text" class="password-input" id="currentPassword" readonly placeholder="Текущий пароль" value="Не установлен">
                             <button class="generate-btn" id="generatePassword">Сгенерировать</button>
                         </div>
-                        <p style="color: #ccc; font-size: 0.85rem;">После генерации старый пароль перестанет работать</p>
+                        <p style="color: #ccc; font-size: 0.85rem;">Пользователи будут входить с этим паролем (логин любой)</p>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -764,8 +789,12 @@
         </div>
 
         <div class="wrapper" id="wrapper">
-            <div class="container" id="container"></div>
+            <!-- Главная сетка (RGG Live стиль) -->
+            <div class="main-grid-container">
+                <div class="grid-overlay" id="gridContainer"></div>
+            </div>
 
+            <!-- Активный вид (Multistream стиль) -->
             <div class="active-view" id="activeView">
                 <div class="left-section">
                     <div class="main-player" id="mainPlayer">
@@ -792,9 +821,9 @@
         let currentUser = null;
         let currentPassword = null;
         let activeChannel = null;
-        let streamStatuses = {};
         let bottomStreamers = [];
         let sidebarStreamers = [];
+        let gridPositions = [];
 
         // DOM элементы
         const loginPage = document.getElementById('loginPage');
@@ -814,13 +843,20 @@
         const resetBtn = document.getElementById('resetBtn');
         const generatePassword = document.getElementById('generatePassword');
         const currentPasswordInput = document.getElementById('currentPassword');
-        const container = document.getElementById('container');
+        const gridContainer = document.getElementById('gridContainer');
         const wrapper = document.getElementById('wrapper');
         const playerFrame = document.getElementById('playerFrame');
         const activeStreamerName = document.getElementById('activeStreamerName');
         const closeBtn = document.getElementById('closeBtn');
         const bottomStreams = document.getElementById('bottomStreams');
         const sidebar = document.getElementById('sidebar');
+
+        // Дефолтные стримеры
+        const defaultStreamers = [
+            "xqc", "bratishkinoff", "silvername", "c_a_k_e", "shroud",
+            "summit1g", "lirik", "pokimane", "pestily", "asmongold",
+            "ailisiq", "akuma_dgm", "irvincheg", "sh4dowfi4sh"
+        ];
 
         // Загрузка данных из файлов
         async function loadData() {
@@ -842,17 +878,11 @@
                         .map(line => line.trim())
                         .filter(line => line && !line.startsWith('#'));
                 } else {
-                    // Если файла нет, используем дефолтных
-                    settings.streamers = [
-                        "xqc", "bratishkinoff", "silvername", "c_a_k_e", "shroud",
-                        "summit1g", "lirik", "pokimane", "pestily", "asmongold"
-                    ];
+                    settings.streamers = [...defaultStreamers];
                 }
             } catch (error) {
                 console.error('Ошибка загрузки данных:', error);
-                settings.streamers = [
-                    "xqc", "bratishkinoff", "silvername", "c_a_k_e", "shroud"
-                ];
+                settings.streamers = [...defaultStreamers];
             }
         }
 
@@ -914,7 +944,7 @@
                 mainInterface.style.display = 'block';
                 settingsBtn.style.display = 'flex';
                 await loadData();
-                initStreamers();
+                initMainGrid();
                 return;
             }
 
@@ -925,7 +955,7 @@
                 mainInterface.style.display = 'block';
                 settingsBtn.style.display = 'none';
                 await loadData();
-                initStreamers();
+                initMainGrid();
                 return;
             }
 
@@ -967,42 +997,44 @@
             return { cols: 5, rows: 4 };
         }
 
-        function updateGridLayout() {
-            const count = Math.min(settings.gridSize, settings.streamers.length);
-            const { cols, rows } = calculateGrid(count);
-            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-            container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-        }
-
-        function createGridBox(channel) {
-            const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
-            const parent = getParentDomain();
+        function initMainGrid() {
+            gridContainer.innerHTML = '';
             
-            const box = document.createElement('div');
-            box.className = 'stream-box';
-            box.dataset.channel = channel;
-            box.dataset.name = displayName;
-
-            box.innerHTML = `
-                <div class="mini-player">
+            const count = Math.min(settings.gridSize, settings.streamers.length);
+            const streamersToShow = settings.streamers.slice(0, count);
+            
+            const { cols, rows } = calculateGrid(count);
+            
+            // Создаем CSS Grid
+            gridContainer.style.display = 'grid';
+            gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            gridContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+            gridContainer.style.gap = '4px';
+            gridContainer.style.padding = '4px';
+            
+            streamersToShow.forEach(channel => {
+                const displayName = channel.charAt(0).toUpperCase() + channel.slice(1);
+                const parent = getParentDomain();
+                
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.dataset.channel = channel;
+                
+                cell.innerHTML = `
                     <iframe 
                         src="https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=true&autoplay=true&controls=false"
                         allow="autoplay; fullscreen"
                         allowfullscreen>
                     </iframe>
-                </div>
-                <div class="click-overlay"></div>
-                <span class="streamer-name">${displayName}</span>
-            `;
-
-            box.classList.add('online', 'with-player');
-
-            const overlay = box.querySelector('.click-overlay');
-            overlay.addEventListener('click', () => {
-                openStream(channel, displayName);
+                    <div class="streamer-label">${displayName}</div>
+                `;
+                
+                cell.addEventListener('click', () => {
+                    openStream(channel, displayName);
+                });
+                
+                gridContainer.appendChild(cell);
             });
-
-            return box;
         }
 
         function createActiveBox(channel, location) {
@@ -1099,10 +1131,10 @@
                 bottomStreamers[idx2] = channel1;
             }
 
-            renderPanels();
+            renderActivePanels();
         }
 
-        function renderPanels() {
+        function renderActivePanels() {
             bottomStreams.innerHTML = '';
             bottomStreamers.forEach(channel => {
                 const box = createActiveBox(channel, 'bottom');
@@ -1136,7 +1168,7 @@
             bottomStreamers = streamersToUse.slice(0, 4);
             sidebarStreamers = streamersToUse.slice(4);
 
-            renderPanels();
+            renderActivePanels();
         }
 
         function closeStream() {
@@ -1148,20 +1180,6 @@
             sidebar.innerHTML = '';
             bottomStreamers = [];
             sidebarStreamers = [];
-        }
-
-        function initStreamers() {
-            container.innerHTML = '';
-
-            const count = Math.min(settings.gridSize, settings.streamers.length);
-            const streamersToShow = settings.streamers.slice(0, count);
-
-            updateGridLayout();
-
-            streamersToShow.forEach(channel => {
-                const box = createGridBox(channel);
-                container.appendChild(box);
-            });
         }
 
         // Обработчики интерфейса
@@ -1202,7 +1220,8 @@
 
             streamersList.querySelectorAll('.remove-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    settings.streamers.splice(parseInt(e.target.dataset.index), 1);
+                    const index = parseInt(e.target.dataset.index);
+                    settings.streamers.splice(index, 1);
                     renderStreamerInputs();
                 });
             });
@@ -1238,7 +1257,11 @@
             
             saveStreamersToFile();
             closeModal();
-            initStreamers();
+            
+            if (activeChannel) {
+                closeStream();
+            }
+            initMainGrid();
         });
 
         resetBtn.addEventListener('click', () => {
