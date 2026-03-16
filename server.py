@@ -18,7 +18,7 @@ import string
 import socket
 import time
 
-PORT = 8080
+PORT = int(os.environ.get("PORT", 8080))
 CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko'  # Public Twitch client ID
 
 class TimeoutHTTPHandler(http.server.SimpleHTTPRequestHandler):
