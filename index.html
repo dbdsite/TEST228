@@ -80,7 +80,6 @@
             left: 15px;
         }
 
-        /* Кнопка сворачивания */
         .collapse-btn {
             width: 40px;
             height: 40px;
@@ -174,7 +173,7 @@
         }
 
         .main-wrapper {
-            height: calc(100vh - 50px);
+            height: calc(100vh - 75px);
             margin-top: 50px;
             display: flex;
             padding: 8px;
@@ -239,7 +238,6 @@
             object-fit: contain;
         }
 
-        /* Ник на большом плеере - внизу по центру */
         .player-label {
             position: absolute;
             bottom: 20px;
@@ -268,7 +266,7 @@
             overflow: hidden;
             background: #0e0e10;
             border-radius: 0 0 8px 8px;
-            padding: 4px 4px 4px 4px;
+            padding: 4px;
         }
 
         .sidebar {
@@ -293,7 +291,6 @@
             flex-shrink: 0;
         }
 
-        /* Stream Box */
         .stream-box {
             background: #000;
             border-radius: 6px;
@@ -307,14 +304,8 @@
             width: 100%;
         }
 
-        .grid-view .stream-box {
-            aspect-ratio: 16/9;
-        }
-
-        .quad-view .stream-box {
-            aspect-ratio: 16/9;
-        }
-
+        .grid-view .stream-box,
+        .quad-view .stream-box,
         .bottom-streams .stream-box {
             aspect-ratio: 16/9;
         }
@@ -363,7 +354,6 @@
             z-index: 5;
         }
 
-        /* Ники по центру внизу, крупнее */
         .stream-box .label {
             position: absolute;
             bottom: 8px;
@@ -388,7 +378,6 @@
             border: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* Для маленьких окошек (сайдбар и нижние стримы) - ники чуть меньше, но все еще крупные */
         .sidebar .stream-box .label,
         .bottom-streams .stream-box .label {
             font-size: 0.95rem;
@@ -465,7 +454,6 @@
 
         .stream-box:hover .click-hint { opacity: 1; }
 
-        /* Video Controls */
         .video-controls {
             position: absolute;
             bottom: 0;
@@ -530,7 +518,6 @@
             max-width: 60px;
         }
 
-        /* Password */
         .password-overlay {
             display: none;
             position: fixed;
@@ -592,7 +579,6 @@
         .password-box button:hover { background: #772ce8; }
         .password-box .cancel-btn { background: #2d2d35; margin-top: 10px; }
 
-        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -811,17 +797,14 @@
         .btn-secondary { background: #2d2d35; color: white; }
         .btn-secondary:hover { background: #464649; }
 
-        /* View modes */
         .main-wrapper[data-mode="grid"] .grid-view { 
             display: grid; 
-            grid-auto-rows: minmax(0, 1fr);
         }
         .main-wrapper[data-mode="grid"] .quad-view,
         .main-wrapper[data-mode="grid"] .expanded-view { display: none; }
 
         .main-wrapper[data-mode="quad"] .quad-view { 
             display: grid; 
-            grid-auto-rows: minmax(0, 1fr);
         }
         .main-wrapper[data-mode="quad"] .grid-view,
         .main-wrapper[data-mode="quad"] .expanded-view { display: none; }
@@ -833,32 +816,6 @@
         .top-bar[data-view="quad"] .grid-count-control { display: none; }
         .top-bar[data-view="grid"] .group-nav { display: none; }
 
-        @media (max-width: 1100px) {
-            .sidebar { width: 150px; }
-            .bottom-streams { grid-template-columns: repeat(3, 1fr); }
-            .grid-count-control { display: none !important; }
-            .main-wrapper { padding: 6px; gap: 6px; }
-            .left-controls { gap: 5px; }
-        }
-
-        @media (max-width: 800px) {
-            .sidebar { width: 120px; }
-            .group-slots { grid-template-columns: repeat(2, 1fr); }
-            .bottom-streams { height: 120px; }
-            .main-wrapper { padding: 4px; gap: 4px; }
-            .player-label { font-size: 1.6rem; }
-            .collapse-btn { width: 35px; height: 35px; }
-        }
-
-        @media (max-width: 600px) {
-            .main-wrapper { flex-direction: column; }
-            .sidebar { width: 100%; flex-direction: row; height: 100px; overflow-x: auto; }
-            .sidebar .stream-box { min-width: 160px; height: 100%; }
-            .bottom-streams { grid-template-columns: repeat(2, 1fr); height: 100px; }
-            .main-wrapper { padding: 4px; gap: 4px; }
-            .player-label { font-size: 1.4rem; bottom: 15px; }
-        }
-         /* Footer */
         footer {
             position: fixed;
             bottom: 0;
@@ -879,14 +836,25 @@
             line-height: 15px;
         }
 
-        /* Уменьшаем высоту main-wrapper чтобы освободить место для футера */
-        .main-wrapper {
-            height: calc(100vh - 75px); /* 50px (top-bar) + 25px (footer) = 75px */
-            margin-top: 50px;
-            display: flex;
-            padding: 8px;
-            gap: 8px;
-            overflow: hidden;
+        @media (max-width: 1100px) {
+            .sidebar { width: 150px; }
+            .bottom-streams { grid-template-columns: repeat(3, 1fr); }
+            .grid-count-control { display: none !important; }
+        }
+
+        @media (max-width: 800px) {
+            .sidebar { width: 120px; }
+            .group-slots { grid-template-columns: repeat(2, 1fr); }
+            .bottom-streams { height: 120px; }
+            .player-label { font-size: 1.6rem; }
+        }
+
+        @media (max-width: 600px) {
+            .main-wrapper { flex-direction: column; }
+            .sidebar { width: 100%; flex-direction: row; height: 100px; overflow-x: auto; }
+            .sidebar .stream-box { min-width: 160px; height: 100%; }
+            .bottom-streams { grid-template-columns: repeat(2, 1fr); height: 100px; }
+            .player-label { font-size: 1.4rem; bottom: 15px; }
         }
     </style>
 </head>
@@ -903,7 +871,6 @@
 
     <div class="top-bar" id="topBar" data-view="quad">
         <div class="left-controls">
-            <!-- Кнопка сворачивания перед ползунком -->
             <button class="collapse-btn" id="collapseExpandedBtn" title="Свернуть (Esc)">✕</button>
             
             <div class="grid-count-control">
@@ -934,9 +901,7 @@
             <div class="quad-view" id="quadView"></div>
             
             <div class="expanded-view" id="expandedView">
-                <div class="main-player" id="mainPlayer">
-                    <!-- Ник будет добавлен сюда динамически -->
-                </div>
+                <div class="main-player" id="mainPlayer"></div>
                 <div class="bottom-streams" id="bottomStreams"></div>
             </div>
         </div>
@@ -946,7 +911,6 @@
         </div>
     </div>
 
-<!-- Footer -->
     <footer>
         <p class="footer-copyright">Сайт создан по заказу Lagerta_Seeman</p>
     </footer>
@@ -995,20 +959,11 @@
 
                 <div class="tab-content" id="tabHelp">
                     <div class="info-box">
-                        <h4>🚀 Запуск</h4>
-                        <p>
-                            Запустите <code>python server.py</code><br><br>
-                            Откройте: <code>http://localhost:8080</code>
-                        </p>
-                    </div>
-                    <div class="info-box">
-                        <h4>🎮 HLS Плеер</h4>
-                        <p>
-                            Используется HLS.js с локальным прокси:<br>
-                            • Автоматическое воспроизведение<br>
-                            • Без рекламы<br>
-                            • Выбор качества
-                        </p>
+                        <h4>🎮 Публичная версия</h4>
+                        <p>Используются публичные CORS-прокси:<br>
+                        • https://corsproxy.io/<br>
+                        • https://api.codetabs.com/v1/proxy</p>
+                        <p>Если стримы не грузятся - обновите страницу</p>
                     </div>
                     <div class="info-box">
                         <h4>⌨️ Горячие клавиши</h4>
@@ -1028,11 +983,6 @@
         </div>
     </div>
 
-<!-- Footer -->
-    <footer>
-            <p class="footer-copyright">Сайт создан при поддержке by PHG community</p>
-    </footer>
-
     <script>
         // ============ КОНСТАНТЫ ============
         const STORAGE_KEY = 'hlsMultiStreamData';
@@ -1046,11 +996,9 @@
             'https://thingproxy.freeboard.io/fetch/'
         ];
         
-        // Twitch API endpoint
         const TWITCH_GQL = 'https://gql.twitch.tv/gql';
         const TWITCH_CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
 
-        // Группы по умолчанию
         const defaultGroups = [
             { name: "Группа 1", streamers: ["xqc", "shroud", "summit1g", "lirik"] },
             { name: "Группа 2", streamers: ["pokimane", "hasanabi", "mizkif", "ludwig"] },
@@ -1062,7 +1010,7 @@
             "ironmouse", "esfandtv", "tarik", "caseoh_"
         ];
 
-        // ============ LOCALSTORAGE ============
+        // ============ ЗАГРУЗКА ИЗ STORAGE ============
         function loadFromStorage() {
             try {
                 const data = localStorage.getItem(STORAGE_KEY);
@@ -1092,7 +1040,7 @@
         };
 
         // ============ СОСТОЯНИЕ ============
-        let viewMode = 'quad'; // Текущий режим отображения
+        let viewMode = 'quad';
         let activeChannel = null;
         let soundChannel = null;
         let bottomChannels = [];
@@ -1114,8 +1062,94 @@
         const collapseBtn = document.getElementById('collapseExpandedBtn');
         const viewBtns = document.querySelectorAll('.view-btn');
 
+        // ============ ФУНКЦИИ ДЛЯ TWITCH API ============
+        
+        async function fetchWithProxy(url, options = {}) {
+            for (const proxy of PROXIES) {
+                try {
+                    const response = await fetch(proxy + encodeURIComponent(url), {
+                        ...options,
+                        headers: {
+                            ...options.headers,
+                            'Origin': 'https://www.twitch.tv',
+                            'Referer': 'https://www.twitch.tv/'
+                        }
+                    });
+                    if (response.ok) return response;
+                } catch (e) {
+                    console.log(`Proxy ${proxy} failed:`, e);
+                }
+            }
+            throw new Error('All proxies failed');
+        }
+
+        async function getAccessToken(channel) {
+            const query = {
+                operationName: "PlaybackAccessToken",
+                extensions: {
+                    persistedQuery: {
+                        version: 1,
+                        sha256Hash: "0828119ded1c13477966434e15800ff57ddacf13ba1911c129dc2200705b0712"
+                    }
+                },
+                variables: {
+                    isLive: true,
+                    login: channel,
+                    isVod: false,
+                    vodID: "",
+                    playerType: "embed"
+                }
+            };
+
+            try {
+                const response = await fetchWithProxy(TWITCH_GQL, {
+                    method: 'POST',
+                    headers: {
+                        'Client-ID': TWITCH_CLIENT_ID,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(query)
+                });
+                
+                const data = await response.json();
+                const tokenData = data?.data?.streamPlaybackAccessToken;
+                
+                if (tokenData?.value && tokenData?.signature) {
+                    return {
+                        token: tokenData.value,
+                        sig: tokenData.signature
+                    };
+                }
+            } catch (e) {
+                console.log('Failed to get token:', e);
+            }
+            return null;
+        }
+
+        async function getPlaylistUrl(channel) {
+            const tokenData = await getAccessToken(channel);
+            if (!tokenData) return null;
+
+            const params = new URLSearchParams({
+                allow_source: 'true',
+                allow_audio_only: 'true',
+                allow_spectre: 'true',
+                p: Math.floor(Math.random() * 9999999),
+                player: 'twitchweb',
+                playlist_include_framerate: 'true',
+                segment_preference: '4',
+                sig: tokenData.sig,
+                token: tokenData.token,
+                cdm: 'wv',
+                player_version: '1.20.0',
+                player_backend: 'mediaplayer'
+            });
+
+            return `https://usher.ttvnw.net/api/channel/hls/${channel}.m3u8?${params.toString()}`;
+        }
+
         // ============ HLS ПЛЕЕР ============
-        function createHlsPlayer(container, channel, options = {}) {
+        async function createHlsPlayer(container, channel, options = {}) {
             const { muted = true, autoplay = true } = options;
             
             const existingPlayer = hlsPlayers.get(channel);
@@ -1159,6 +1193,14 @@
                 return null;
             }
 
+            const playlistUrl = await getPlaylistUrl(channel);
+            
+            if (!playlistUrl) {
+                container.classList.add('offline');
+                loading.style.display = 'none';
+                return null;
+            }
+
             const hls = new Hls({
                 enableWorker: true,
                 lowLatencyMode: true,
@@ -1167,7 +1209,7 @@
                 maxMaxBufferLength: 60
             });
 
-            hls.loadSource(`${API_BASE}/playlist/${channel}`);
+            hls.loadSource(playlistUrl);
             hls.attachMedia(video);
 
             hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
@@ -1278,7 +1320,6 @@
             });
         }
 
-        // ============ СТРИМ БОКС ============
         function createStreamBox(channel, options = {}) {
             const { draggable = false, location = '', muted = true, showHint = true, onClick = null } = options;
             
@@ -1402,18 +1443,14 @@
             sidebarChannels = all.slice(4);
             render();
             
-            // Показываем кнопку сворачивания
             collapseBtn.classList.add('visible');
         }
 
         function closeExpandedView() {
             activeChannel = null;
-            // Возвращаемся к режиму, который был выбран в topBar.dataset.view
             viewMode = topBar.dataset.view;
             soundChannel = null;
             render();
-            
-            // Скрываем кнопку сворачивания
             collapseBtn.classList.remove('visible');
         }
 
@@ -1424,7 +1461,6 @@
             return channels;
         }
 
-        // ============ РЕНДЕРИНГ ============
         function render() {
             mainWrapper.dataset.mode = viewMode;
             
@@ -1450,7 +1486,6 @@
             updateGroupNav();
             updateSoundIndicators();
             
-            // Обновляем видимость кнопки сворачивания
             if (viewMode === 'expanded') {
                 collapseBtn.classList.add('visible');
             } else {
@@ -1525,10 +1560,8 @@
         function renderExpandedView() {
             mainPlayer.innerHTML = '';
             
-            // Создаем плеер
             createHlsPlayer(mainPlayer, activeChannel, { muted: false, autoplay: true });
             
-            // Добавляем ник на плеер - внизу по центру, без фона и LIVE
             const label = document.createElement('div');
             label.className = 'player-label';
             label.textContent = activeChannel.charAt(0).toUpperCase() + activeChannel.slice(1);
@@ -1614,10 +1647,7 @@
         }
 
         function setViewMode(mode) {
-            // Обновляем data-view на topBar
             topBar.dataset.view = mode;
-            
-            // Обновляем активные кнопки
             viewBtns.forEach(b => {
                 if (b.dataset.view === mode) {
                     b.classList.add('active');
@@ -1626,7 +1656,6 @@
                 }
             });
             
-            // Если не в развернутом режиме, меняем режим
             if (viewMode !== 'expanded') { 
                 viewMode = mode; 
                 soundChannel = null; 
@@ -1648,12 +1677,10 @@
         document.getElementById('prevGroup').onclick = () => goToGroup(settings.currentGroup - 1);
         document.getElementById('nextGroup').onclick = () => goToGroup(settings.currentGroup + 1);
         
-        // Исправляем обработчики для кнопок переключения режимов
         viewBtns.forEach(b => {
             b.onclick = () => setViewMode(b.dataset.view);
         });
         
-        // Кнопка сворачивания
         collapseBtn.onclick = closeExpandedView;
 
         document.onkeydown = (e) => {
@@ -1814,7 +1841,7 @@
         }, 30000);
 
         // ============ INIT ============
-        console.log('HLS Multi Stream Viewer');
+        console.log('HLS Multi Stream Viewer (Public Proxy Version)');
         render();
     </script>
 </body>
