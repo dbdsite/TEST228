@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi Stream Viewer</title>
+    <!-- HLS.js для альтернативного плеера -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * {
             margin: 0;
@@ -78,7 +80,6 @@
             background: #772ce8;
         }
 
-        /* Ползунок количества стримов */
         .grid-count-control {
             display: flex;
             align-items: center;
@@ -216,7 +217,8 @@
             position: relative;
         }
 
-        .main-player iframe {
+        .main-player iframe,
+        .main-player video {
             width: 100%;
             height: 100%;
             border: none;
@@ -286,6 +288,7 @@
             padding: 5px;
         }
 
+        /* Стрим бокс */
         .stream-box {
             background: #000;
             border-radius: 6px;
@@ -317,7 +320,8 @@
             box-shadow: 0 0 15px rgba(0, 200, 83, 0.3);
         }
 
-        .stream-box iframe {
+        .stream-box iframe,
+        .stream-box video {
             width: 100%;
             height: 100%;
             border: none;
@@ -368,6 +372,35 @@
             opacity: 1;
         }
 
+        .stream-box .offline-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff4444;
+            font-weight: 600;
+            text-align: center;
+            z-index: 3;
+        }
+
+        .stream-box .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border: 3px solid #2d2d35;
+            border-top-color: #9146ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 3;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
         .sidebar .stream-box {
             height: 100px;
             flex-shrink: 0;
@@ -380,6 +413,68 @@
 
         .bottom-streams .stream-box {
             height: 100%;
+        }
+
+        /* HLS Video Controls */
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 30px 10px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+
+        .stream-box:hover .video-controls {
+            opacity: 1;
+        }
+
+        .video-controls button {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .video-controls button:hover {
+            color: #9146ff;
+        }
+
+        .volume-slider {
+            width: 60px;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #9146ff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .quality-selector {
+            margin-left: auto;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #464649;
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
         }
 
         /* Окно пароля */
@@ -561,6 +656,15 @@
             margin-bottom: 15px;
         }
 
+        .info-box.warning {
+            background: rgba(255, 165, 0, 0.1);
+            border-color: #ffa500;
+        }
+
+        .info-box.warning h4 {
+            color: #ffa500;
+        }
+
         .info-box h4 {
             color: #9146ff;
             margin-bottom: 8px;
@@ -595,30 +699,17 @@
             font-weight: 500;
         }
 
-        .setting-row select {
+        .setting-row select,
+        .setting-row input {
             padding: 8px 12px;
             border: 2px solid #2d2d35;
             border-radius: 6px;
             background: #18181b;
             color: #fff;
-            cursor: pointer;
+            min-width: 200px;
         }
 
-        .setting-row select:focus {
-            outline: none;
-            border-color: #9146ff;
-        }
-
-        .setting-row input[type="password"],
-        .setting-row input[type="text"] {
-            padding: 8px 12px;
-            border: 2px solid #2d2d35;
-            border-radius: 6px;
-            background: #18181b;
-            color: #fff;
-            width: 200px;
-        }
-
+        .setting-row select:focus,
         .setting-row input:focus {
             outline: none;
             border-color: #9146ff;
@@ -859,7 +950,6 @@
     </div>
 
     <div class="top-bar" id="topBar" data-view="quad">
-        <!-- Ползунок количества стримов -->
         <div class="grid-count-control">
             <label>Стримов:</label>
             <input type="range" class="grid-count-slider" id="gridCountSlider" min="1" max="20" value="12">
@@ -887,9 +977,7 @@
             <div class="quad-view" id="quadView"></div>
             
             <div class="expanded-view" id="expandedView">
-                <div class="main-player">
-                    <iframe id="mainPlayerFrame" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                </div>
+                <div class="main-player" id="mainPlayer"></div>
                 <div class="player-info">
                     <span class="active-name" id="activeName"></span>
                     <button class="close-expanded" id="closeExpanded">✕</button>
@@ -935,29 +1023,44 @@
                 </div>
 
                 <div class="tab-content" id="tabSettings">
-                    <div class="info-box">
-                        <h4>🎮 Тип плеера</h4>
-                        <p>Альтернативные плееры могут обходить ограничения автовоспроизведения</p>
+                    <div class="info-box warning">
+                        <h4>⚠️ Альтернативный плеер (HLS)</h4>
+                        <p>
+                            HLS плеер использует прокси для обхода ограничений. 
+                            Если не работает — используйте официальный Twitch embed.
+                        </p>
                     </div>
                     
                     <div class="setting-row">
-                        <label>Плеер:</label>
+                        <label>Тип плеера:</label>
                         <select id="playerType">
                             <option value="official">Официальный Twitch</option>
-                            <option value="proxy1">Прокси (TTV LOL)</option>
-                            <option value="proxy2">Прокси (Purple AdBlock)</option>
-                            <option value="embed">Twitch Embed API</option>
+                            <option value="hls">HLS Прокси (автовоспр.)</option>
                         </select>
                     </div>
 
                     <div class="setting-row">
-                        <label>Пароль на настройки:</label>
-                        <input type="password" id="settingsPassword" placeholder="Оставьте пустым для отключения">
+                        <label>Прокси сервер:</label>
+                        <select id="proxyServer">
+                            <option value="ttv-lol">TTV.LOL</option>
+                            <option value="purple">Purple AdBlock</option>
+                            <option value="custom">Свой прокси</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-row" id="customProxyRow" style="display:none;">
+                        <label>URL прокси:</label>
+                        <input type="text" id="customProxyUrl" placeholder="https://...">
                     </div>
 
                     <div class="setting-row">
                         <label>Стримов в сетке:</label>
                         <input type="number" id="gridCountInput" min="1" max="20" value="12">
+                    </div>
+
+                    <div class="setting-row">
+                        <label>Пароль настроек:</label>
+                        <input type="password" id="settingsPassword" placeholder="Оставьте пустым для отключения">
                     </div>
                 </div>
 
@@ -970,18 +1073,12 @@
                         </p>
                     </div>
                     <div class="info-box">
-                        <h4>🔊 Звук</h4>
+                        <h4>🎮 HLS Плеер</h4>
                         <p>
-                            <b>Режим 4 окна:</b> клик включает звук на этом стриме<br>
-                            <b>Режим сетки:</b> клик открывает стрим в большом плеере
-                        </p>
-                    </div>
-                    <div class="info-box">
-                        <h4>🔄 Альтернативные плееры</h4>
-                        <p>
-                            Если официальный плеер требует клика для воспроизведения, 
-                            попробуйте прокси-плееры в настройках. Они могут обходить 
-                            ограничения браузера на автовоспроизведение.
+                            Альтернативный плеер использует HLS.js и прокси для:
+                            <br>• Автоматического воспроизведения без клика
+                            <br>• Обхода блокировки рекламы
+                            <br>• Выбора качества
                         </p>
                     </div>
                     <div class="info-box">
@@ -1002,10 +1099,10 @@
         </div>
     </div>
 
-    <!-- Twitch Embed API -->
-    <script src="https://player.twitch.tv/js/embed/v1.js"></script>
-
     <script>
+        // ============ НАСТРОЙКИ ПО УМОЛЧАНИЮ ============
+        const DEFAULT_PASSWORD = 'admin';
+        
         const defaultGroups = [
             { name: "Группа 1", streamers: ["xqc", "shroud", "summit1g", "lirik"] },
             { name: "Группа 2", streamers: ["pokimane", "hasanabi", "mizkif", "ludwig"] },
@@ -1017,60 +1114,204 @@
             "ironmouse", "esfandtv", "tarik", "caseoh_"
         ];
 
-        // Прокси URL для разных плееров
-        const playerUrls = {
-            official: (channel, parent, muted) => 
-                `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=${muted}&autoplay=true`,
-            proxy1: (channel, parent, muted) => 
-                `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=${muted}&autoplay=true&player=popout`,
-            proxy2: (channel, parent, muted) =>
-                `https://www.twitch.tv/embed/${channel}/chat?parent=${parent}&darkpopout`,
-            embed: 'embed' // Используем Twitch.Player API
-        };
+        // ============ LOCALSTORAGE ============
+        const STORAGE_KEY = 'multiStreamViewerSettings';
 
-        function loadSettings() {
+        function loadFromStorage() {
             try {
-                const saved = localStorage.getItem('msvSettings2');
-                return saved ? JSON.parse(saved) : null;
-            } catch { return null; }
+                const data = localStorage.getItem(STORAGE_KEY);
+                return data ? JSON.parse(data) : null;
+            } catch (e) {
+                console.error('Error loading from localStorage:', e);
+                return null;
+            }
         }
 
-        function saveSettings() {
-            localStorage.setItem('msvSettings2', JSON.stringify({
-                groups: settings.groups,
-                streamers: settings.streamers,
-                currentGroup: settings.currentGroup,
-                playerType: settings.playerType,
-                password: settings.password,
-                gridCount: settings.gridCount
-            }));
+        function saveToStorage() {
+            try {
+                const data = {
+                    groups: settings.groups,
+                    streamers: settings.streamers,
+                    currentGroup: settings.currentGroup,
+                    playerType: settings.playerType,
+                    proxyServer: settings.proxyServer,
+                    customProxyUrl: settings.customProxyUrl,
+                    password: settings.password,
+                    gridCount: settings.gridCount,
+                    savedAt: Date.now()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                console.log('Settings saved to localStorage');
+            } catch (e) {
+                console.error('Error saving to localStorage:', e);
+            }
         }
 
-        const saved = loadSettings();
+        // Загрузка настроек
+        const saved = loadFromStorage();
         const settings = {
             groups: saved?.groups || JSON.parse(JSON.stringify(defaultGroups)),
             streamers: saved?.streamers || [...defaultStreamers],
             currentGroup: saved?.currentGroup || 0,
             playerType: saved?.playerType || 'official',
-            password: saved?.password || '',
+            proxyServer: saved?.proxyServer || 'ttv-lol',
+            customProxyUrl: saved?.customProxyUrl || '',
+            password: saved?.password ?? DEFAULT_PASSWORD, // Используем ?? для проверки null/undefined
             gridCount: saved?.gridCount || 12
         };
 
-        // Состояние
+        // ============ HLS ПРОКСИ ПЛЕЕР ============
+        const ProxyStream = {
+            players: {},
+            
+            // Прокси URLs
+            getProxyUrl: function(channel) {
+                switch(settings.proxyServer) {
+                    case 'ttv-lol':
+                        return `https://api.ttv.lol/playlist/${channel}.m3u8%3Fallow_source%3Dtrue`;
+                    case 'purple':
+                        return `https://eu.luminous.dev/live/${channel}`;
+                    case 'custom':
+                        return settings.customProxyUrl.replace('{channel}', channel);
+                    default:
+                        return `https://api.ttv.lol/playlist/${channel}.m3u8%3Fallow_source%3Dtrue`;
+                }
+            },
+
+            // Создание HLS плеера
+            createHlsPlayer: function(channel, container, muted = true) {
+                const playerId = `hls-${channel}-${Date.now()}`;
+                
+                container.innerHTML = `
+                    <video id="${playerId}" playsinline></video>
+                    <div class="loading-spinner"></div>
+                    <div class="video-controls">
+                        <button class="play-btn">⏸</button>
+                        <button class="mute-btn">${muted ? '🔇' : '🔊'}</button>
+                        <input type="range" class="volume-slider" min="0" max="100" value="${muted ? 0 : 50}">
+                        <select class="quality-selector">
+                            <option>Auto</option>
+                        </select>
+                    </div>
+                `;
+
+                const video = document.getElementById(playerId);
+                const spinner = container.querySelector('.loading-spinner');
+                const playBtn = container.querySelector('.play-btn');
+                const muteBtn = container.querySelector('.mute-btn');
+                const volumeSlider = container.querySelector('.volume-slider');
+                const qualitySelect = container.querySelector('.quality-selector');
+
+                if (Hls.isSupported()) {
+                    const hls = new Hls({
+                        enableWorker: true,
+                        lowLatencyMode: true,
+                        backBufferLength: 90
+                    });
+
+                    const proxyUrl = this.getProxyUrl(channel);
+                    
+                    hls.loadSource(proxyUrl);
+                    hls.attachMedia(video);
+
+                    hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
+                        spinner.style.display = 'none';
+                        video.muted = muted;
+                        video.volume = muted ? 0 : 0.5;
+                        video.play().catch(e => console.log('Autoplay blocked:', e));
+
+                        // Качество
+                        qualitySelect.innerHTML = '<option value="-1">Auto</option>';
+                        data.levels.forEach((level, idx) => {
+                            qualitySelect.innerHTML += `<option value="${idx}">${level.height}p</option>`;
+                        });
+                    });
+
+                    hls.on(Hls.Events.ERROR, function(event, data) {
+                        console.log('HLS Error:', data);
+                        if (data.fatal) {
+                            spinner.style.display = 'none';
+                            container.innerHTML = `
+                                <div class="offline-message">
+                                    ⚠️ Прокси недоступен<br>
+                                    <small>Попробуйте другой сервер</small>
+                                </div>
+                            `;
+                        }
+                    });
+
+                    // Контролы
+                    playBtn.onclick = () => {
+                        if (video.paused) {
+                            video.play();
+                            playBtn.textContent = '⏸';
+                        } else {
+                            video.pause();
+                            playBtn.textContent = '▶';
+                        }
+                    };
+
+                    muteBtn.onclick = () => {
+                        video.muted = !video.muted;
+                        muteBtn.textContent = video.muted ? '🔇' : '🔊';
+                        volumeSlider.value = video.muted ? 0 : video.volume * 100;
+                    };
+
+                    volumeSlider.oninput = (e) => {
+                        video.volume = e.target.value / 100;
+                        video.muted = video.volume === 0;
+                        muteBtn.textContent = video.muted ? '🔇' : '🔊';
+                    };
+
+                    qualitySelect.onchange = (e) => {
+                        hls.currentLevel = parseInt(e.target.value);
+                    };
+
+                    this.players[playerId] = { hls, video };
+                    return { hls, video, playerId };
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    // Safari native HLS
+                    video.src = this.getProxyUrl(channel);
+                    video.muted = muted;
+                    video.play().catch(e => console.log('Autoplay blocked:', e));
+                    spinner.style.display = 'none';
+                    return { video, playerId };
+                } else {
+                    container.innerHTML = '<div class="offline-message">HLS не поддерживается</div>';
+                    return null;
+                }
+            },
+
+            // Уничтожение плеера
+            destroy: function(playerId) {
+                if (this.players[playerId]) {
+                    if (this.players[playerId].hls) {
+                        this.players[playerId].hls.destroy();
+                    }
+                    delete this.players[playerId];
+                }
+            },
+
+            // Уничтожение всех плееров
+            destroyAll: function() {
+                Object.keys(this.players).forEach(id => this.destroy(id));
+            }
+        };
+
+        // ============ ОСНОВНОЙ КОД ============
         let viewMode = 'quad';
         let activeChannel = null;
         let soundChannel = null;
         let bottomChannels = [];
         let sidebarChannels = [];
-        let embedPlayers = {}; // Для Twitch.Player API
 
-        // DOM
+        // DOM элементы
         const topBar = document.getElementById('topBar');
         const mainWrapper = document.getElementById('mainWrapper');
         const gridView = document.getElementById('gridView');
         const quadView = document.getElementById('quadView');
         const expandedView = document.getElementById('expandedView');
-        const mainPlayerFrame = document.getElementById('mainPlayerFrame');
+        const mainPlayer = document.getElementById('mainPlayer');
         const activeName = document.getElementById('activeName');
         const closeExpanded = document.getElementById('closeExpanded');
         const bottomStreams = document.getElementById('bottomStreams');
@@ -1081,13 +1322,6 @@
         const nextGroup = document.getElementById('nextGroup');
         const gridCountSlider = document.getElementById('gridCountSlider');
         const gridCountValue = document.getElementById('gridCountValue');
-
-        // Пароль
-        const passwordOverlay = document.getElementById('passwordOverlay');
-        const passwordInput = document.getElementById('passwordInput');
-        const passwordError = document.getElementById('passwordError');
-        const passwordSubmit = document.getElementById('passwordSubmit');
-        const passwordCancel = document.getElementById('passwordCancel');
 
         function getParent() {
             const h = window.location.hostname;
@@ -1105,72 +1339,19 @@
             return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
         }
 
-        // Создание iframe/embed плеера
-        function createPlayerElement(channel, containerId, muted = true) {
-            const parent = getParent();
-            
-            if (settings.playerType === 'embed' && typeof Twitch !== 'undefined') {
-                // Используем Twitch Embed API для лучшего контроля
-                const container = document.getElementById(containerId);
-                if (!container) return null;
-                
-                container.innerHTML = '';
-                
-                try {
-                    const player = new Twitch.Player(containerId, {
-                        channel: channel,
-                        parent: [parent],
-                        muted: muted,
-                        autoplay: true,
-                        width: '100%',
-                        height: '100%'
-                    });
-                    
-                    embedPlayers[containerId] = player;
-                    
-                    // Попытка автоматического unmute через несколько секунд
-                    if (!muted) {
-                        setTimeout(() => {
-                            try {
-                                player.setMuted(false);
-                                player.setVolume(0.5);
-                            } catch (e) {}
-                        }, 2000);
-                    }
-                    
-                    return player;
-                } catch (e) {
-                    console.error('Embed error:', e);
-                }
-            }
-            
-            // Fallback на iframe
-            const iframe = document.createElement('iframe');
-            const url = typeof playerUrls[settings.playerType] === 'function' 
-                ? playerUrls[settings.playerType](channel, parent, muted)
-                : playerUrls.official(channel, parent, muted);
-            
-            iframe.src = url;
-            iframe.allow = 'autoplay; fullscreen';
-            iframe.allowFullscreen = true;
-            
-            return iframe;
-        }
-
-        // Создание стрим-бокса
+        // Создание стрим бокса
         function createStreamBox(channel, options = {}) {
             const { 
                 draggable = false, 
                 location = '', 
                 muted = true,
                 showSoundHint = true,
-                onClick = null,
-                useEmbed = false
+                onClick = null
             } = options;
             
             const hasSound = soundChannel === channel;
             const parent = getParent();
-            const boxId = `box-${channel}-${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
+            const boxId = `box-${channel}-${Date.now()}`;
             
             const box = document.createElement('div');
             box.className = 'stream-box' + (hasSound ? ' has-sound' : '');
@@ -1179,41 +1360,44 @@
             if (location) box.dataset.location = location;
             if (draggable) box.draggable = true;
 
-            const actualMuted = hasSound ? false : true;
-            
-            if (useEmbed && settings.playerType === 'embed') {
-                // Контейнер для Embed API
-                box.innerHTML = `
-                    <div id="embed-${boxId}" style="width:100%;height:100%;"></div>
-                    <div class="overlay"></div>
-                    <div class="label">${capitalize(channel)}</div>
-                    ${showSoundHint ? '<div class="sound-hint">🔊 Клик = звук</div>' : ''}
-                `;
-                
-                // Создаём плеер после добавления в DOM
-                setTimeout(() => {
-                    createPlayerElement(channel, `embed-${boxId}`, actualMuted);
-                }, 100);
+            const actualMuted = hasSound ? false : muted;
+
+            // Создаем контейнер для плеера
+            const playerContainer = document.createElement('div');
+            playerContainer.style.cssText = 'width:100%;height:100%;position:absolute;top:0;left:0;';
+            box.appendChild(playerContainer);
+
+            // Выбираем тип плеера
+            if (settings.playerType === 'hls') {
+                ProxyStream.createHlsPlayer(channel, playerContainer, actualMuted);
             } else {
-                // iframe
-                const url = typeof playerUrls[settings.playerType] === 'function' 
-                    ? playerUrls[settings.playerType](channel, parent, actualMuted)
-                    : playerUrls.official(channel, parent, actualMuted);
-                
-                box.innerHTML = `
-                    <iframe 
-                        src="${url}"
-                        allow="autoplay; fullscreen"
-                        allowfullscreen>
-                    </iframe>
-                    <div class="overlay"></div>
-                    <div class="label">${capitalize(channel)}</div>
-                    ${showSoundHint ? '<div class="sound-hint">🔊 Клик = звук</div>' : ''}
-                `;
+                // Официальный iframe
+                const iframe = document.createElement('iframe');
+                iframe.src = `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=${actualMuted}&autoplay=true`;
+                iframe.allow = 'autoplay; fullscreen';
+                iframe.allowFullscreen = true;
+                playerContainer.appendChild(iframe);
+            }
+
+            // Оверлей и лейбл
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            box.appendChild(overlay);
+
+            const label = document.createElement('div');
+            label.className = 'label';
+            label.textContent = capitalize(channel);
+            box.appendChild(label);
+
+            if (showSoundHint) {
+                const hint = document.createElement('div');
+                hint.className = 'sound-hint';
+                hint.textContent = '🔊 Клик = звук';
+                box.appendChild(hint);
             }
 
             // Клик
-            box.querySelector('.overlay').addEventListener('click', () => {
+            overlay.addEventListener('click', () => {
                 if (onClick) onClick(channel);
             });
 
@@ -1278,11 +1462,7 @@
         }
 
         function toggleSound(channel) {
-            if (soundChannel === channel) {
-                soundChannel = null;
-            } else {
-                soundChannel = channel;
-            }
+            soundChannel = (soundChannel === channel) ? null : channel;
             render();
         }
 
@@ -1302,6 +1482,7 @@
             activeChannel = null;
             soundChannel = null;
             viewMode = topBar.dataset.view;
+            ProxyStream.destroyAll();
             render();
         }
 
@@ -1320,9 +1501,7 @@
 
         function render() {
             mainWrapper.dataset.mode = viewMode;
-            
-            // Очищаем embed плееры
-            embedPlayers = {};
+            ProxyStream.destroyAll();
 
             if (viewMode === 'quad') {
                 renderQuadView();
@@ -1342,12 +1521,12 @@
             const group = settings.groups[settings.currentGroup];
             if (!group) return;
 
-            group.streamers.forEach((channel, idx) => {
+            group.streamers.forEach(channel => {
                 if (channel) {
                     const box = createStreamBox(channel, {
                         onClick: (ch) => toggleSound(ch),
                         showSoundHint: true,
-                        useEmbed: true
+                        muted: soundChannel !== channel
                     });
                     quadView.appendChild(box);
                 } else {
@@ -1378,7 +1557,7 @@
                 const box = createStreamBox(channel, {
                     onClick: (ch) => toggleSound(ch),
                     showSoundHint: true,
-                    useEmbed: true
+                    muted: true
                 });
                 sidebar.appendChild(box);
             });
@@ -1396,7 +1575,7 @@
                 const box = createStreamBox(channel, {
                     onClick: (ch) => expandStream(ch),
                     showSoundHint: false,
-                    useEmbed: true
+                    muted: true
                 });
                 gridView.appendChild(box);
             });
@@ -1408,11 +1587,19 @@
 
         function renderExpandedView() {
             const parent = getParent();
-            const url = typeof playerUrls[settings.playerType] === 'function' 
-                ? playerUrls[settings.playerType](activeChannel, parent, false)
-                : playerUrls.official(activeChannel, parent, false);
             
-            mainPlayerFrame.src = url;
+            mainPlayer.innerHTML = '';
+            
+            if (settings.playerType === 'hls') {
+                ProxyStream.createHlsPlayer(activeChannel, mainPlayer, false);
+            } else {
+                const iframe = document.createElement('iframe');
+                iframe.src = `https://player.twitch.tv/?channel=${activeChannel}&parent=${parent}&muted=false&autoplay=true`;
+                iframe.allow = 'autoplay; fullscreen';
+                iframe.allowFullscreen = true;
+                mainPlayer.appendChild(iframe);
+            }
+            
             activeName.textContent = capitalize(activeChannel);
 
             renderExpandedPanels();
@@ -1427,15 +1614,13 @@
                     onClick: (ch) => {
                         activeChannel = ch;
                         soundChannel = ch;
-                        
                         const allOthers = getAllChannels().filter(c => c !== ch);
                         bottomChannels = allOthers.slice(0, 4);
                         sidebarChannels = allOthers.slice(4);
-                        
                         render();
                     },
                     showSoundHint: false,
-                    useEmbed: true
+                    muted: true
                 });
                 bottomStreams.appendChild(box);
             });
@@ -1456,15 +1641,13 @@
                     onClick: (ch) => {
                         activeChannel = ch;
                         soundChannel = ch;
-                        
                         const allOthers = getAllChannels().filter(c => c !== ch);
                         bottomChannels = allOthers.slice(0, 4);
                         sidebarChannels = allOthers.slice(4);
-                        
                         render();
                     },
                     showSoundHint: false,
-                    useEmbed: true
+                    muted: true
                 });
                 sidebar.appendChild(box);
             });
@@ -1490,7 +1673,7 @@
             if (idx >= 0 && idx < settings.groups.length) {
                 settings.currentGroup = idx;
                 soundChannel = null;
-                saveSettings();
+                saveToStorage();
                 render();
             }
         }
@@ -1509,18 +1692,18 @@
             render();
         }
 
-        // Ползунок количества стримов
+        // Ползунок
         gridCountSlider.value = settings.gridCount;
         gridCountValue.textContent = settings.gridCount;
         
         gridCountSlider.addEventListener('input', (e) => {
             settings.gridCount = parseInt(e.target.value);
             gridCountValue.textContent = settings.gridCount;
-            saveSettings();
+            saveToStorage();
             if (viewMode === 'grid') render();
         });
 
-        // События навигации
+        // Навигация
         prevGroup.addEventListener('click', () => goToGroup(settings.currentGroup - 1));
         nextGroup.addEventListener('click', () => goToGroup(settings.currentGroup + 1));
 
@@ -1538,7 +1721,7 @@
                 return;
             }
             
-            if (document.getElementById('modalOverlay').classList.contains('active')) {
+            if (modalOverlay.classList.contains('active')) {
                 if (e.key === 'Escape') closeModal();
                 return;
             }
@@ -1566,7 +1749,13 @@
             }
         });
 
-        // === Пароль ===
+        // ============ ПАРОЛЬ ============
+        const passwordOverlay = document.getElementById('passwordOverlay');
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordError = document.getElementById('passwordError');
+        const passwordSubmit = document.getElementById('passwordSubmit');
+        const passwordCancel = document.getElementById('passwordCancel');
+
         function requestPassword(callback) {
             if (!settings.password) {
                 callback();
@@ -1601,7 +1790,7 @@
             passwordCancel.addEventListener('click', onCancel);
         }
 
-        // === Модальное окно ===
+        // ============ МОДАЛЬНОЕ ОКНО ============
         const settingsBtn = document.getElementById('settingsBtn');
         const modalOverlay = document.getElementById('modalOverlay');
         const modalClose = document.getElementById('modalClose');
@@ -1609,6 +1798,12 @@
         const resetBtn = document.getElementById('resetBtn');
         const addGroupBtn = document.getElementById('addGroupBtn');
         const addStreamerBtn = document.getElementById('addStreamerBtn');
+        const proxyServerSelect = document.getElementById('proxyServer');
+        const customProxyRow = document.getElementById('customProxyRow');
+
+        proxyServerSelect.addEventListener('change', (e) => {
+            customProxyRow.style.display = e.target.value === 'custom' ? 'flex' : 'none';
+        });
 
         function openModal() {
             requestPassword(() => {
@@ -1736,8 +1931,11 @@
 
         function renderSettingsTab() {
             document.getElementById('playerType').value = settings.playerType;
+            document.getElementById('proxyServer').value = settings.proxyServer;
+            document.getElementById('customProxyUrl').value = settings.customProxyUrl;
             document.getElementById('settingsPassword').value = settings.password;
             document.getElementById('gridCountInput').value = settings.gridCount;
+            customProxyRow.style.display = settings.proxyServer === 'custom' ? 'flex' : 'none';
         }
 
         saveBtn.addEventListener('click', () => {
@@ -1746,16 +1944,16 @@
             });
             settings.streamers = settings.streamers.map(s => extractChannel(s)).filter(s => s);
             
-            // Сохраняем настройки из вкладки Опции
             settings.playerType = document.getElementById('playerType').value;
+            settings.proxyServer = document.getElementById('proxyServer').value;
+            settings.customProxyUrl = document.getElementById('customProxyUrl').value;
             settings.password = document.getElementById('settingsPassword').value;
             settings.gridCount = parseInt(document.getElementById('gridCountInput').value) || 12;
             
-            // Обновляем ползунок
             gridCountSlider.value = settings.gridCount;
             gridCountValue.textContent = settings.gridCount;
             
-            saveSettings();
+            saveToStorage();
             closeModal();
             render();
         });
@@ -1766,15 +1964,22 @@
                 settings.streamers = [...defaultStreamers];
                 settings.currentGroup = 0;
                 settings.playerType = 'official';
-                settings.password = '';
+                settings.proxyServer = 'ttv-lol';
+                settings.customProxyUrl = '';
+                settings.password = DEFAULT_PASSWORD;
                 settings.gridCount = 12;
+                saveToStorage();
                 renderGroupsTab();
                 renderStreamersTab();
                 renderSettingsTab();
             }
         });
 
-        // Инициализация
+        // ============ ИНИЦИАЛИЗАЦИЯ ============
+        console.log('Multi Stream Viewer loaded');
+        console.log('Settings:', settings);
+        console.log('Password:', settings.password ? '***' : 'not set');
+        
         render();
     </script>
 </body>
