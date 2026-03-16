@@ -18,7 +18,6 @@
             overflow: hidden;
         }
 
-        /* Верхняя панель */
         .top-bar {
             position: fixed;
             top: 0;
@@ -79,7 +78,44 @@
             background: #772ce8;
         }
 
-        /* Навигация групп */
+        /* Ползунок количества стримов */
+        .grid-count-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: absolute;
+            left: 15px;
+        }
+
+        .grid-count-control label {
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .grid-count-slider {
+            width: 100px;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #464649;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .grid-count-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #9146ff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .grid-count-value {
+            color: #9146ff;
+            font-weight: 700;
+            min-width: 25px;
+        }
+
         .group-nav {
             display: flex;
             align-items: center;
@@ -135,7 +171,6 @@
             text-align: center;
         }
 
-        /* Основной контейнер */
         .main-wrapper {
             height: calc(100vh - 50px);
             margin-top: 50px;
@@ -144,7 +179,6 @@
             gap: 6px;
         }
 
-        /* Левая часть */
         .left-section {
             flex: 1;
             display: flex;
@@ -153,23 +187,20 @@
             min-width: 0;
         }
 
-        /* Сетка всех стримов */
         .grid-view {
             flex: 1;
-            display: grid;
+            display: none;
             gap: 6px;
         }
 
-        /* Режим 4 окна */
         .quad-view {
             flex: 1;
-            display: none;
+            display: grid;
             grid-template-columns: repeat(2, 1fr);
             grid-template-rows: repeat(2, 1fr);
             gap: 6px;
         }
 
-        /* Развёрнутый плеер */
         .expanded-view {
             display: none;
             flex-direction: column;
@@ -230,7 +261,6 @@
             flex-shrink: 0;
         }
 
-        /* Колонна справа */
         .sidebar {
             width: 180px;
             display: flex;
@@ -256,7 +286,6 @@
             padding: 5px;
         }
 
-        /* Стрим бокс */
         .stream-box {
             background: #000;
             border-radius: 6px;
@@ -270,7 +299,7 @@
 
         .stream-box:hover {
             border-color: #9146ff;
-            transform: scale(1.02);
+            transform: scale(1.01);
             z-index: 5;
         }
 
@@ -321,6 +350,24 @@
             content: '🔊 ';
         }
 
+        .stream-box .sound-hint {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 6;
+        }
+
+        .stream-box:hover .sound-hint {
+            opacity: 1;
+        }
+
         .sidebar .stream-box {
             height: 100px;
             flex-shrink: 0;
@@ -333,6 +380,87 @@
 
         .bottom-streams .stream-box {
             height: 100%;
+        }
+
+        /* Окно пароля */
+        .password-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-overlay.active {
+            display: flex;
+        }
+
+        .password-box {
+            background: #18181b;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+        }
+
+        .password-box h3 {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .password-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #2d2d35;
+            border-radius: 8px;
+            background: #0e0e10;
+            color: #fff;
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .password-box input:focus {
+            outline: none;
+            border-color: #9146ff;
+        }
+
+        .password-box .error {
+            color: #ff4444;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .password-box .error.show {
+            display: block;
+        }
+
+        .password-box button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #9146ff;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .password-box button:hover {
+            background: #772ce8;
+        }
+
+        .password-box .cancel-btn {
+            background: #2d2d35;
+            margin-top: 10px;
         }
 
         /* Модальное окно */
@@ -450,6 +578,50 @@
             padding: 2px 6px;
             border-radius: 4px;
             color: #00c853;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #0e0e10;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .setting-row label {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .setting-row select {
+            padding: 8px 12px;
+            border: 2px solid #2d2d35;
+            border-radius: 6px;
+            background: #18181b;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .setting-row select:focus {
+            outline: none;
+            border-color: #9146ff;
+        }
+
+        .setting-row input[type="password"],
+        .setting-row input[type="text"] {
+            padding: 8px 12px;
+            border: 2px solid #2d2d35;
+            border-radius: 6px;
+            background: #18181b;
+            color: #fff;
+            width: 200px;
+        }
+
+        .setting-row input:focus {
+            outline: none;
+            border-color: #9146ff;
         }
 
         .group-card {
@@ -607,7 +779,7 @@
             background: #464649;
         }
 
-        /* Режимы отображения */
+        /* Режимы */
         .main-wrapper[data-mode="grid"] .grid-view {
             display: grid;
         }
@@ -635,37 +807,28 @@
             display: none;
         }
 
-        /* Скрываем навигацию групп в режиме сетки */
+        .top-bar[data-view="quad"] .grid-count-control {
+            display: none;
+        }
+
         .top-bar[data-view="grid"] .group-nav {
             display: none;
         }
 
-        /* Responsive */
         @media (max-width: 1100px) {
-            .sidebar {
-                width: 150px;
-            }
-            .bottom-streams {
-                grid-template-columns: repeat(3, 1fr);
-            }
+            .sidebar { width: 150px; }
+            .bottom-streams { grid-template-columns: repeat(3, 1fr); }
+            .grid-count-control { display: none !important; }
         }
 
         @media (max-width: 800px) {
-            .sidebar {
-                width: 120px;
-            }
-            .group-slots {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .bottom-streams {
-                height: 120px;
-            }
+            .sidebar { width: 120px; }
+            .group-slots { grid-template-columns: repeat(2, 1fr); }
+            .bottom-streams { height: 120px; }
         }
 
         @media (max-width: 600px) {
-            .main-wrapper {
-                flex-direction: column;
-            }
+            .main-wrapper { flex-direction: column; }
             .sidebar {
                 width: 100%;
                 flex-direction: row;
@@ -684,7 +847,25 @@
     </style>
 </head>
 <body>
+    <!-- Окно пароля -->
+    <div class="password-overlay" id="passwordOverlay">
+        <div class="password-box">
+            <h3>🔒 Введите пароль</h3>
+            <input type="password" id="passwordInput" placeholder="Пароль" autocomplete="off">
+            <div class="error" id="passwordError">Неверный пароль</div>
+            <button id="passwordSubmit">Войти</button>
+            <button class="cancel-btn" id="passwordCancel">Отмена</button>
+        </div>
+    </div>
+
     <div class="top-bar" id="topBar" data-view="quad">
+        <!-- Ползунок количества стримов -->
+        <div class="grid-count-control">
+            <label>Стримов:</label>
+            <input type="range" class="grid-count-slider" id="gridCountSlider" min="1" max="20" value="12">
+            <span class="grid-count-value" id="gridCountValue">12</span>
+        </div>
+
         <div class="view-toggle">
             <button class="view-btn" data-view="grid">Сетка</button>
             <button class="view-btn active" data-view="quad">4 окна</button>
@@ -702,13 +883,9 @@
 
     <div class="main-wrapper" id="mainWrapper" data-mode="quad">
         <div class="left-section">
-            <!-- Сетка -->
             <div class="grid-view" id="gridView"></div>
-            
-            <!-- 4 окна -->
             <div class="quad-view" id="quadView"></div>
             
-            <!-- Развёрнутый плеер -->
             <div class="expanded-view" id="expandedView">
                 <div class="main-player">
                     <iframe id="mainPlayerFrame" allow="autoplay; fullscreen" allowfullscreen></iframe>
@@ -726,7 +903,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -734,6 +910,7 @@
                 <div class="modal-tabs">
                     <button class="modal-tab active" data-tab="groups">Группы</button>
                     <button class="modal-tab" data-tab="streamers">Стримеры</button>
+                    <button class="modal-tab" data-tab="settings">Опции</button>
                     <button class="modal-tab" data-tab="help">Помощь</button>
                 </div>
                 <button class="modal-close" id="modalClose">✕</button>
@@ -742,7 +919,7 @@
                 <div class="tab-content active" id="tabGroups">
                     <div class="info-box">
                         <h4>📺 Группы по 4 стрима</h4>
-                        <p>Создайте группы. Переключайтесь стрелками ◀ ▶</p>
+                        <p>Переключайтесь между группами стрелками ◀ ▶</p>
                     </div>
                     <div id="groupsList"></div>
                     <button class="add-btn" id="addGroupBtn">+ Добавить группу</button>
@@ -757,6 +934,33 @@
                     <button class="add-btn" id="addStreamerBtn">+ Добавить</button>
                 </div>
 
+                <div class="tab-content" id="tabSettings">
+                    <div class="info-box">
+                        <h4>🎮 Тип плеера</h4>
+                        <p>Альтернативные плееры могут обходить ограничения автовоспроизведения</p>
+                    </div>
+                    
+                    <div class="setting-row">
+                        <label>Плеер:</label>
+                        <select id="playerType">
+                            <option value="official">Официальный Twitch</option>
+                            <option value="proxy1">Прокси (TTV LOL)</option>
+                            <option value="proxy2">Прокси (Purple AdBlock)</option>
+                            <option value="embed">Twitch Embed API</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-row">
+                        <label>Пароль на настройки:</label>
+                        <input type="password" id="settingsPassword" placeholder="Оставьте пустым для отключения">
+                    </div>
+
+                    <div class="setting-row">
+                        <label>Стримов в сетке:</label>
+                        <input type="number" id="gridCountInput" min="1" max="20" value="12">
+                    </div>
+                </div>
+
                 <div class="tab-content" id="tabHelp">
                     <div class="info-box">
                         <h4>🚀 Запуск</h4>
@@ -767,17 +971,24 @@
                     </div>
                     <div class="info-box">
                         <h4>🔊 Звук</h4>
-                        <p>Кликните на стрим для включения звука</p>
+                        <p>
+                            <b>Режим 4 окна:</b> клик включает звук на этом стриме<br>
+                            <b>Режим сетки:</b> клик открывает стрим в большом плеере
+                        </p>
                     </div>
                     <div class="info-box">
-                        <h4>🔄 Drag & Drop</h4>
-                        <p>Перетаскивайте стримы между нижней панелью и колонкой справа</p>
+                        <h4>🔄 Альтернативные плееры</h4>
+                        <p>
+                            Если официальный плеер требует клика для воспроизведения, 
+                            попробуйте прокси-плееры в настройках. Они могут обходить 
+                            ограничения браузера на автовоспроизведение.
+                        </p>
                     </div>
                     <div class="info-box">
                         <h4>⌨️ Горячие клавиши</h4>
                         <p>
-                            <code>←</code> <code>→</code> — группы<br>
-                            <code>1-4</code> — звук на стриме<br>
+                            <code>←</code> <code>→</code> — переключение групп<br>
+                            <code>1-4</code> — звук на стриме 1-4<br>
                             <code>M</code> — выключить звук<br>
                             <code>Esc</code> — закрыть
                         </p>
@@ -791,8 +1002,10 @@
         </div>
     </div>
 
+    <!-- Twitch Embed API -->
+    <script src="https://player.twitch.tv/js/embed/v1.js"></script>
+
     <script>
-        // Дефолтные данные
         const defaultGroups = [
             { name: "Группа 1", streamers: ["xqc", "shroud", "summit1g", "lirik"] },
             { name: "Группа 2", streamers: ["pokimane", "hasanabi", "mizkif", "ludwig"] },
@@ -804,19 +1017,32 @@
             "ironmouse", "esfandtv", "tarik", "caseoh_"
         ];
 
-        // Загрузка настроек
+        // Прокси URL для разных плееров
+        const playerUrls = {
+            official: (channel, parent, muted) => 
+                `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=${muted}&autoplay=true`,
+            proxy1: (channel, parent, muted) => 
+                `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=${muted}&autoplay=true&player=popout`,
+            proxy2: (channel, parent, muted) =>
+                `https://www.twitch.tv/embed/${channel}/chat?parent=${parent}&darkpopout`,
+            embed: 'embed' // Используем Twitch.Player API
+        };
+
         function loadSettings() {
             try {
-                const saved = localStorage.getItem('msvSettings');
+                const saved = localStorage.getItem('msvSettings2');
                 return saved ? JSON.parse(saved) : null;
             } catch { return null; }
         }
 
         function saveSettings() {
-            localStorage.setItem('msvSettings', JSON.stringify({
+            localStorage.setItem('msvSettings2', JSON.stringify({
                 groups: settings.groups,
                 streamers: settings.streamers,
-                currentGroup: settings.currentGroup
+                currentGroup: settings.currentGroup,
+                playerType: settings.playerType,
+                password: settings.password,
+                gridCount: settings.gridCount
             }));
         }
 
@@ -824,15 +1050,19 @@
         const settings = {
             groups: saved?.groups || JSON.parse(JSON.stringify(defaultGroups)),
             streamers: saved?.streamers || [...defaultStreamers],
-            currentGroup: saved?.currentGroup || 0
+            currentGroup: saved?.currentGroup || 0,
+            playerType: saved?.playerType || 'official',
+            password: saved?.password || '',
+            gridCount: saved?.gridCount || 12
         };
 
         // Состояние
-        let viewMode = 'quad'; // 'grid', 'quad', 'expanded'
-        let activeChannel = null; // Развёрнутый канал
-        let soundChannel = null; // Канал со звуком
-        let bottomChannels = []; // Каналы в нижней панели
-        let sidebarChannels = []; // Каналы в сайдбаре
+        let viewMode = 'quad';
+        let activeChannel = null;
+        let soundChannel = null;
+        let bottomChannels = [];
+        let sidebarChannels = [];
+        let embedPlayers = {}; // Для Twitch.Player API
 
         // DOM
         const topBar = document.getElementById('topBar');
@@ -849,13 +1079,15 @@
         const groupDots = document.getElementById('groupDots');
         const prevGroup = document.getElementById('prevGroup');
         const nextGroup = document.getElementById('nextGroup');
-        const settingsBtn = document.getElementById('settingsBtn');
-        const modalOverlay = document.getElementById('modalOverlay');
-        const modalClose = document.getElementById('modalClose');
-        const saveBtn = document.getElementById('saveBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const addGroupBtn = document.getElementById('addGroupBtn');
-        const addStreamerBtn = document.getElementById('addStreamerBtn');
+        const gridCountSlider = document.getElementById('gridCountSlider');
+        const gridCountValue = document.getElementById('gridCountValue');
+
+        // Пароль
+        const passwordOverlay = document.getElementById('passwordOverlay');
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordError = document.getElementById('passwordError');
+        const passwordSubmit = document.getElementById('passwordSubmit');
+        const passwordCancel = document.getElementById('passwordCancel');
 
         function getParent() {
             const h = window.location.hostname;
@@ -873,46 +1105,116 @@
             return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
         }
 
-        // Создание iframe плеера
-        function createPlayerIframe(channel, muted = true) {
+        // Создание iframe/embed плеера
+        function createPlayerElement(channel, containerId, muted = true) {
             const parent = getParent();
+            
+            if (settings.playerType === 'embed' && typeof Twitch !== 'undefined') {
+                // Используем Twitch Embed API для лучшего контроля
+                const container = document.getElementById(containerId);
+                if (!container) return null;
+                
+                container.innerHTML = '';
+                
+                try {
+                    const player = new Twitch.Player(containerId, {
+                        channel: channel,
+                        parent: [parent],
+                        muted: muted,
+                        autoplay: true,
+                        width: '100%',
+                        height: '100%'
+                    });
+                    
+                    embedPlayers[containerId] = player;
+                    
+                    // Попытка автоматического unmute через несколько секунд
+                    if (!muted) {
+                        setTimeout(() => {
+                            try {
+                                player.setMuted(false);
+                                player.setVolume(0.5);
+                            } catch (e) {}
+                        }, 2000);
+                    }
+                    
+                    return player;
+                } catch (e) {
+                    console.error('Embed error:', e);
+                }
+            }
+            
+            // Fallback на iframe
             const iframe = document.createElement('iframe');
-            iframe.src = `https://player.twitch.tv/?channel=${channel}&parent=${parent}&muted=${muted}&autoplay=true`;
+            const url = typeof playerUrls[settings.playerType] === 'function' 
+                ? playerUrls[settings.playerType](channel, parent, muted)
+                : playerUrls.official(channel, parent, muted);
+            
+            iframe.src = url;
             iframe.allow = 'autoplay; fullscreen';
             iframe.allowFullscreen = true;
+            
             return iframe;
         }
 
-        // Создание бокса стрима
+        // Создание стрим-бокса
         function createStreamBox(channel, options = {}) {
-            const { draggable = false, location = '', onClick = null } = options;
+            const { 
+                draggable = false, 
+                location = '', 
+                muted = true,
+                showSoundHint = true,
+                onClick = null,
+                useEmbed = false
+            } = options;
+            
             const hasSound = soundChannel === channel;
+            const parent = getParent();
+            const boxId = `box-${channel}-${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
             
             const box = document.createElement('div');
             box.className = 'stream-box' + (hasSound ? ' has-sound' : '');
             box.dataset.channel = channel;
+            box.id = boxId;
             if (location) box.dataset.location = location;
             if (draggable) box.draggable = true;
 
-            const iframe = createPlayerIframe(channel, !hasSound);
-            box.appendChild(iframe);
-
-            const overlay = document.createElement('div');
-            overlay.className = 'overlay';
-            box.appendChild(overlay);
-
-            const label = document.createElement('div');
-            label.className = 'label';
-            label.textContent = capitalize(channel);
-            box.appendChild(label);
+            const actualMuted = hasSound ? false : true;
+            
+            if (useEmbed && settings.playerType === 'embed') {
+                // Контейнер для Embed API
+                box.innerHTML = `
+                    <div id="embed-${boxId}" style="width:100%;height:100%;"></div>
+                    <div class="overlay"></div>
+                    <div class="label">${capitalize(channel)}</div>
+                    ${showSoundHint ? '<div class="sound-hint">🔊 Клик = звук</div>' : ''}
+                `;
+                
+                // Создаём плеер после добавления в DOM
+                setTimeout(() => {
+                    createPlayerElement(channel, `embed-${boxId}`, actualMuted);
+                }, 100);
+            } else {
+                // iframe
+                const url = typeof playerUrls[settings.playerType] === 'function' 
+                    ? playerUrls[settings.playerType](channel, parent, actualMuted)
+                    : playerUrls.official(channel, parent, actualMuted);
+                
+                box.innerHTML = `
+                    <iframe 
+                        src="${url}"
+                        allow="autoplay; fullscreen"
+                        allowfullscreen>
+                    </iframe>
+                    <div class="overlay"></div>
+                    <div class="label">${capitalize(channel)}</div>
+                    ${showSoundHint ? '<div class="sound-hint">🔊 Клик = звук</div>' : ''}
+                `;
+            }
 
             // Клик
-            overlay.addEventListener('click', () => {
-                if (onClick) {
-                    onClick(channel);
-                } else {
-                    toggleSound(channel);
-                }
+            box.querySelector('.overlay').addEventListener('click', () => {
+                if (onClick) onClick(channel);
             });
 
             // Drag & Drop
@@ -945,11 +1247,9 @@
                     
                     const draggedChannel = e.dataTransfer.getData('channel');
                     const draggedLocation = e.dataTransfer.getData('location');
-                    const targetChannel = channel;
-                    const targetLocation = location;
 
-                    if (draggedChannel !== targetChannel) {
-                        swapChannels(draggedChannel, draggedLocation, targetChannel, targetLocation);
+                    if (draggedChannel !== channel) {
+                        swapChannels(draggedChannel, draggedLocation, channel, location);
                     }
                 });
             }
@@ -957,7 +1257,6 @@
             return box;
         }
 
-        // Обмен каналов
         function swapChannels(ch1, loc1, ch2, loc2) {
             const getArray = (loc) => loc === 'bottom' ? bottomChannels : sidebarChannels;
             
@@ -978,19 +1277,20 @@
             renderExpandedPanels();
         }
 
-        // Переключение звука
         function toggleSound(channel) {
-            soundChannel = (soundChannel === channel) ? null : channel;
+            if (soundChannel === channel) {
+                soundChannel = null;
+            } else {
+                soundChannel = channel;
+            }
             render();
         }
 
-        // Развернуть стрим
         function expandStream(channel) {
             activeChannel = channel;
             soundChannel = channel;
             viewMode = 'expanded';
             
-            // Распределяем остальные каналы
             const allChannels = getAllChannels().filter(ch => ch !== channel);
             bottomChannels = allChannels.slice(0, 4);
             sidebarChannels = allChannels.slice(4);
@@ -998,14 +1298,13 @@
             render();
         }
 
-        // Закрыть развёрнутый
         function closeExpandedView() {
             activeChannel = null;
+            soundChannel = null;
             viewMode = topBar.dataset.view;
             render();
         }
 
-        // Получить все каналы
         function getAllChannels() {
             const channels = [];
             settings.groups.forEach(g => {
@@ -1019,9 +1318,11 @@
             return channels;
         }
 
-        // Рендер
         function render() {
             mainWrapper.dataset.mode = viewMode;
+            
+            // Очищаем embed плееры
+            embedPlayers = {};
 
             if (viewMode === 'quad') {
                 renderQuadView();
@@ -1036,16 +1337,17 @@
             updateGroupNav();
         }
 
-        // Рендер режима 4 окна
         function renderQuadView() {
             quadView.innerHTML = '';
             const group = settings.groups[settings.currentGroup];
             if (!group) return;
 
-            group.streamers.forEach(channel => {
+            group.streamers.forEach((channel, idx) => {
                 if (channel) {
                     const box = createStreamBox(channel, {
-                        onClick: (ch) => expandStream(ch)
+                        onClick: (ch) => toggleSound(ch),
+                        showSoundHint: true,
+                        useEmbed: true
                     });
                     quadView.appendChild(box);
                 } else {
@@ -1057,7 +1359,6 @@
                 }
             });
 
-            // Добить до 4
             while (quadView.children.length < 4) {
                 const empty = document.createElement('div');
                 empty.className = 'stream-box';
@@ -1067,7 +1368,6 @@
             }
         }
 
-        // Рендер сайдбара для quad
         function renderSidebarForQuad() {
             sidebar.innerHTML = '<div class="sidebar-title">Другие стримы</div>';
             
@@ -1076,16 +1376,17 @@
 
             others.forEach(channel => {
                 const box = createStreamBox(channel, {
-                    onClick: (ch) => expandStream(ch)
+                    onClick: (ch) => toggleSound(ch),
+                    showSoundHint: true,
+                    useEmbed: true
                 });
                 sidebar.appendChild(box);
             });
         }
 
-        // Рендер режима сетки
         function renderGridView() {
             gridView.innerHTML = '';
-            const channels = getAllChannels();
+            const channels = getAllChannels().slice(0, settings.gridCount);
             
             const count = channels.length;
             const cols = count <= 4 ? 2 : count <= 9 ? 3 : count <= 16 ? 4 : 5;
@@ -1093,41 +1394,52 @@
 
             channels.forEach(channel => {
                 const box = createStreamBox(channel, {
-                    onClick: (ch) => expandStream(ch)
+                    onClick: (ch) => expandStream(ch),
+                    showSoundHint: false,
+                    useEmbed: true
                 });
                 gridView.appendChild(box);
             });
         }
 
-        // Рендер сайдбара для grid
         function renderSidebarForGrid() {
-            sidebar.innerHTML = '<div class="sidebar-title">Все стримы</div>';
-            // В режиме сетки сайдбар может быть пустым или содержать доп. инфо
+            sidebar.innerHTML = '<div class="sidebar-title">Клик = открыть</div>';
         }
 
-        // Рендер развёрнутого вида
         function renderExpandedView() {
-            // Основной плеер
-            mainPlayerFrame.src = `https://player.twitch.tv/?channel=${activeChannel}&parent=${getParent()}&muted=false&autoplay=true`;
+            const parent = getParent();
+            const url = typeof playerUrls[settings.playerType] === 'function' 
+                ? playerUrls[settings.playerType](activeChannel, parent, false)
+                : playerUrls.official(activeChannel, parent, false);
+            
+            mainPlayerFrame.src = url;
             activeName.textContent = capitalize(activeChannel);
 
             renderExpandedPanels();
         }
 
-        // Рендер панелей в развёрнутом виде
         function renderExpandedPanels() {
-            // Нижние стримы
             bottomStreams.innerHTML = '';
             bottomChannels.forEach(channel => {
                 const box = createStreamBox(channel, {
                     draggable: true,
                     location: 'bottom',
-                    onClick: (ch) => expandStream(ch)
+                    onClick: (ch) => {
+                        activeChannel = ch;
+                        soundChannel = ch;
+                        
+                        const allOthers = getAllChannels().filter(c => c !== ch);
+                        bottomChannels = allOthers.slice(0, 4);
+                        sidebarChannels = allOthers.slice(4);
+                        
+                        render();
+                    },
+                    showSoundHint: false,
+                    useEmbed: true
                 });
                 bottomStreams.appendChild(box);
             });
 
-            // Добить до 4
             while (bottomStreams.children.length < 4) {
                 const empty = document.createElement('div');
                 empty.className = 'stream-box';
@@ -1136,19 +1448,28 @@
                 bottomStreams.appendChild(empty);
             }
 
-            // Сайдбар
-            sidebar.innerHTML = '<div class="sidebar-title">Перетащите сюда ↓</div>';
+            sidebar.innerHTML = '<div class="sidebar-title">Перетащите ↔</div>';
             sidebarChannels.forEach(channel => {
                 const box = createStreamBox(channel, {
                     draggable: true,
                     location: 'sidebar',
-                    onClick: (ch) => expandStream(ch)
+                    onClick: (ch) => {
+                        activeChannel = ch;
+                        soundChannel = ch;
+                        
+                        const allOthers = getAllChannels().filter(c => c !== ch);
+                        bottomChannels = allOthers.slice(0, 4);
+                        sidebarChannels = allOthers.slice(4);
+                        
+                        render();
+                    },
+                    showSoundHint: false,
+                    useEmbed: true
                 });
                 sidebar.appendChild(box);
             });
         }
 
-        // Обновление навигации групп
         function updateGroupNav() {
             const group = settings.groups[settings.currentGroup];
             groupName.textContent = group?.name || `Группа ${settings.currentGroup + 1}`;
@@ -1168,16 +1489,17 @@
         function goToGroup(idx) {
             if (idx >= 0 && idx < settings.groups.length) {
                 settings.currentGroup = idx;
+                soundChannel = null;
                 saveSettings();
                 render();
             }
         }
 
-        // Переключение режима вида
         function setViewMode(mode) {
             topBar.dataset.view = mode;
             if (viewMode !== 'expanded') {
                 viewMode = mode;
+                soundChannel = null;
             }
             
             document.querySelectorAll('.view-btn').forEach(btn => {
@@ -1187,7 +1509,18 @@
             render();
         }
 
-        // События
+        // Ползунок количества стримов
+        gridCountSlider.value = settings.gridCount;
+        gridCountValue.textContent = settings.gridCount;
+        
+        gridCountSlider.addEventListener('input', (e) => {
+            settings.gridCount = parseInt(e.target.value);
+            gridCountValue.textContent = settings.gridCount;
+            saveSettings();
+            if (viewMode === 'grid') render();
+        });
+
+        // События навигации
         prevGroup.addEventListener('click', () => goToGroup(settings.currentGroup - 1));
         nextGroup.addEventListener('click', () => goToGroup(settings.currentGroup + 1));
 
@@ -1199,7 +1532,13 @@
 
         // Горячие клавиши
         document.addEventListener('keydown', (e) => {
-            if (modalOverlay.classList.contains('active')) {
+            if (passwordOverlay.classList.contains('active')) {
+                if (e.key === 'Enter') passwordSubmit.click();
+                if (e.key === 'Escape') passwordCancel.click();
+                return;
+            }
+            
+            if (document.getElementById('modalOverlay').classList.contains('active')) {
                 if (e.key === 'Escape') closeModal();
                 return;
             }
@@ -1227,11 +1566,57 @@
             }
         });
 
-        // Модальное окно
+        // === Пароль ===
+        function requestPassword(callback) {
+            if (!settings.password) {
+                callback();
+                return;
+            }
+            
+            passwordOverlay.classList.add('active');
+            passwordInput.value = '';
+            passwordError.classList.remove('show');
+            passwordInput.focus();
+            
+            const onSubmit = () => {
+                if (passwordInput.value === settings.password) {
+                    passwordOverlay.classList.remove('active');
+                    passwordSubmit.removeEventListener('click', onSubmit);
+                    passwordCancel.removeEventListener('click', onCancel);
+                    callback();
+                } else {
+                    passwordError.classList.add('show');
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            };
+            
+            const onCancel = () => {
+                passwordOverlay.classList.remove('active');
+                passwordSubmit.removeEventListener('click', onSubmit);
+                passwordCancel.removeEventListener('click', onCancel);
+            };
+            
+            passwordSubmit.addEventListener('click', onSubmit);
+            passwordCancel.addEventListener('click', onCancel);
+        }
+
+        // === Модальное окно ===
+        const settingsBtn = document.getElementById('settingsBtn');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
+        const saveBtn = document.getElementById('saveBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const addGroupBtn = document.getElementById('addGroupBtn');
+        const addStreamerBtn = document.getElementById('addStreamerBtn');
+
         function openModal() {
-            modalOverlay.classList.add('active');
-            renderGroupsTab();
-            renderStreamersTab();
+            requestPassword(() => {
+                modalOverlay.classList.add('active');
+                renderGroupsTab();
+                renderStreamersTab();
+                renderSettingsTab();
+            });
         }
 
         function closeModal() {
@@ -1255,7 +1640,6 @@
             });
         });
 
-        // Рендер вкладки групп
         function renderGroupsTab() {
             const container = document.getElementById('groupsList');
             container.innerHTML = '';
@@ -1273,7 +1657,7 @@
                             <div class="slot">
                                 <span class="slot-num">${i+1}</span>
                                 <input type="text" value="${group.streamers[i] || ''}" 
-                                    placeholder="ник или ссылка" data-gidx="${gIdx}" data-sidx="${i}">
+                                    placeholder="ник" data-gidx="${gIdx}" data-sidx="${i}">
                             </div>
                         `).join('')}
                     </div>
@@ -1281,7 +1665,6 @@
                 container.appendChild(card);
             });
 
-            // События
             container.querySelectorAll('.group-name-input').forEach(input => {
                 input.addEventListener('change', (e) => {
                     settings.groups[e.target.dataset.gidx].name = e.target.value;
@@ -1318,7 +1701,6 @@
             renderGroupsTab();
         });
 
-        // Рендер вкладки стримеров
         function renderStreamersTab() {
             const container = document.getElementById('streamersList');
             container.innerHTML = '';
@@ -1327,7 +1709,7 @@
                 const row = document.createElement('div');
                 row.className = 'streamer-row';
                 row.innerHTML = `
-                    <input type="text" value="${ch || ''}" placeholder="ник или ссылка" data-idx="${idx}">
+                    <input type="text" value="${ch || ''}" placeholder="ник" data-idx="${idx}">
                     <button class="remove-btn" data-idx="${idx}">✕</button>
                 `;
                 container.appendChild(row);
@@ -1352,24 +1734,44 @@
             renderStreamersTab();
         });
 
-        // Сохранение
+        function renderSettingsTab() {
+            document.getElementById('playerType').value = settings.playerType;
+            document.getElementById('settingsPassword').value = settings.password;
+            document.getElementById('gridCountInput').value = settings.gridCount;
+        }
+
         saveBtn.addEventListener('click', () => {
             settings.groups.forEach(g => {
                 g.streamers = g.streamers.map(s => extractChannel(s));
             });
             settings.streamers = settings.streamers.map(s => extractChannel(s)).filter(s => s);
+            
+            // Сохраняем настройки из вкладки Опции
+            settings.playerType = document.getElementById('playerType').value;
+            settings.password = document.getElementById('settingsPassword').value;
+            settings.gridCount = parseInt(document.getElementById('gridCountInput').value) || 12;
+            
+            // Обновляем ползунок
+            gridCountSlider.value = settings.gridCount;
+            gridCountValue.textContent = settings.gridCount;
+            
             saveSettings();
             closeModal();
             render();
         });
 
-        // Сброс
         resetBtn.addEventListener('click', () => {
-            settings.groups = JSON.parse(JSON.stringify(defaultGroups));
-            settings.streamers = [...defaultStreamers];
-            settings.currentGroup = 0;
-            renderGroupsTab();
-            renderStreamersTab();
+            if (confirm('Сбросить все настройки?')) {
+                settings.groups = JSON.parse(JSON.stringify(defaultGroups));
+                settings.streamers = [...defaultStreamers];
+                settings.currentGroup = 0;
+                settings.playerType = 'official';
+                settings.password = '';
+                settings.gridCount = 12;
+                renderGroupsTab();
+                renderStreamersTab();
+                renderSettingsTab();
+            }
         });
 
         // Инициализация
