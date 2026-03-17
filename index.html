@@ -87,7 +87,6 @@
             left: 15px;
         }
 
-        /* Кнопка сворачивания */
         .collapse-btn {
             width: 40px;
             height: 40px;
@@ -245,7 +244,6 @@
             object-fit: contain;
         }
 
-        /* Ник на большом плеере */
         .main-player .player-label {
             position: absolute;
             bottom: 20px;
@@ -269,7 +267,6 @@
             text-transform: lowercase;
         }
 
-        /* Управление на развернутом стриме */
         .main-player .video-controls {
             position: absolute;
             bottom: 0;
@@ -384,7 +381,6 @@
             flex-shrink: 0;
         }
 
-        /* Stream Box */
         .stream-box {
             background: #000;
             border-radius: 6px;
@@ -448,7 +444,6 @@
             z-index: 5;
         }
 
-        /* Ники по центру внизу */
         .stream-box .label {
             position: absolute;
             bottom: 8px;
@@ -474,7 +469,6 @@
             text-transform: lowercase;
         }
 
-        /* Для маленьких окошек */
         .sidebar .stream-box .label,
         .bottom-streams .stream-box .label {
             font-size: 0.95rem;
@@ -551,7 +545,6 @@
 
         .stream-box:hover .click-hint { opacity: 1; }
 
-        /* Video Controls для маленьких плееров */
         .video-controls {
             position: absolute;
             bottom: 0;
@@ -616,7 +609,6 @@
             max-width: 60px;
         }
 
-        /* Password */
         .password-overlay {
             display: none;
             position: fixed;
@@ -678,7 +670,6 @@
         .password-box button:hover { background: #772ce8; }
         .password-box .cancel-btn { background: #2d2d35; margin-top: 10px; }
 
-        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -897,7 +888,6 @@
         .btn-secondary { background: #2d2d35; color: white; }
         .btn-secondary:hover { background: #464649; }
 
-        /* View modes */
         .main-wrapper[data-mode="grid"] .grid-view { 
             display: grid; 
             grid-auto-rows: minmax(0, 1fr);
@@ -944,7 +934,6 @@
             .main-player .player-label { font-size: 1rem; padding: 4px 12px; }
         }
         
-        /* Footer */
         footer {
             position: fixed;
             bottom: 0;
@@ -979,7 +968,6 @@
 
     <div class="top-bar" id="topBar" data-view="quad">
         <div class="left-controls">
-            <!-- Кнопка сворачивания перед ползунком -->
             <button class="collapse-btn" id="collapseExpandedBtn" title="Свернуть (Esc)">✕</button>
             
             <div class="grid-count-control">
@@ -1010,9 +998,7 @@
             <div class="quad-view" id="quadView"></div>
             
             <div class="expanded-view" id="expandedView">
-                <div class="main-player" id="mainPlayer">
-                    <!-- Ник будет добавлен сюда динамически -->
-                </div>
+                <div class="main-player" id="mainPlayer"></div>
                 <div class="bottom-streams" id="bottomStreams"></div>
             </div>
         </div>
@@ -1022,7 +1008,6 @@
         </div>
     </div>
 
-<!-- Footer -->
     <footer>
         <p class="footer-copyright">Сайт создан по заказу для Lagerta_Seeman</p>
     </footer>
@@ -1118,7 +1103,6 @@
         const DEFAULT_PASSWORD = '';
         const API_BASE = 'https://test228.onrender.com/api';
 
-        // wake render server
         fetch('https://test228.onrender.com/api/status/lagerta_seeman').catch(()=>{});
 
         const defaultGroups = [
@@ -1162,7 +1146,7 @@
         };
 
         // ============ СОСТОЯНИЕ ============
-        let viewMode = 'quad'; // Текущий режим отображения
+        let viewMode = 'quad';
         let activeChannel = null;
         let soundChannel = null;
         let bottomChannels = [];
@@ -1185,6 +1169,69 @@
         const viewBtns = document.querySelectorAll('.view-btn');
 
         // ============ HLS ПЛЕЕР ============
+        function setupControls(player, container) {
+            const playBtn = container.querySelector('.play-btn');
+            const muteBtn = container.querySelector('.mute-btn');
+            const volumeSlider = container.querySelector('.volume-slider');
+            const qualitySelect = container.querySelector('.quality-select');
+            const video = player.video;
+
+            if (playBtn) {
+                playBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (video.paused) {
+                        video.play();
+                        playBtn.textContent = '⏸';
+                    } else {
+                        video.pause();
+                        playBtn.textContent = '▶';
+                    }
+                };
+            }
+
+            if (muteBtn) {
+                muteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    video.muted = !video.muted;
+                    muteBtn.textContent = video.muted ? '🔇' : '🔊';
+                    if (volumeSlider) volumeSlider.value = video.muted ? 0 : video.volume * 100;
+                    
+                    if (!video.muted) {
+                        if (soundChannel !== player.channel) {
+                            hlsPlayers.forEach((p, ch) => {
+                                if (ch !== player.channel && p.video) {
+                                    p.video.muted = true;
+                                }
+                            });
+                            soundChannel = player.channel;
+                        }
+                    } else if (soundChannel === player.channel) {
+                        soundChannel = null;
+                    }
+                    
+                    updateSoundIndicators();
+                };
+            }
+
+            if (volumeSlider) {
+                volumeSlider.oninput = (e) => {
+                    e.stopPropagation();
+                    video.volume = e.target.value / 100;
+                    video.muted = video.volume === 0;
+                    if (muteBtn) muteBtn.textContent = video.muted ? '🔇' : '🔊';
+                };
+                volumeSlider.onclick = (e) => e.stopPropagation();
+            }
+
+            if (qualitySelect) {
+                qualitySelect.onchange = (e) => {
+                    e.stopPropagation();
+                    player.hls.currentLevel = parseInt(e.target.value);
+                };
+                qualitySelect.onclick = (e) => e.stopPropagation();
+            }
+        }
+
         function createHlsPlayer(container, channel, options = {}) {
             const { muted = true, autoplay = true } = options;
             
@@ -1352,12 +1399,37 @@
         function createStreamBox(channel, options = {}) {
             const { draggable = false, location = '', muted = true, showHint = true, onClick = null } = options;
             
+            const existingBox = document.querySelector(`.stream-box[data-channel="${channel}"]`);
+            if (existingBox) {
+                if (location) existingBox.dataset.location = location;
+                existingBox.draggable = draggable;
+                
+                // Обновляем обработчик клика
+                const overlay = existingBox.querySelector('.overlay');
+                if (overlay && onClick) {
+                    overlay.onclick = (e) => {
+                        e.stopPropagation();
+                        onClick(channel);
+                    };
+                }
+                
+                // Обновляем muted состояние
+                const player = hlsPlayers.get(channel);
+                if (player && player.video) {
+                    player.video.muted = muted;
+                    const muteBtn = existingBox.querySelector('.mute-btn');
+                    if (muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊';
+                }
+                
+                return existingBox;
+            }
+            
             const box = document.createElement('div');
             box.className = 'stream-box';
             if (channel === soundChannel) box.classList.add('has-sound');
             box.dataset.channel = channel;
             if (location) box.dataset.location = location;
-            if (draggable) box.draggable = true;
+            box.draggable = draggable;
 
             const playerContainer = document.createElement('div');
             playerContainer.className = 'player-container';
@@ -1371,7 +1443,6 @@
 
             const label = document.createElement('div');
             label.className = 'label';
-            // Ник с маленькой буквы
             label.textContent = channel.toLowerCase();
             box.appendChild(label);
 
@@ -1382,12 +1453,35 @@
                 box.appendChild(hint);
             }
 
-            setTimeout(() => {
-                createHlsPlayer(playerContainer, channel, { 
-                    muted: channel !== soundChannel, 
-                    autoplay: true 
-                });
-            }, 10);
+            // Проверяем существующий плеер
+            let existingPlayer = hlsPlayers.get(channel);
+            if (existingPlayer) {
+                // Если плеер существует, перемещаем видео в новый контейнер
+                if (existingPlayer.video && existingPlayer.container !== playerContainer) {
+                    playerContainer.appendChild(existingPlayer.video);
+                    existingPlayer.container = playerContainer;
+                    
+                    const controls = document.createElement('div');
+                    controls.className = 'video-controls';
+                    controls.innerHTML = `
+                        <button class="play-btn">${existingPlayer.video.paused ? '▶' : '⏸'}</button>
+                        <button class="mute-btn">${existingPlayer.video.muted ? '🔇' : '🔊'}</button>
+                        <input type="range" class="volume-slider" min="0" max="100" value="${existingPlayer.video.muted ? 0 : existingPlayer.video.volume * 100}">
+                        <select class="quality-select"><option>Auto</option></select>
+                    `;
+                    playerContainer.appendChild(controls);
+                    
+                    setupControls(existingPlayer, playerContainer);
+                }
+            } else {
+                // Если плеера нет, создаем новый
+                setTimeout(() => {
+                    createHlsPlayer(playerContainer, channel, { 
+                        muted: muted, 
+                        autoplay: true 
+                    });
+                }, 10);
+            }
 
             overlay.onclick = (e) => {
                 e.stopPropagation();
@@ -1455,36 +1549,49 @@
                 soundChannel = channel;
             }
             updateSoundIndicators();
+            
+            document.querySelectorAll('.stream-box').forEach(box => {
+                const ch = box.dataset.channel;
+                if (ch) {
+                    const player = hlsPlayers.get(ch);
+                    if (player && player.video) {
+                        const muteBtn = box.querySelector('.mute-btn');
+                        if (muteBtn) {
+                            muteBtn.textContent = player.video.muted ? '🔇' : '🔊';
+                        }
+                    }
+                }
+            });
         }
 
         function expandStream(channel) {
+            console.log('Expanding stream:', channel);
             activeChannel = channel;
             soundChannel = channel;
             viewMode = 'expanded';
             
+            // Обновляем состояние звука для всех плееров
             hlsPlayers.forEach((player, ch) => {
                 if (player.video) {
                     player.video.muted = (ch !== channel);
                 }
             });
             
-            const all = getAllChannels().filter(c => c !== channel);
+            // Получаем все каналы и распределяем их
+            const all = getAllChannels().filter(c => c && c !== channel);
             bottomChannels = all.slice(0, 4);
             sidebarChannels = all.slice(4);
-            render();
             
-            // Показываем кнопку сворачивания
+            render();
             collapseBtn.classList.add('visible');
         }
 
         function closeExpandedView() {
             activeChannel = null;
-            // Возвращаемся к режиму, который был выбран в topBar.dataset.view
             viewMode = topBar.dataset.view;
             soundChannel = null;
             render();
             
-            // Скрываем кнопку сворачивания
             collapseBtn.classList.remove('visible');
         }
 
@@ -1499,13 +1606,15 @@
         function render() {
             mainWrapper.dataset.mode = viewMode;
             
-            const visibleChannels = getVisibleChannels();
-            hlsPlayers.forEach((player, channel) => {
-                if (!visibleChannels.includes(channel)) {
-                    destroyPlayer(channel);
+            // Обновляем активные кнопки в соответствии с текущим режимом
+            viewBtns.forEach(b => {
+                if (b.dataset.view === viewMode) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
                 }
             });
-
+            
             if (viewMode === 'quad') { 
                 renderQuadView(); 
                 renderSidebarForQuad(); 
@@ -1521,7 +1630,6 @@
             updateGroupNav();
             updateSoundIndicators();
             
-            // Обновляем видимость кнопки сворачивания
             if (viewMode === 'expanded') {
                 collapseBtn.classList.add('visible');
             } else {
@@ -1532,7 +1640,6 @@
         function getVisibleChannels() {
             if (viewMode === 'quad') {
                 const group = settings.groups[settings.currentGroup];
-                // Показываем только заполненные слоты (не пустые)
                 const groupStreamers = group?.streamers.filter(c => c && c.trim() !== '') || [];
                 return [...groupStreamers, ...settings.streamers];
             } else if (viewMode === 'grid') {
@@ -1548,12 +1655,10 @@
             const group = settings.groups[settings.currentGroup];
             if (!group) return;
 
-            // Фильтруем только заполненные слоты
             const activeStreamers = group.streamers.filter(c => c && c.trim() !== '');
             
-            // Динамически рассчитываем количество колонок
             const count = activeStreamers.length;
-            let cols = 2; // по умолчанию
+            let cols = 2;
             if (count <= 4) cols = 2;
             else if (count <= 6) cols = 3;
             else if (count <= 9) cols = 3;
@@ -1563,18 +1668,17 @@
             quadView.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
             quadView.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-            // Добавляем активные стримы
             activeStreamers.forEach(channel => {
                 if (channel) {
-                    quadView.appendChild(createStreamBox(channel, {
+                    const box = createStreamBox(channel, {
                         onClick: toggleSound,
                         showHint: true,
                         muted: soundChannel !== channel
-                    }));
+                    });
+                    quadView.appendChild(box);
                 }
             });
 
-            // Заполняем пустые места заглушками до полного заполнения сетки
             const totalCells = cols * rows;
             for (let i = activeStreamers.length; i < totalCells; i++) {
                 const empty = document.createElement('div');
@@ -1600,35 +1704,65 @@
             const channels = getAllChannels().slice(0, settings.gridCount);
             const cols = channels.length <= 4 ? 2 : channels.length <= 9 ? 3 : channels.length <= 16 ? 4 : 5;
             gridView.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            
             channels.forEach(channel => {
-                gridView.appendChild(createStreamBox(channel, { onClick: expandStream, showHint: false, muted: soundChannel !== channel }));
+                const box = createStreamBox(channel, { 
+                    onClick: expandStream, 
+                    showHint: false, 
+                    muted: soundChannel !== channel,
+                    draggable: false
+                });
+                gridView.appendChild(box);
             });
         }
 
         function renderSidebarForGrid() {
             sidebar.innerHTML = '<div class="sidebar-title">Клик = открыть</div>';
+            // В режиме сетки боковая панель пустая
         }
 
         function renderExpandedView() {
-            mainPlayer.innerHTML = '';
-            
-            // Создаем плеер
-            createHlsPlayer(mainPlayer, activeChannel, { muted: false, autoplay: true });
-            
-            // Добавляем ник на плеер
-            const label = document.createElement('div');
-            label.className = 'player-label';
-            label.textContent = activeChannel.toLowerCase();
-            mainPlayer.appendChild(label);
-            
-            renderExpandedPanels();
-        }
+    mainPlayer.innerHTML = '';
+    
+    // Проверяем, есть ли уже плеер для activeChannel
+    let player = hlsPlayers.get(activeChannel);
+    
+    if (player && player.video) {
+        // Если плеер существует, перемещаем его в mainPlayer
+        mainPlayer.appendChild(player.video);
+        player.container = mainPlayer;
+        
+        // Добавляем элементы управления
+        const controls = document.createElement('div');
+        controls.className = 'video-controls';
+        controls.innerHTML = `
+            <button class="play-btn">${player.video.paused ? '▶' : '⏸'}</button>
+            <button class="mute-btn">${player.video.muted ? '🔇' : '🔊'}</button>
+            <input type="range" class="volume-slider" min="0" max="100" value="${player.video.muted ? 0 : player.video.volume * 100}">
+            <select class="quality-select"><option>Auto</option></select>
+        `;
+        mainPlayer.appendChild(controls);
+        
+        setupControls(player, mainPlayer);
+    } else {
+        // Если плеера нет, создаем новый
+        createHlsPlayer(mainPlayer, activeChannel, { muted: false, autoplay: true });
+    }
+    
+    const label = document.createElement('div');
+    label.className = 'player-label';
+    label.textContent = activeChannel.toLowerCase();
+    mainPlayer.appendChild(label);
+    
+    renderExpandedPanels();
+}
 
         function renderExpandedPanels() {
             bottomStreams.innerHTML = '';
             bottomChannels.forEach(channel => {
                 bottomStreams.appendChild(createStreamBox(channel, {
-                    draggable: true, location: 'bottom',
+                    draggable: true,
+                    location: 'bottom',
                     onClick: (c) => { 
                         activeChannel = c; 
                         soundChannel = c;
@@ -1657,7 +1791,8 @@
             sidebar.innerHTML = '<div class="sidebar-title">Перетащите ↔</div>';
             sidebarChannels.forEach(channel => {
                 sidebar.appendChild(createStreamBox(channel, {
-                    draggable: true, location: 'sidebar',
+                    draggable: true,
+                    location: 'sidebar',
                     onClick: (c) => { 
                         activeChannel = c; 
                         soundChannel = c;
@@ -1701,10 +1836,8 @@
         }
 
         function setViewMode(mode) {
-            // Обновляем data-view на topBar
             topBar.dataset.view = mode;
             
-            // Обновляем активные кнопки
             viewBtns.forEach(b => {
                 if (b.dataset.view === mode) {
                     b.classList.add('active');
@@ -1717,6 +1850,10 @@
             if (viewMode !== 'expanded') { 
                 viewMode = mode; 
                 soundChannel = null; 
+            } else {
+                // Если мы в развернутом режиме, просто обновляем topBar.dataset.view
+                // для возможности возврата в этот режим после сворачивания
+                topBar.dataset.view = mode;
             }
             
             render();
@@ -1735,12 +1872,10 @@
         document.getElementById('prevGroup').onclick = () => goToGroup(settings.currentGroup - 1);
         document.getElementById('nextGroup').onclick = () => goToGroup(settings.currentGroup + 1);
         
-        // Исправляем обработчики для кнопок переключения режимов
         viewBtns.forEach(b => {
             b.onclick = () => setViewMode(b.dataset.view);
         });
         
-        // Кнопка сворачивания
         collapseBtn.onclick = closeExpandedView;
 
         document.onkeydown = (e) => {
@@ -1818,7 +1953,6 @@
                 const card = document.createElement('div');
                 card.className = 'group-card';
                 
-                // Создаем заголовок группы
                 const header = document.createElement('div');
                 header.className = 'group-header';
                 header.innerHTML = `
@@ -1827,7 +1961,6 @@
                 `;
                 card.appendChild(header);
                 
-                // Создаем слоты для стримеров (10 слотов)
                 const slots = document.createElement('div');
                 slots.className = 'group-slots';
                 
@@ -1845,14 +1978,12 @@
                 container.appendChild(card);
             });
             
-            // Добавляем обработчики
             container.querySelectorAll('.group-name-input').forEach(i => i.onchange = (e) => settings.groups[e.target.dataset.gidx].name = e.target.value);
             container.querySelectorAll('.group-slots input').forEach(i => i.onchange = (e) => {
                 const gIdx = parseInt(e.target.dataset.gidx);
                 const sIdx = parseInt(e.target.dataset.sidx);
                 const value = extractChannel(e.target.value);
                 
-                // Убеждаемся, что массив имеет нужную длину
                 while (settings.groups[gIdx].streamers.length < 10) {
                     settings.groups[gIdx].streamers.push('');
                 }
@@ -1901,9 +2032,7 @@
 
         document.getElementById('saveBtn').onclick = () => {
             settings.groups.forEach(g => {
-                // Обновляем массив стримеров
                 g.streamers = g.streamers.map(extractChannel);
-                // Убеждаемся, что всегда 10 элементов
                 while (g.streamers.length < 10) g.streamers.push('');
                 if (g.streamers.length > 10) g.streamers = g.streamers.slice(0, 10);
             });
@@ -1950,7 +2079,7 @@
             });
         }, 30000);
 
-                // ============ INIT ============
+        // ============ INIT ============
         fetch('https://test228.onrender.com/api/ping').catch(()=>{});
         setInterval(() => {
             fetch('https://test228.onrender.com/api/ping').catch(()=>{});
