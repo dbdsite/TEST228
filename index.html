@@ -1,16 +1,23 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <link rel="icon" href="https://static-cdn.jtvnw.net/jtv_user_pictures/481347b6-d915-4e3f-bb44-613a427e79f1-profile_image-70x70.png" type="image/x-icon">
+    <link rel="icon" href="https://static-cdn.jtvnw.net/jtv_user_pictures/c39afce5-9518-43b3-8007-51c1b7f596f4-profile_image-70x70.png" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Specially for Lagerta_Seeman</title>
+    <title>Multi-Stream for Twitch </title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        @font-face {
+            font-family: 'Facon Bold Italic';
+            src: url('https://fonts.cdnfonts.com/css/facon') format('woff2');
+            font-weight: bold;
+            font-style: italic;
         }
 
         body {
@@ -174,7 +181,7 @@
         }
 
         .main-wrapper {
-            height: calc(100vh - 50px);
+            height: calc(100vh - 75px);
             margin-top: 50px;
             display: flex;
             padding: 8px;
@@ -206,13 +213,12 @@
         .quad-view {
             flex: 1;
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(2, 1fr);
             gap: 8px;
             min-height: 0;
             height: 100%;
-            overflow: hidden;
+            overflow: auto;
             padding: 2px;
+            grid-auto-rows: minmax(0, 1fr);
         }
 
         .expanded-view {
@@ -239,23 +245,108 @@
             object-fit: contain;
         }
 
-        /* Ник на большом плеере - внизу по центру */
-        .player-label {
+        /* Ник на большом плеере */
+        .main-player .player-label {
             position: absolute;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             color: #fff;
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 700;
             z-index: 100;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
-            letter-spacing: 1px;
-            text-align: center;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 25px;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255,255,255,0.1);
             white-space: nowrap;
             max-width: 90%;
             overflow: hidden;
             text-overflow: ellipsis;
+            letter-spacing: 0.5px;
+            font-family: 'Facon Bold Italic', 'Segoe UI', Arial, sans-serif;
+            text-transform: lowercase;
+        }
+
+        /* Управление на развернутом стриме */
+        .main-player .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 30px 15px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .main-player:hover .video-controls {
+            opacity: 1;
+        }
+
+        .main-player .video-controls button,
+        .main-player .video-controls input,
+        .main-player .video-controls select {
+            pointer-events: auto;
+        }
+
+        .main-player .video-controls button {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #9146ff;
+            border-radius: 50%;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .main-player .video-controls button:hover {
+            background: #9146ff;
+            transform: scale(1.1);
+        }
+
+        .main-player .volume-slider {
+            width: 80px;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .main-player .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #9146ff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .main-player .quality-select {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #9146ff;
+            border-radius: 20px;
+            color: #fff;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            min-width: 100px;
+        }
+
+        .main-player .quality-select option {
+            background: #18181b;
         }
 
         .bottom-streams {
@@ -307,20 +398,14 @@
             width: 100%;
         }
 
-        .grid-view .stream-box {
-            aspect-ratio: 16/9;
-        }
-
-        .quad-view .stream-box {
-            aspect-ratio: 16/9;
-        }
-
-        .bottom-streams .stream-box {
+        .grid-view .stream-box,
+        .quad-view .stream-box,
+        .bottom-streams .stream-box,
+        .sidebar .stream-box {
             aspect-ratio: 16/9;
         }
 
         .sidebar .stream-box {
-            aspect-ratio: 16/9;
             min-height: 80px;
             width: 100%;
         }
@@ -363,7 +448,7 @@
             z-index: 5;
         }
 
-        /* Ники по центру внизу, крупнее */
+        /* Ники по центру внизу */
         .stream-box .label {
             position: absolute;
             bottom: 8px;
@@ -375,20 +460,21 @@
             z-index: 4;
             pointer-events: none;
             text-align: center;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
             background: rgba(0,0,0,0.6);
             padding: 5px 15px;
             border-radius: 25px;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255,255,255,0.1);
             white-space: nowrap;
             max-width: 90%;
             overflow: hidden;
             text-overflow: ellipsis;
             letter-spacing: 0.5px;
-            backdrop-filter: blur(2px);
-            border: 1px solid rgba(255,255,255,0.1);
+            font-family: 'Facon Bold Italic', 'Segoe UI', Arial, sans-serif;
+            text-transform: lowercase;
         }
 
-        /* Для маленьких окошек (сайдбар и нижние стримы) - ники чуть меньше, но все еще крупные */
+        /* Для маленьких окошек */
         .sidebar .stream-box .label,
         .bottom-streams .stream-box .label {
             font-size: 0.95rem;
@@ -465,7 +551,7 @@
 
         .stream-box:hover .click-hint { opacity: 1; }
 
-        /* Video Controls */
+        /* Video Controls для маленьких плееров */
         .video-controls {
             position: absolute;
             bottom: 0;
@@ -723,7 +809,7 @@
 
         .group-slots {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 8px;
         }
 
@@ -821,7 +907,6 @@
 
         .main-wrapper[data-mode="quad"] .quad-view { 
             display: grid; 
-            grid-auto-rows: minmax(0, 1fr);
         }
         .main-wrapper[data-mode="quad"] .grid-view,
         .main-wrapper[data-mode="quad"] .expanded-view { display: none; }
@@ -846,7 +931,7 @@
             .group-slots { grid-template-columns: repeat(2, 1fr); }
             .bottom-streams { height: 120px; }
             .main-wrapper { padding: 4px; gap: 4px; }
-            .player-label { font-size: 1.6rem; }
+            .main-player .player-label { font-size: 1.2rem; padding: 6px 15px; }
             .collapse-btn { width: 35px; height: 35px; }
         }
 
@@ -856,9 +941,10 @@
             .sidebar .stream-box { min-width: 160px; height: 100%; }
             .bottom-streams { grid-template-columns: repeat(2, 1fr); height: 100px; }
             .main-wrapper { padding: 4px; gap: 4px; }
-            .player-label { font-size: 1.4rem; bottom: 15px; }
+            .main-player .player-label { font-size: 1rem; padding: 4px 12px; }
         }
-         /* Footer */
+        
+        /* Footer */
         footer {
             position: fixed;
             bottom: 0;
@@ -877,16 +963,6 @@
         .footer-copyright {
             margin: 0;
             line-height: 15px;
-        }
-
-        /* Уменьшаем высоту main-wrapper чтобы освободить место для футера */
-        .main-wrapper {
-            height: calc(100vh - 75px); /* 50px (top-bar) + 25px (footer) = 75px */
-            margin-top: 50px;
-            display: flex;
-            padding: 8px;
-            gap: 8px;
-            overflow: hidden;
         }
     </style>
 </head>
@@ -915,7 +991,7 @@
 
         <div class="view-toggle">
             <button class="view-btn" data-view="grid">Сетка</button>
-            <button class="view-btn active" data-view="quad">4 окна</button>
+            <button class="view-btn active" data-view="quad">Группа</button>
         </div>
 
         <div class="group-nav">
@@ -959,15 +1035,15 @@
                     <button class="modal-tab active" data-tab="groups">Группы</button>
                     <button class="modal-tab" data-tab="streamers">Стримеры</button>
                     <button class="modal-tab" data-tab="settings">Опции</button>
-                    <button class="modal-tab" data-tab="help">Помощь</button>
+                    <button class="modal-tab" data-tab="help">Инфо</button>
                 </div>
                 <button class="modal-close" id="modalClose">✕</button>
             </div>
             <div class="modal-body">
                 <div class="tab-content active" id="tabGroups">
                     <div class="info-box">
-                        <h4>📺 Группы по 4 стрима</h4>
-                        <p>Переключайтесь стрелками ◀ ▶</p>
+                        <h4>📺 Группы до 10 стримов</h4>
+                        <p>Заполните только нужные слоты - остальные не будут отображаться</p>
                     </div>
                     <div id="groupsList"></div>
                     <button class="add-btn" id="addGroupBtn">+ Добавить группу</button>
@@ -995,16 +1071,16 @@
 
                 <div class="tab-content" id="tabHelp">
                     <div class="info-box">
-                        <h4>🚀 Запуск</h4>
+                        <h4>❤ Сайт</h4>
                         <p>
-                            Запустите <code>python server.py</code><br><br>
-                            Откройте: <code>http://localhost:8080</code>
+                            Сайт принадлежит: <code>Lagerta_Seeman</code><br>
+                            Сайт разработал: <code>MCPLEH</code>
                         </p>
                     </div>
                     <div class="info-box">
                         <h4>🎮 HLS Плеер</h4>
                         <p>
-                            Используется HLS.js с локальным прокси:<br>
+                            Используется HLS.js с кастомным плеером:<br>
                             • Автоматическое воспроизведение<br>
                             • Без рекламы<br>
                             • Выбор качества
@@ -1019,6 +1095,14 @@
                             <code>Esc</code> — закрыть
                         </p>
                     </div>
+                    <div class="info-box">
+                        <h4>⚠ Внимание!</h4>
+                        <p>
+                            Загрузка стримов напрямую зависит от вашего <code>Интернета\Компьютера</code><br>
+                            Чем больше у вас стримов включено тем больше нагрузка на сервер и тем больше запросов вашему компьютеру<br>
+                            Если стримы плохо грузят но Компьютер в порядке, попробуйте включить <code>VPN</code>
+                        </p>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1031,21 +1115,21 @@
     <script>
         // ============ КОНСТАНТЫ ============
         const STORAGE_KEY = 'hlsMultiStreamData';
-        const DEFAULT_PASSWORD = 'admin';
+        const DEFAULT_PASSWORD = '';
         const API_BASE = 'https://test228.onrender.com/api';
 
         // wake render server
-        fetch('https://test228.onrender.com/api/status/xqc').catch(()=>{});
+        fetch('https://test228.onrender.com/api/status/lagerta_seeman').catch(()=>{});
 
         const defaultGroups = [
-            { name: "Группа 1", streamers: ["xqc", "shroud", "summit1g", "lirik"] },
-            { name: "Группа 2", streamers: ["pokimane", "hasanabi", "mizkif", "ludwig"] },
-            { name: "Группа 3", streamers: ["pestily", "asmongold", "nmplol", "sykkuno"] }
+            { name: "Группа 1", streamers: ["mcpleh", "lagerta_seeman", "nestli_exidaz", "galaxytm_", "", "", "", "", "", ""] },
+            { name: "Группа 2", streamers: ["stervunya", "sharllin", "danyafleksym", "lefort", "", "", "", "", "", ""] },
+            { name: "Группа 3", streamers: ["cfcbrt", "ottenochek", "mogilevtm_", "kakcaxap_ok", "", "", "", "", "", ""] }
         ];
 
         const defaultStreamers = [
-            "bratishkinoff", "silvername", "kaicenat", "cohhcarnage",
-            "ironmouse", "esfandtv", "tarik", "caseoh_"
+            "tolkacmen", "masqarad_", "patyanchik", "kattynya",
+            "akirrrin", "tigra", "vikaklubnika01", "otryzhka_bomzha"
         ];
 
         // ============ LOCALSTORAGE ============
@@ -1287,7 +1371,8 @@
 
             const label = document.createElement('div');
             label.className = 'label';
-            label.textContent = channel.charAt(0).toUpperCase() + channel.slice(1);
+            // Ник с маленькой буквы
+            label.textContent = channel.toLowerCase();
             box.appendChild(label);
 
             if (showHint) {
@@ -1447,7 +1532,9 @@
         function getVisibleChannels() {
             if (viewMode === 'quad') {
                 const group = settings.groups[settings.currentGroup];
-                return [...(group?.streamers || []), ...settings.streamers];
+                // Показываем только заполненные слоты (не пустые)
+                const groupStreamers = group?.streamers.filter(c => c && c.trim() !== '') || [];
+                return [...groupStreamers, ...settings.streamers];
             } else if (viewMode === 'grid') {
                 return getAllChannels().slice(0, settings.gridCount);
             } else if (viewMode === 'expanded') {
@@ -1461,26 +1548,39 @@
             const group = settings.groups[settings.currentGroup];
             if (!group) return;
 
-            group.streamers.forEach(channel => {
+            // Фильтруем только заполненные слоты
+            const activeStreamers = group.streamers.filter(c => c && c.trim() !== '');
+            
+            // Динамически рассчитываем количество колонок
+            const count = activeStreamers.length;
+            let cols = 2; // по умолчанию
+            if (count <= 4) cols = 2;
+            else if (count <= 6) cols = 3;
+            else if (count <= 9) cols = 3;
+            else cols = 4;
+            
+            const rows = Math.ceil(count / cols);
+            quadView.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            quadView.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+            // Добавляем активные стримы
+            activeStreamers.forEach(channel => {
                 if (channel) {
                     quadView.appendChild(createStreamBox(channel, {
                         onClick: toggleSound,
                         showHint: true,
                         muted: soundChannel !== channel
                     }));
-                } else {
-                    const empty = document.createElement('div');
-                    empty.className = 'stream-box';
-                    empty.style.background = '#18181b';
-                    empty.innerHTML = '<div class="label" style="color:#666">Пусто</div>';
-                    quadView.appendChild(empty);
                 }
             });
 
-            while (quadView.children.length < 4) {
+            // Заполняем пустые места заглушками до полного заполнения сетки
+            const totalCells = cols * rows;
+            for (let i = activeStreamers.length; i < totalCells; i++) {
                 const empty = document.createElement('div');
                 empty.className = 'stream-box';
                 empty.style.background = '#18181b';
+                empty.style.border = '2px dashed #2d2d35';
                 empty.innerHTML = '<div class="label" style="color:#666">Пусто</div>';
                 quadView.appendChild(empty);
             }
@@ -1488,7 +1588,8 @@
 
         function renderSidebarForQuad() {
             sidebar.innerHTML = '<div class="sidebar-title">Другие стримы</div>';
-            const current = settings.groups[settings.currentGroup]?.streamers || [];
+            const group = settings.groups[settings.currentGroup];
+            const current = group?.streamers.filter(c => c && c.trim() !== '') || [];
             getAllChannels().filter(c => !current.includes(c)).forEach(channel => {
                 sidebar.appendChild(createStreamBox(channel, { onClick: toggleSound, showHint: true, muted: soundChannel !== channel }));
             });
@@ -1514,10 +1615,10 @@
             // Создаем плеер
             createHlsPlayer(mainPlayer, activeChannel, { muted: false, autoplay: true });
             
-            // Добавляем ник на плеер - внизу по центру, без фона и LIVE
+            // Добавляем ник на плеер
             const label = document.createElement('div');
             label.className = 'player-label';
-            label.textContent = activeChannel.charAt(0).toUpperCase() + activeChannel.slice(1);
+            label.textContent = activeChannel.toLowerCase();
             mainPlayer.appendChild(label);
             
             renderExpandedPanels();
@@ -1716,22 +1817,65 @@
             settings.groups.forEach((group, gIdx) => {
                 const card = document.createElement('div');
                 card.className = 'group-card';
-                card.innerHTML = `
-                    <div class="group-header">
-                        <input type="text" value="${group.name}" data-gidx="${gIdx}" class="group-name-input">
-                        <button class="delete-btn" data-gidx="${gIdx}">🗑️</button>
-                    </div>
-                    <div class="group-slots">
-                        ${[0,1,2,3].map(i => `<div class="slot"><span class="slot-num">${i+1}</span><input type="text" value="${group.streamers[i] || ''}" placeholder="ник" data-gidx="${gIdx}" data-sidx="${i}"></div>`).join('')}
-                    </div>`;
+                
+                // Создаем заголовок группы
+                const header = document.createElement('div');
+                header.className = 'group-header';
+                header.innerHTML = `
+                    <input type="text" value="${group.name}" data-gidx="${gIdx}" class="group-name-input" placeholder="Название группы">
+                    <button class="delete-btn" data-gidx="${gIdx}">🗑️</button>
+                `;
+                card.appendChild(header);
+                
+                // Создаем слоты для стримеров (10 слотов)
+                const slots = document.createElement('div');
+                slots.className = 'group-slots';
+                
+                for (let i = 0; i < 10; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'slot';
+                    slot.innerHTML = `
+                        <span class="slot-num">${i+1}</span>
+                        <input type="text" value="${group.streamers[i] || ''}" placeholder="ник" data-gidx="${gIdx}" data-sidx="${i}">
+                    `;
+                    slots.appendChild(slot);
+                }
+                
+                card.appendChild(slots);
                 container.appendChild(card);
             });
+            
+            // Добавляем обработчики
             container.querySelectorAll('.group-name-input').forEach(i => i.onchange = (e) => settings.groups[e.target.dataset.gidx].name = e.target.value);
-            container.querySelectorAll('.group-slots input').forEach(i => i.onchange = (e) => settings.groups[parseInt(e.target.dataset.gidx)].streamers[parseInt(e.target.dataset.sidx)] = extractChannel(e.target.value));
-            container.querySelectorAll('.delete-btn').forEach(b => b.onclick = (e) => { if (settings.groups.length > 1) { settings.groups.splice(parseInt(e.target.dataset.gidx), 1); if (settings.currentGroup >= settings.groups.length) settings.currentGroup--; renderGroupsTab(); }});
+            container.querySelectorAll('.group-slots input').forEach(i => i.onchange = (e) => {
+                const gIdx = parseInt(e.target.dataset.gidx);
+                const sIdx = parseInt(e.target.dataset.sidx);
+                const value = extractChannel(e.target.value);
+                
+                // Убеждаемся, что массив имеет нужную длину
+                while (settings.groups[gIdx].streamers.length < 10) {
+                    settings.groups[gIdx].streamers.push('');
+                }
+                
+                settings.groups[gIdx].streamers[sIdx] = value;
+            });
+            
+            container.querySelectorAll('.delete-btn').forEach(b => b.onclick = (e) => { 
+                if (settings.groups.length > 1) { 
+                    settings.groups.splice(parseInt(e.target.dataset.gidx), 1); 
+                    if (settings.currentGroup >= settings.groups.length) settings.currentGroup--; 
+                    renderGroupsTab(); 
+                }
+            });
         }
 
-        document.getElementById('addGroupBtn').onclick = () => { settings.groups.push({ name: `Группа ${settings.groups.length + 1}`, streamers: ['','','',''] }); renderGroupsTab(); };
+        document.getElementById('addGroupBtn').onclick = () => { 
+            settings.groups.push({ 
+                name: `Группа ${settings.groups.length + 1}`, 
+                streamers: ['','','','','','','','','',''] 
+            }); 
+            renderGroupsTab(); 
+        };
 
         function renderStreamersTab() {
             const container = document.getElementById('streamersList');
@@ -1756,7 +1900,14 @@
         }
 
         document.getElementById('saveBtn').onclick = () => {
-            settings.groups.forEach(g => g.streamers = g.streamers.map(extractChannel));
+            settings.groups.forEach(g => {
+                // Обновляем массив стримеров
+                g.streamers = g.streamers.map(extractChannel);
+                // Убеждаемся, что всегда 10 элементов
+                while (g.streamers.length < 10) g.streamers.push('');
+                if (g.streamers.length > 10) g.streamers = g.streamers.slice(0, 10);
+            });
+            
             settings.streamers = settings.streamers.map(extractChannel).filter(s => s);
             settings.password = document.getElementById('settingsPassword').value;
             settings.gridCount = parseInt(document.getElementById('gridCountInput').value) || 12;
@@ -1807,6 +1958,6 @@
  
         console.log('HLS Multi Stream Viewer');
         render();
-    </script> // Одна закрывающая скобка
+    </script>
 </body>
 </html>
