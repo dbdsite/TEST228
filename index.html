@@ -188,6 +188,10 @@
             overflow: hidden;
         }
 
+        .main-wrapper.sidebar-hidden .sidebar {
+            display: none;
+        }
+
         .left-section {
             flex: 1;
             display: flex;
@@ -198,28 +202,22 @@
             overflow: hidden;
         }
 
-        .grid-view { 
-            flex: 1;
-            display: none; 
-            gap: 8px;
-            padding: 2px;
-            min-height: 0;
-            height: 100%;
-            grid-auto-rows: minmax(0, 1fr);
-            overflow: auto;
-        }
+.quad-view,
+.grid-view {
+    height: 100%;
+    align-content: start;
+    justify-content: center;
+    justify-items: stretch;
+    overflow: hidden;
+}
 
-        .quad-view {
-            flex: 1;
-            display: grid;
-            gap: 8px;
-            min-height: 0;
-            height: 100%;
-            overflow: auto;
-            padding: 2px;
-            grid-auto-rows: minmax(0, 1fr);
-        }
-
+.grid-view .stream-box,
+.quad-view .stream-box {
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+    height: 100%;
+}
         .expanded-view {
             display: none;
             flex-direction: column;
@@ -347,22 +345,20 @@
         }
 
         .bottom-streams {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            height: 140px;
-            flex-shrink: 0;
-            min-height: 0;
-            overflow: hidden;
-            background: #0e0e10;
-            border-radius: 0 0 8px 8px;
-            padding: 4px 4px 4px 4px;
-        }
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.bottom-streams .stream-box {
+    aspect-ratio: 16 / 9;
+}
 
         .sidebar {
             width: 180px;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+    grid-auto-rows: auto;
+    align-content: start;
             gap: 8px;
             overflow-y: auto;
             flex-shrink: 0;
@@ -390,20 +386,14 @@
             cursor: pointer;
             transition: all 0.2s;
             min-height: 0;
-            height: 100%;
             width: 100%;
-        }
-
-        .grid-view .stream-box,
-        .quad-view .stream-box,
-        .bottom-streams .stream-box,
-        .sidebar .stream-box {
-            aspect-ratio: 16/9;
         }
 
         .sidebar .stream-box {
             min-height: 80px;
             width: 100%;
+            aspect-ratio: 16 / 9;
+            height: auto;
         }
 
         .stream-box:hover {
@@ -890,7 +880,7 @@
 
         .main-wrapper[data-mode="grid"] .grid-view { 
             display: grid; 
-            grid-auto-rows: minmax(0, 1fr);
+            grid-auto-rows: auto;
         }
         .main-wrapper[data-mode="grid"] .quad-view,
         .main-wrapper[data-mode="grid"] .expanded-view { display: none; }
@@ -1037,7 +1027,7 @@
                 <div class="tab-content" id="tabStreamers">
                     <div class="info-box">
                         <h4>👤 Дополнительные стримеры</h4>
-                        <p>Отображаются в боковой колонке</p>
+                        <p>В режиме «Группа» доступны для перетаскивания с заменой мест</p>
                     </div>
                     <div id="streamersList"></div>
                     <button class="add-btn" id="addStreamerBtn">+ Добавить</button>
@@ -1049,8 +1039,16 @@
                         <input type="number" id="gridCountInput" min="1" max="20" value="12">
                     </div>
                     <div class="setting-row">
+                        <label>Открывать настройки в новом окне:</label>
+                        <input type="checkbox" id="settingsNewWindow">
+                    </div>
+                    <div class="setting-row">
                         <label>Пароль настроек:</label>
                         <input type="password" id="settingsPassword" placeholder="Оставьте пустым для отключения">
+                    </div>
+                    <div class="setting-row">
+                        <label>Сбросить доп. стримеров к дефолту из кода:</label>
+                        <button class="btn btn-secondary" id="resetStreamersDefaultsBtn" type="button">Сбросить стримеров</button>
                     </div>
                 </div>
 
@@ -1129,7 +1127,8 @@
                     streamers: settings.streamers,
                     currentGroup: settings.currentGroup,
                     password: settings.password,
-                    gridCount: settings.gridCount
+                    gridCount: settings.gridCount,
+                    openInNewWindow: settings.openInNewWindow
                 }));
             } catch (e) { console.error('Save error:', e); }
         }
@@ -1140,11 +1139,13 @@
             streamers: saved?.streamers || [...defaultStreamers],
             currentGroup: saved?.currentGroup || 0,
             password: saved?.password !== undefined ? saved.password : DEFAULT_PASSWORD,
-            gridCount: saved?.gridCount || 12
+            gridCount: saved?.gridCount || 12,
+            openInNewWindow: saved?.openInNewWindow || false
         };
 
         // ============ СОСТОЯНИЕ ============
         let viewMode = 'quad';
+        let expandedSourceMode = 'grid';
         let activeChannel = null;
         let soundChannel = null;
         let bottomChannels = [];
@@ -1395,38 +1396,14 @@
 
         // ============ СТРИМ БОКС ============
         function createStreamBox(channel, options = {}) {
-            const { draggable = false, location = '', muted = true, showHint = true, onClick = null } = options;
-            
-            const existingBox = document.querySelector(`.stream-box[data-channel="${channel}"]`);
-            if (existingBox) {
-                if (location) existingBox.dataset.location = location;
-                existingBox.draggable = draggable;
-                
-                // Обновляем обработчик клика
-                const overlay = existingBox.querySelector('.overlay');
-                if (overlay && onClick) {
-                    overlay.onclick = (e) => {
-                        e.stopPropagation();
-                        onClick(channel);
-                    };
-                }
-                
-                // Обновляем muted состояние
-                const player = hlsPlayers.get(channel);
-                if (player && player.video) {
-                    player.video.muted = muted;
-                    const muteBtn = existingBox.querySelector('.mute-btn');
-                    if (muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊';
-                }
-                
-                return existingBox;
-            }
+            const { draggable = false, location = '', muted = true, showHint = true, onClick = null, refData = null } = options;
             
             const box = document.createElement('div');
             box.className = 'stream-box';
             if (channel === soundChannel) box.classList.add('has-sound');
             box.dataset.channel = channel;
             if (location) box.dataset.location = location;
+            if (refData) box.dataset.refData = JSON.stringify(refData);
             box.draggable = draggable;
 
             const playerContainer = document.createElement('div');
@@ -1470,6 +1447,7 @@
                     playerContainer.appendChild(controls);
                     
                     setupControls(existingPlayer, playerContainer);
+                    ensureVideoPlaying(existingPlayer.video);
                 }
             } else {
                 // Если плеера нет, создаем новый
@@ -1490,6 +1468,7 @@
                 box.ondragstart = (e) => {
                     e.dataTransfer.setData('channel', channel);
                     e.dataTransfer.setData('location', location);
+                    e.dataTransfer.setData('refData', JSON.stringify(refData || null));
                     box.classList.add('dragging');
                 };
                 box.ondragend = () => {
@@ -1506,8 +1485,9 @@
                     box.classList.remove('drag-over');
                     const draggedChannel = e.dataTransfer.getData('channel');
                     const draggedLocation = e.dataTransfer.getData('location');
+                    const draggedRefData = e.dataTransfer.getData('refData');
                     if (draggedChannel !== channel) {
-                        swapChannels(draggedChannel, draggedLocation, channel, location);
+                        swapChannels(draggedChannel, draggedLocation, channel, location, draggedRefData, refData);
                     }
                 };
             }
@@ -1515,19 +1495,34 @@
             return box;
         }
 
-        function swapChannels(ch1, loc1, ch2, loc2) {
+        function swapChannels(ch1, loc1, ch2, loc2, refData1 = null, refData2 = null) {
+            if (viewMode === 'grid' || viewMode === 'quad') {
+                const r1 = typeof refData1 === 'string' ? JSON.parse(refData1 || 'null') : refData1;
+                const r2 = typeof refData2 === 'string' ? JSON.parse(refData2 || 'null') : refData2;
+
+                if (r1 && r2) {
+                    swapRefs(r1, r2);
+                    render();
+                }
+                return;
+            }
+
+            const allowedLocations = new Set(['bottom', 'sidebar']);
+            if (!allowedLocations.has(loc1) || !allowedLocations.has(loc2)) return;
+            if (expandedSourceMode !== 'grid' && (loc1 === 'sidebar' || loc2 === 'sidebar')) return;
+
             const getArr = (loc) => loc === 'bottom' ? bottomChannels : sidebarChannels;
             const arr1 = getArr(loc1), arr2 = getArr(loc2);
             const idx1 = arr1.indexOf(ch1), idx2 = arr2.indexOf(ch2);
             if (idx1 === -1 || idx2 === -1) return;
-            
-            if (loc1 === loc2) { 
-                [arr1[idx1], arr1[idx2]] = [arr1[idx2], arr1[idx1]]; 
-            } else { 
-                arr1[idx1] = ch2; 
-                arr2[idx2] = ch1; 
+
+            if (loc1 === loc2) {
+                [arr1[idx1], arr1[idx2]] = [arr1[idx2], arr1[idx1]];
+            } else {
+                arr1[idx1] = ch2;
+                arr2[idx2] = ch1;
             }
-            
+
             renderExpandedPanels();
         }
 
@@ -1566,30 +1561,30 @@
             console.log('Expanding stream:', channel);
             activeChannel = channel;
             soundChannel = channel;
+            expandedSourceMode = topBar.dataset.view || 'grid';
             viewMode = 'expanded';
-            
-            // Обновляем состояние звука для всех плееров
+
             hlsPlayers.forEach((player, ch) => {
                 if (player.video) {
                     player.video.muted = (ch !== channel);
+                    ensureVideoPlaying(player.video);
                 }
             });
-            
-            // Получаем все каналы и распределяем их
+
             const all = getAllChannels().filter(c => c && c !== channel);
             bottomChannels = all.slice(0, 4);
             sidebarChannels = all.slice(4);
-            
+
             render();
             collapseBtn.classList.add('visible');
         }
 
         function closeExpandedView() {
             activeChannel = null;
-            viewMode = topBar.dataset.view;
+            viewMode = expandedSourceMode || topBar.dataset.view;
             soundChannel = null;
             render();
-            
+
             collapseBtn.classList.remove('visible');
         }
 
@@ -1600,9 +1595,143 @@
             return channels;
         }
 
+        function getGridChannelRefs(limit = settings.gridCount) {
+            const refs = [];
+            const seen = new Set();
+
+            settings.groups.forEach((group, gIdx) => {
+                group.streamers.forEach((channel, sIdx) => {
+                    if (channel && !seen.has(channel)) {
+                        seen.add(channel);
+                        refs.push({ channel, source: 'group', groupIndex: gIdx, slotIndex: sIdx });
+                    }
+                });
+            });
+
+            settings.streamers.forEach((channel, sIdx) => {
+                if (channel && !seen.has(channel)) {
+                    seen.add(channel);
+                    refs.push({ channel, source: 'streamer', slotIndex: sIdx });
+                }
+            });
+
+            return refs.slice(0, limit);
+        }
+
+        function getChannelByRef(ref) {
+            if (!ref) return '';
+            return ref.source === 'group'
+                ? (settings.groups[ref.groupIndex]?.streamers?.[ref.slotIndex] || '')
+                : (settings.streamers[ref.slotIndex] || '');
+        }
+
+        function setChannelByRef(ref, value) {
+            if (!ref) return;
+            if (ref.source === 'group') {
+                while (settings.groups[ref.groupIndex].streamers.length < 10) settings.groups[ref.groupIndex].streamers.push('');
+                settings.groups[ref.groupIndex].streamers[ref.slotIndex] = value;
+            } else {
+                settings.streamers[ref.slotIndex] = value;
+            }
+        }
+
+        function swapRefs(ref1, ref2) {
+            const value1 = getChannelByRef(ref1);
+            const value2 = getChannelByRef(ref2);
+            if (!value1 || !value2 || value1 === value2) return;
+            setChannelByRef(ref1, value2);
+            setChannelByRef(ref2, value1);
+            saveToStorage();
+        }
+
+        function fit16x9Tiles(container, preferredCols, preferredRows, itemCount) {
+            if (!container) return;
+
+            requestAnimationFrame(() => {
+                const rect = container.getBoundingClientRect();
+                if (!rect.width || !rect.height) return;
+
+                const styles = getComputedStyle(container);
+                const gapX = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+                const gapY = parseFloat(styles.rowGap || styles.gap || '0') || 0;
+                const count = Math.max(1, itemCount || container.querySelectorAll('.stream-box').length || 1);
+
+                let best = null;
+                for (let cols = 1; cols <= count; cols++) {
+                    const rows = Math.ceil(count / cols);
+                    const tileWidth = (rect.width - gapX * Math.max(0, cols - 1)) / cols;
+                    const tileHeightByWidth = tileWidth * 9 / 16;
+                    const maxTileHeight = (rect.height - gapY * Math.max(0, rows - 1)) / rows;
+                    const tileHeight = Math.min(tileHeightByWidth, maxTileHeight);
+                    if (tileHeight <= 0) continue;
+                    const finalTileWidth = tileHeight * 16 / 9;
+                    const area = finalTileWidth * tileHeight;
+                    const score = area + (cols === preferredCols ? 0.5 : 0);
+                    if (!best || score > best.score) {
+                        best = { cols, rows, tileWidth: finalTileWidth, tileHeight, score };
+                    }
+                }
+
+                if (!best) return;
+
+                container.style.gridTemplateColumns = `repeat(${best.cols}, ${best.tileWidth}px)`;
+                container.style.gridAutoRows = `${best.tileHeight}px`;
+                container.style.gridTemplateRows = `repeat(${best.rows}, ${best.tileHeight}px)`;
+                container.style.justifyContent = 'center';
+                container.style.alignContent = 'start';
+            });
+        }
+
+        function ensureVideoPlaying(video) {
+            if (!video) return;
+            const promise = video.play();
+            if (promise && typeof promise.catch === 'function') {
+                promise.catch(() => {});
+            }
+        }
+
+        function resumeAllPlayers() {
+            hlsPlayers.forEach((player) => {
+                if (player && player.video && !player.video.paused) {
+                    ensureVideoPlaying(player.video);
+                }
+            });
+        }
+
+        function getAdaptiveGap(mode, count) {
+            const noGapGridCounts = new Set([3, 4, 7, 8, 9, 13, 14, 15, 16]);
+            const noGapQuadCounts = new Set([4, 7, 8, 9]);
+
+            if (mode === 'grid' && noGapGridCounts.has(count)) return '0px';
+            if (mode === 'quad' && noGapQuadCounts.has(count)) return '0px';
+            return '8px';
+        }
+
+        function getQuadMainRefs() {
+            const refs = [];
+            const group = settings.groups[settings.currentGroup];
+            if (!group) return refs;
+
+            group.streamers.forEach((channel, slotIndex) => {
+                if (channel && channel.trim() !== '') {
+                    refs.push({ channel, source: 'group', groupIndex: settings.currentGroup, slotIndex });
+                }
+            });
+
+            return refs;
+        }
+
+        function getQuadSidebarRefs() {
+            return settings.streamers
+                .map((channel, slotIndex) => ({ channel, source: 'streamer', slotIndex }))
+                .filter(ref => ref.channel && ref.channel.trim() !== '');
+        }
+
         // ============ РЕНДЕРИНГ ============
         function render() {
             mainWrapper.dataset.mode = viewMode;
+            const showSidebar = viewMode === 'quad' || (viewMode === 'expanded' && expandedSourceMode === 'grid');
+            mainWrapper.classList.toggle('sidebar-hidden', !showSidebar);
             
             // Обновляем активные кнопки в соответствии с текущим режимом
             viewBtns.forEach(b => {
@@ -1633,6 +1762,8 @@
             } else {
                 collapseBtn.classList.remove('visible');
             }
+
+            requestAnimationFrame(resumeAllPlayers);
         }
 
         function getVisibleChannels() {
@@ -1650,73 +1781,84 @@
 
         function renderQuadView() {
             quadView.innerHTML = '';
-            const group = settings.groups[settings.currentGroup];
-            if (!group) return;
+            const refs = getQuadMainRefs();
+            const activeStreamers = refs.map(ref => ref.channel);
 
-            const activeStreamers = group.streamers.filter(c => c && c.trim() !== '');
-            
             const count = activeStreamers.length;
-            let cols = 2;
-            if (count <= 4) cols = 2;
+            let cols = 3;
+            if (count <= 2) cols = count || 1;
+            else if (count <= 4) cols = 2;
             else if (count <= 6) cols = 3;
             else if (count <= 9) cols = 3;
             else cols = 4;
-            
-            const rows = Math.ceil(count / cols);
-            quadView.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-            quadView.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-            activeStreamers.forEach(channel => {
-                if (channel) {
-                    const box = createStreamBox(channel, {
-                        onClick: toggleSound,
-                        showHint: true,
-                        muted: soundChannel !== channel
-                    });
-                    quadView.appendChild(box);
-                }
+            const rows = Math.max(1, Math.ceil(Math.max(count, 1) / cols));
+            quadView.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+            quadView.style.gridTemplateRows = `repeat(${rows}, auto)`;
+
+            refs.forEach(ref => {
+                const box = createStreamBox(ref.channel, {
+                    onClick: toggleSound,
+                    showHint: true,
+                    muted: soundChannel !== ref.channel,
+                    draggable: true,
+                    location: 'quad',
+                    refData: ref
+                });
+                quadView.appendChild(box);
             });
 
-            const totalCells = cols * rows;
-            for (let i = activeStreamers.length; i < totalCells; i++) {
-                const empty = document.createElement('div');
-                empty.className = 'stream-box';
-                empty.style.background = '#18181b';
-                empty.style.border = '2px dashed #2d2d35';
-                empty.innerHTML = '<div class="label" style="color:#666">Пусто</div>';
-                quadView.appendChild(empty);
-            }
+            quadView.style.gap = getAdaptiveGap('quad', count);
+            fit16x9Tiles(quadView, cols, rows, count);
         }
 
         function renderSidebarForQuad() {
-            sidebar.innerHTML = '<div class="sidebar-title">Другие стримы</div>';
-            const group = settings.groups[settings.currentGroup];
-            const current = group?.streamers.filter(c => c && c.trim() !== '') || [];
-            getAllChannels().filter(c => !current.includes(c)).forEach(channel => {
-                sidebar.appendChild(createStreamBox(channel, { onClick: toggleSound, showHint: true, muted: soundChannel !== channel }));
+            sidebar.innerHTML = '<div class="sidebar-title">Перетаскивание с заменой ↔</div>';
+            getQuadSidebarRefs().forEach(ref => {
+                sidebar.appendChild(createStreamBox(ref.channel, {
+                    onClick: toggleSound,
+                    showHint: true,
+                    muted: soundChannel !== ref.channel,
+                    draggable: true,
+                    location: 'sidebar',
+                    refData: ref
+                }));
             });
         }
 
         function renderGridView() {
             gridView.innerHTML = '';
-            const channels = getAllChannels().slice(0, settings.gridCount);
-            const cols = channels.length <= 4 ? 2 : channels.length <= 9 ? 3 : channels.length <= 16 ? 4 : 5;
-            gridView.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-            
-            channels.forEach(channel => {
-                const box = createStreamBox(channel, { 
+            const refs = getGridChannelRefs(settings.gridCount);
+            const channels = refs.map(ref => ref.channel);
+            const count = channels.length;
+            const cols = count <= 2 ? count || 1 :
+                count <= 4 ? 2 :
+                count <= 9 ? 3 :
+                count <= 16 ? 4 : 5;
+
+            const rows = Math.max(1, Math.ceil(Math.max(count, 1) / cols));
+
+            gridView.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+            gridView.style.gridTemplateRows = `repeat(${rows}, auto)`;
+
+            refs.forEach(ref => {
+                const box = createStreamBox(ref.channel, { 
                     onClick: expandStream, 
                     showHint: false, 
-                    muted: soundChannel !== channel,
-                    draggable: false
+                    muted: soundChannel !== ref.channel,
+                    draggable: true,
+                    location: 'grid',
+                    refData: ref
                 });
                 gridView.appendChild(box);
             });
+
+            gridView.style.gap = getAdaptiveGap('grid', count);
+            fit16x9Tiles(gridView, cols, rows, count);
         }
 
         function renderSidebarForGrid() {
-            sidebar.innerHTML = '<div class="sidebar-title">Клик = открыть</div>';
-            // В режиме сетки боковая панель пустая
+            sidebar.innerHTML = '';
         }
 
         function renderExpandedView() {
@@ -1742,6 +1884,7 @@
         mainPlayer.appendChild(controls);
         
         setupControls(player, mainPlayer);
+        ensureVideoPlaying(player.video);
     } else {
         // Если плеера нет, создаем новый
         createHlsPlayer(mainPlayer, activeChannel, { muted: false, autoplay: true });
@@ -1767,6 +1910,7 @@
                         hlsPlayers.forEach((player, ch) => {
                             if (player.video) {
                                 player.video.muted = (ch !== c);
+                                ensureVideoPlaying(player.video);
                             }
                         });
                         const all = getAllChannels().filter(x => x !== c); 
@@ -1786,24 +1930,17 @@
                 bottomStreams.appendChild(empty);
             }
 
-            sidebar.innerHTML = '<div class="sidebar-title">Перетащите ↔</div>';
+            if (expandedSourceMode !== 'grid') {
+                sidebar.innerHTML = '';
+                return;
+            }
+
+            sidebar.innerHTML = '<div class="sidebar-title">Перетащи в один из 4 нижних слотов ↔</div>';
             sidebarChannels.forEach(channel => {
                 sidebar.appendChild(createStreamBox(channel, {
                     draggable: true,
                     location: 'sidebar',
-                    onClick: (c) => { 
-                        activeChannel = c; 
-                        soundChannel = c;
-                        hlsPlayers.forEach((player, ch) => {
-                            if (player.video) {
-                                player.video.muted = (ch !== c);
-                            }
-                        });
-                        const all = getAllChannels().filter(x => x !== c); 
-                        bottomChannels = all.slice(0, 4); 
-                        sidebarChannels = all.slice(4); 
-                        render(); 
-                    },
+                    onClick: null,
                     showHint: false, 
                     muted: soundChannel !== channel
                 }));
@@ -1835,7 +1972,8 @@
 
         function setViewMode(mode) {
             topBar.dataset.view = mode;
-            
+            expandedSourceMode = mode;
+
             viewBtns.forEach(b => {
                 if (b.dataset.view === mode) {
                     b.classList.add('active');
@@ -1843,17 +1981,12 @@
                     b.classList.remove('active');
                 }
             });
-            
-            // Если не в развернутом режиме, меняем режим
+
             if (viewMode !== 'expanded') { 
                 viewMode = mode; 
                 soundChannel = null; 
-            } else {
-                // Если мы в развернутом режиме, просто обновляем topBar.dataset.view
-                // для возможности возврата в этот режим после сворачивания
-                topBar.dataset.view = mode;
             }
-            
+
             render();
         }
 
@@ -1866,6 +1999,13 @@
             saveToStorage();
             if (viewMode === 'grid') render();
         };
+
+
+        window.addEventListener('resize', () => {
+            if (viewMode === 'grid' || viewMode === 'quad') {
+                render();
+            }
+        });
 
         document.getElementById('prevGroup').onclick = () => goToGroup(settings.currentGroup - 1);
         document.getElementById('nextGroup').onclick = () => goToGroup(settings.currentGroup + 1);
@@ -1928,10 +2068,17 @@
             renderStreamersTab();
             document.getElementById('settingsPassword').value = settings.password;
             document.getElementById('gridCountInput').value = settings.gridCount;
+            document.getElementById('settingsNewWindow').checked = settings.openInNewWindow;
         }
         function closeModal() { modalOverlay.classList.remove('active'); }
 
-        document.getElementById('settingsBtn').onclick = openModal;
+        document.getElementById('settingsBtn').onclick = () => {
+    if (settings.openInNewWindow) {
+        window.open(window.location.href + '?settings=1', '_blank', 'width=900,height=700');
+    } else {
+        openModal();
+    }
+};
         document.getElementById('modalClose').onclick = closeModal;
         modalOverlay.onclick = (e) => { if (e.target === modalOverlay) closeModal(); };
 
@@ -2020,6 +2167,10 @@
         }
 
         document.getElementById('addStreamerBtn').onclick = () => { settings.streamers.push(''); renderStreamersTab(); };
+        document.getElementById('resetStreamersDefaultsBtn').onclick = () => {
+            settings.streamers = [...defaultStreamers];
+            renderStreamersTab();
+        };
 
         function extractChannel(input) {
             if (!input) return '';
@@ -2038,6 +2189,7 @@
             settings.streamers = settings.streamers.map(extractChannel).filter(s => s);
             settings.password = document.getElementById('settingsPassword').value;
             settings.gridCount = parseInt(document.getElementById('gridCountInput').value) || 12;
+            settings.openInNewWindow = document.getElementById('settingsNewWindow').checked;
             gridCountSlider.value = settings.gridCount;
             gridCountValue.textContent = settings.gridCount;
             saveToStorage();
@@ -2052,6 +2204,7 @@
                 settings.currentGroup = 0;
                 settings.password = DEFAULT_PASSWORD;
                 settings.gridCount = 12;
+                settings.openInNewWindow = false;
                 saveToStorage();
                 renderGroupsTab();
                 renderStreamersTab();
@@ -2077,7 +2230,85 @@
             });
         }, 30000);
 
-        // ============ INIT ============
+        
+// ============ КОНТЕКСТНОЕ МЕНЮ ============
+let contextMenu = null;
+let contextChannel = null;
+
+function createContextMenu() {
+    contextMenu = document.createElement('div');
+    contextMenu.style.position = 'fixed';
+    contextMenu.style.background = '#18181b';
+    contextMenu.style.border = '1px solid #9146ff';
+    contextMenu.style.borderRadius = '8px';
+    contextMenu.style.padding = '5px';
+    contextMenu.style.zIndex = '9999';
+    contextMenu.style.display = 'none';
+
+    const restartBtn = document.createElement('div');
+    restartBtn.textContent = '🔄 Перезапустить';
+    restartBtn.style.padding = '8px 15px';
+    restartBtn.style.cursor = 'pointer';
+    restartBtn.style.color = '#fff';
+
+    restartBtn.onmouseenter = () => restartBtn.style.background = '#9146ff';
+    restartBtn.onmouseleave = () => restartBtn.style.background = 'transparent';
+
+    restartBtn.onclick = () => {
+        if (contextChannel) restartStream(contextChannel);
+        hideContextMenu();
+    };
+
+    contextMenu.appendChild(restartBtn);
+    document.body.appendChild(contextMenu);
+}
+
+function showContextMenu(x, y, channel) {
+    contextChannel = channel;
+    contextMenu.style.left = x + 'px';
+    contextMenu.style.top = y + 'px';
+    contextMenu.style.display = 'block';
+}
+
+function hideContextMenu() {
+    contextMenu.style.display = 'none';
+    contextChannel = null;
+}
+
+document.addEventListener('click', hideContextMenu);
+document.addEventListener('contextmenu', (e) => {
+    const box = e.target.closest('.stream-box');
+    if (box && box.dataset.channel) {
+        e.preventDefault();
+        showContextMenu(e.clientX, e.clientY, box.dataset.channel);
+    }
+});
+
+function restartStream(channel) {
+    const player = hlsPlayers.get(channel);
+    if (!player) return;
+
+    const container = player.container;
+    const muted = player.video?.muted ?? true;
+
+    destroyPlayer(channel);
+
+    setTimeout(() => {
+        createHlsPlayer(container, channel, {
+            muted: muted,
+            autoplay: true
+        });
+    }, 200);
+}
+
+createContextMenu();
+
+// ============ INIT ============
+if (window.location.search.includes('settings=1')) {
+    setTimeout(() => {
+        openModalReal();
+    }, 300);
+}
         fetch('https://test228.onrender.com/api/ping').catch(()=>{});
         setInterval(() => {
             fetch('https://test228.onrender.com/api/ping').catch(()=>{});
