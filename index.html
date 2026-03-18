@@ -1175,6 +1175,23 @@
             const qualitySelect = container.querySelector('.quality-select');
             const video = player.video;
 
+            const interactiveControls = [playBtn, muteBtn, volumeSlider, qualitySelect].filter(Boolean);
+
+            function stopDragFromControl(el) {
+                el.draggable = false;
+                el.addEventListener('dragstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+                ['pointerdown', 'mousedown', 'touchstart', 'click', 'dblclick'].forEach((evt) => {
+                    el.addEventListener(evt, (e) => {
+                        e.stopPropagation();
+                    }, { passive: false });
+                });
+            }
+
+            interactiveControls.forEach(stopDragFromControl);
+
             if (playBtn) {
                 playBtn.onclick = (e) => {
                     e.stopPropagation();
@@ -1194,7 +1211,7 @@
                     video.muted = !video.muted;
                     muteBtn.textContent = video.muted ? '🔇' : '🔊';
                     if (volumeSlider) volumeSlider.value = video.muted ? 0 : video.volume * 100;
-                    
+
                     if (!video.muted) {
                         if (soundChannel !== player.channel) {
                             hlsPlayers.forEach((p, ch) => {
@@ -1207,12 +1224,35 @@
                     } else if (soundChannel === player.channel) {
                         soundChannel = null;
                     }
-                    
+
                     updateSoundIndicators();
                 };
             }
 
             if (volumeSlider) {
+                const releaseDragLock = () => {
+                    const streamBox = volumeSlider.closest('.stream-box');
+                    if (streamBox && streamBox.dataset.wasDraggable === '1') {
+                        streamBox.draggable = true;
+                        delete streamBox.dataset.wasDraggable;
+                    }
+                };
+
+                ['pointerdown', 'mousedown', 'touchstart'].forEach((evt) => {
+                    volumeSlider.addEventListener(evt, (e) => {
+                        e.stopPropagation();
+                        const streamBox = volumeSlider.closest('.stream-box');
+                        if (streamBox && streamBox.draggable) {
+                            streamBox.dataset.wasDraggable = '1';
+                            streamBox.draggable = false;
+                        }
+                    }, { passive: false });
+                });
+
+                ['pointerup', 'mouseup', 'touchend', 'change', 'blur'].forEach((evt) => {
+                    volumeSlider.addEventListener(evt, releaseDragLock);
+                });
+
                 volumeSlider.oninput = (e) => {
                     e.stopPropagation();
                     video.volume = e.target.value / 100;
